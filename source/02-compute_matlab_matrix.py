@@ -29,6 +29,7 @@ if len(sys.argv) != 2:
     
 #### MAIN PROGRAM:
 
+ppi_pair_id = sys.argv[1]
 in_fields = sys.argv[1].split("_")
 pdb_id = in_fields[0]
 chain_ids1 = in_fields[1]
@@ -75,7 +76,7 @@ else:
     hb2_ml = 0
     hph2_ml = 0
 
-out_mat_base = masif_opts['mat_file_template'].format(pdb_id, chain_ids1, chain_ids2)
+out_mat_base = masif_opts['mat_dir_template'].format(ppi_pair_id)
 try:
     os.stat(out_mat_base)
 except:

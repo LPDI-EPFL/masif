@@ -19,9 +19,9 @@ chain_ids1 = in_fields[1]
 chain_ids2 = in_fields[2]
 
 paths = {}
-paths['input'] = masif_opts['mat_file_template'].format(pdb_id, chain_ids1, chain_ids2)
+paths['input'] = masif_opts['mat_dir_template'].format(sys.argv[1])
 if not os.path.exists(masif_opts['coord_dir']):
     os.mkdir(masif_opts['coord_dir'])
-paths['output'] = masif_opts['coord_file_template'].format(pdb_id, chain_ids1, chain_ids2)
+paths['output'] = masif_opts['coord_dir_template'].format(sys.argv[1])
 params = masif_opts
 pablo = eng.coords_mds(paths, params)
