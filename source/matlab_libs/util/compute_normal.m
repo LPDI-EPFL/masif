@@ -38,8 +38,6 @@ v = vertex - repmat(mean(vertex,1), 3,1);
 %fprintf('v: \n')
 %v
 s = sum( v.*normal, 2 );
-fprintf('s:\n')
-s
 if sum(s>0)<sum(s<0)
     fprintf('Flipping\n')
     % flip

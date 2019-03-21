@@ -23,12 +23,12 @@ function [G,graph_weights] = geodesic_dists_graph(shape, radius)
     [i,j,s1] = find(A);     % direct link
     [i,j,s2] = find(A');    % reverse link
 
-
     I = find( (s1>0) + (s2>0) == 2 );
 
     % links edge->faces
     E = [s1(I) s2(I)];
     i = i(I); j = j(I);
+
     % only directed edges
     I = find(i<j);
     E = E(I,:);

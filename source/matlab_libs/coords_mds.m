@@ -5,13 +5,11 @@ function success = coords_mds(paths,params)
 
 % shape instances
 tmp   = dir(fullfile(paths.input,'*.mat'));
-paths.input
 names = sort({tmp.name}); clear tmp;
 radius = params.radius;
 success = 0;
 
 fprintf('Running... \n');
-names
 % loop over the shape instances
 %par
 tStart = tic;
