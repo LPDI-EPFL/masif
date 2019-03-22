@@ -1,16 +1,29 @@
 # Header variables and parameters.
+import sys
 import os
 import numpy as np
 from IPython.core.debugger import set_trace
+import importlib
 
 import pyflann
 
 from masif_modules.compute_input_feat import compute_input_feat
 from default_config.masif_opts import masif_opts
+
+
 params = masif_opts['ppi_search']
+
+if sys.argv[1] > 0:
+    custom_params_file = sys.argv[1]
+    custom_params = importlib.import_module(custom_params_file, package=None)
+    custom_params = custom_params.custom_params
+
+    for key in custom_params: 
+        params[key] = custom_params[key]
 
 if 'pids' not in params: 
     params['pids'] = ['p1', 'p2']
+
 
 # Read the positive first 
 parent_in_dir = params['masif_precomputation_dir']
