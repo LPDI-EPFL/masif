@@ -5,13 +5,13 @@
 #SBATCH --cpus-per-task 1
 #SBATCH --mem 16000
 #SBATCH --time 02:00:00
-#SBATCH --array=1-10
-#SBATCH --output=exelogs/out/02_bindomer.%A_%a.out
-#SBATCH --error=exelogs/err/02_bindomer.%A_%a.err
+#SBATCH --array=1-1000
+#SBATCH --output=exelogs/out/_masif_precompute.%A_%a.out
+#SBATCH --error=exelogs/err/_masif_precompute.%A_%a.err
 
 i=1
 while read p; do
-    if [ $(( i % 10 )) == ${SLURM_ARRAY_TASK_ID} ]; then
+    if [ $(( i % 1001 )) == ${SLURM_ARRAY_TASK_ID} ]; then
         FIELD1=$(echo $p| cut -d" " -f1)
         PDBID=$(echo $FIELD1| cut -d"_" -f1)
         CHAIN1=$(echo $FIELD1| cut -d"_" -f2)
