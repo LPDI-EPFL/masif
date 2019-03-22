@@ -22,10 +22,13 @@ if len(sys.argv) <= 1:
     print "A or AB are the chains to include in this surface."
     sys.exit(1)
 
-if sys.argv[1] == 'masif_ppi_search': 
+masif_app = sys.argv[1]
+
+if masif_app == 'masif_ppi_search': 
     params = masif_opts['ppi_search']
-elif sys.argv[1] == 'masif_site':
+elif masif_app == 'masif_site':
     params = masif_opts['site']
+    params['ply_chain_dir'] = masif_opts['ply_chain_dir']
 # Single ppi pair id set
 #if len(sys.argv) == 2: 
 #    ppi_pair_list = [sys.argv[1]]
@@ -70,7 +73,11 @@ for ppi_pair_id in ppi_pair_list:
     for pid in pids:
 #        try:
         
-        list_desc, list_coords, list_shape_idx, list_names, X, Y, Z, list_sc_labels, list_indices = \
+        if masif_app == 'masif_site':
+            list_desc, list_coords, list_shape_idx, list_names, X, Y, Z, list_iface_labels, list_indices = \
+                read_data_from_matfile_full_protein(coord_file, shape_file, ppi_pair_id, params, pid, label_iface=True)
+        elif masif_app == 'masif_ppi_search':
+            list_desc, list_coords, list_shape_idx, list_names, X, Y, Z, list_sc_labels, list_indices = \
                 read_data_from_matfile_full_protein(coord_file, shape_file, ppi_pair_id, params, pid, label_sc=True)
 #        except Exception, e: 
 #            print('Error reading file'+str(e))
@@ -93,7 +100,10 @@ for ppi_pair_id in ppi_pair_list:
         np.save(my_precomp_dir+pid+'_input_feat', input_feat)
         np.save(my_precomp_dir+pid+'_mask', mask)
         np.save(my_precomp_dir+pid+'_names', list_names)
-        np.save(my_precomp_dir+pid+'_sc_labels', list_sc_labels)
+        if masif_app == 'masif_ppi_search':
+            np.save(my_precomp_dir+pid+'_sc_labels', list_sc_labels)
+        elif masif_app == 'masif_site':
+            np.save(my_precomp_dir+pid+'_iface_labels', list_iface_labels)
         np.save(my_precomp_dir+pid+'_list_indices', list_indices)
         np.save(my_precomp_dir+pid+'_X', X)
         np.save(my_precomp_dir+pid+'_Y', Y)
