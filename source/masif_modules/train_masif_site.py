@@ -105,8 +105,8 @@ def train_masif_site(learning_obj, params,
     best_val_auc = 0
 
     out_dir = params['model_dir']
-    #logfile = open(out_dir+'log.txt', 'w', 0)
-    logfile = open(out_dir+'log.txt', 'w')
+    logfile = open(out_dir+'log.txt', 'w', 0)
+#    logfile = open(out_dir+'log.txt', 'w')
 
     training_list = open(params['training_list']).readlines()
     training_list = [x.rstrip() for x in training_list]
@@ -158,7 +158,10 @@ def train_masif_site(learning_obj, params,
             if pdbid+'_'+ chains2 in training_list:
                 pids.append('p2')
             for pid in pids:
-                iface_labels = np.load(mydir+pid+'_iface_labels.npy')
+                try:
+                    iface_labels = np.load(mydir+pid+'_iface_labels.npy')
+                except:
+                    continue
                 if len(iface_labels) > 8000:
                     continue
                 if np.sum(iface_labels) > 0.75*len(iface_labels) or np.sum(iface_labels) < 30:
@@ -171,7 +174,7 @@ def train_masif_site(learning_obj, params,
                 if np.sum(params['feat_mask']) < 5:
                     input_feat = mask_input_feat(input_feat, params['feat_mask'])
                 mask = np.load(mydir+pid+'_mask.npy')
-                indices = np.load(mydir+pid+'_list_indices.npy')
+                indices = np.load(mydir+pid+'_list_indices.npy', encoding='latin1')
                 # indices is (n_verts x <30), it should be 
                 indices = pad_indices(indices, mask.shape[1])
                 tmp = np.zeros((len(iface_labels), 2))
@@ -251,7 +254,10 @@ def train_masif_site(learning_obj, params,
             if pdbid+'_'+ chains2 in testing_list:
                 pids.append('p2')
             for pid in pids:
-                iface_labels = np.load(mydir+pid+'_iface_labels.npy')
+                try:
+                    iface_labels = np.load(mydir+pid+'_iface_labels.npy')
+                except:
+                    continue
                 if len(iface_labels) > 20000:
                     continue
                 if np.sum(iface_labels) > 0.75*len(iface_labels) or np.sum(iface_labels) < 30:
@@ -264,7 +270,7 @@ def train_masif_site(learning_obj, params,
                 if np.sum(params['feat_mask']) < 5:
                     input_feat = mask_input_feat(input_feat, params['feat_mask'])
                 mask = np.load(mydir+pid+'_mask.npy')
-                indices = np.load(mydir+pid+'_list_indices.npy')
+                indices = np.load(mydir+pid+'_list_indices.npy', encoding='latin1')
                 # indices is (n_verts x <30), it should be 
                 indices = pad_indices(indices, mask.shape[1])
                 tmp = np.zeros((len(iface_labels), 2))
