@@ -300,7 +300,10 @@ def read_data_from_matfile_full_protein(coord_file, shape_file, seed_pair, param
         try:
             # Read the interface information from the ply file itself. 
             import pymesh
-            plyfile = '_'.join(seed_pair.split('_')[0:2])
+            if protein_id == 'p1':
+                plyfile = '_'.join(seed_pair.split('_')[0:2])
+            elif protein_id == 'p2':
+                plyfile = '{}_{}'.format(seed_pair.split('_')[0], seed_pair.split('_')[2])
             plyfile = params['ply_chain_dir']+plyfile+'.ply'
             iface_mesh = pymesh.load_mesh(plyfile)
             iface_labels  = iface_mesh.get_attribute('vertex_iface')
