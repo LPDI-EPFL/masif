@@ -8,6 +8,16 @@ from default_config.masif_opts import masif_opts
 
 params = masif_opts['site']
 
+if sys.argv[1] > 0:
+    custom_params_file = sys.argv[1]
+    custom_params = importlib.import_module(custom_params_file, package=None)
+    custom_params = custom_params.custom_params
+
+    for key in custom_params: 
+        print('Setting {} to {} '.format(key, custom_params[key]))
+        params[key] = custom_params[key]
+
+
 # Apply mask to input_feat
 def mask_input_feat(input_feat, mask):
     mymask = np.where(np.array(mask) == 0.0)[0]
