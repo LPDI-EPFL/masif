@@ -19,6 +19,7 @@ if sys.argv[1] > 0:
     custom_params = custom_params.custom_params
 
     for key in custom_params: 
+        print('Setting {} to {} '.format(key, custom_params[key]))
         params[key] = custom_params[key]
 
 if 'pids' not in params: 
