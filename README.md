@@ -11,7 +11,7 @@ P. Gainza, F. Sverrisson, F Monti, E. Rodola, M. M. Bronstein, B.E. Correia. Dec
 
 MaSIF it is meant to form as a base for any protein surface-oriented learning task. 
 
-
+[!MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Fig0_v11-01.png)
 
 ## Dependencies 
 MaSIF has a long list of dependencies, as it relies on external software/libraries to  work with protein databank files and surface files, and to compute features and coordinates: 
