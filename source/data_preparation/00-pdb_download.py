@@ -15,7 +15,7 @@ if len(sys.argv) <= 1:
     sys.exit(1)
 
 if not os.path.exists(masif_opts['raw_pdb_dir']):
-    os.mkdir(masif_opts['raw_pdb_dir'])
+    os.makedirs(masif_opts['raw_pdb_dir'])
 
 if not os.path.exists(masif_opts['tmp_dir']):
     os.mkdir(masif_opts['tmp_dir'])

@@ -61,3 +61,8 @@ masif_opts['site']['max_distance'] = 100
 masif_opts['site']['range_val_samples'] = 0.9 # 0.9 to 1.0
 masif_opts['site']['model_dir'] = 'nn_models/all_feat_3l/'
 
+# Neural network ligand application specific parameters. 
+masif_opts['ligand'] = {}
+masif_opts['ligand']['assembly_dir'] = 'data_preparation/00b-pdbs_assembly'
+masif_opts['ligand']['ligand_coords_dir'] = 'data_preparation/00c-ligand_coords'
+
