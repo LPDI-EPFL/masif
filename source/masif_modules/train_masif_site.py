@@ -106,6 +106,8 @@ def train_masif_site(learning_obj, params,
 
     out_dir = params['model_dir']
     logfile = open(out_dir+'log.txt', 'w', 0)
+    for key in params: 
+        logfile.write('{}: {}\n'.format(key, params[key]))
 #    logfile = open(out_dir+'log.txt', 'w')
 
     training_list = open(params['training_list']).readlines()
@@ -158,8 +160,10 @@ def train_masif_site(learning_obj, params,
             if pdbid+'_'+ chains2 in training_list:
                 pids.append('p2')
             for pid in pids:
+                #print('Considering: {}\n'.format(mydir+pid))
                 try:
                     iface_labels = np.load(mydir+pid+'_iface_labels.npy')
+                    #print('Reading iface_labels: {}\n'.format(mydir+pid))
                 except:
                     continue
                 if len(iface_labels) > 8000:
@@ -169,6 +173,8 @@ def train_masif_site(learning_obj, params,
                 count_proteins +=1
 
                 rho_wrt_center = np.load(mydir+pid+'_rho_wrt_center.npy')
+                #print('len iface_labels: {}\n'.format(iface_labels.shape))
+                #print('len rho_wrt_center: {}\n'.format(rho_wrt_center.shape))
                 theta_wrt_center = np.load(mydir+pid+'_theta_wrt_center.npy')
                 input_feat = np.load(mydir+pid+'_input_feat.npy')
                 if np.sum(params['feat_mask']) < 5:
@@ -194,6 +200,10 @@ def train_masif_site(learning_obj, params,
                     n = min(len(pos_labels), len(neg_labels))
                     n = min(n, batch_size//2)
                     subset = np.concatenate([neg_labels[:n], pos_labels[:n]])
+                    #logfile.write('Number of vertices: {}\n'.format(iface_labels.shape))
+                    #logfile.write('n: {}\n'.format(n))
+                    #logfile.write('pos: {}\n'.format(pos_labels))
+                    #logfile.write('neg: {}\n'.format(neg_labels))
                     rho_wrt_center = rho_wrt_center[subset]
                     theta_wrt_center = theta_wrt_center[subset]
                     input_feat = input_feat[subset]
@@ -218,6 +228,7 @@ def train_masif_site(learning_obj, params,
                 }
 
                 if ppi_pair_id in val_dirs:
+                    logfile.write('Validating on {} {}\n'.format(ppi_pair_id, pid))
                     feed_dict[learning_obj.keep_prob] = 1.0
                     training_loss, score, eval_labels = learning_obj.session.run([learning_obj.data_loss, learning_obj.eval_score, learning_obj.eval_labels],
                                                       feed_dict=feed_dict) 
@@ -229,6 +240,7 @@ def train_masif_site(learning_obj, params,
                     all_val_labels = np.concatenate([all_val_labels,eval_labels[:,0]])
                     all_val_scores = np.concatenate([all_val_scores,score])
                 else:
+                    logfile.write('Training on {} {}\n'.format(ppi_pair_id, pid))
                     feed_dict[learning_obj.keep_prob] = 1.0
                     _, training_loss, norm_grad, score, eval_labels= \
                                         learning_obj.session.run([learning_obj.optimizer, \
@@ -254,6 +266,7 @@ def train_masif_site(learning_obj, params,
             if pdbid+'_'+ chains2 in testing_list:
                 pids.append('p2')
             for pid in pids:
+                logfile.write('Testing on {} {}\n'.format(ppi_pair_id, pid))
                 try:
                     iface_labels = np.load(mydir+pid+'_iface_labels.npy')
                 except:
