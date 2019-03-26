@@ -1,1 +1,17 @@
 *.pyc
+data/**/00-raw_pdbs/
+data/**/01-benchmark_surfaces/
+data/**/01-benchmark_pdbs/
+data/**/02-matfile/
+data/**/02-matfile/
+data/**/03-coords/
+data/**/04*precomputation*/
+*.out
+*.err
+*.mat
+*.npy
+*.npz
+checkpoint
+data/**/cache/
+**/obsolete/*
+**/model_data
