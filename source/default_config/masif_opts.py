@@ -1,3 +1,5 @@
+import tempfile
+
 masif_opts = {}
 # Default directories
 masif_opts['raw_pdb_dir'] = 'data_preparation/00-raw_pdbs/'
@@ -6,7 +8,7 @@ masif_opts['ply_chain_dir'] = 'data_preparation/01-benchmark_surfaces/'
 masif_opts['mat_dir'] = 'data_preparation/02-matfile/'
 masif_opts['coord_dir'] = 'data_preparation/03-coords/'
 masif_opts['coord_dir_npy'] = 'data_preparation/03-coords_npy/'
-masif_opts['tmp_dir'] = '/tmp/'
+masif_opts['tmp_dir'] = tempfile.gettempdir()
 masif_opts['ply_file_template'] = masif_opts['ply_chain_dir']+'/{}_{}.ply'
 masif_opts['mat_dir_template'] = masif_opts['mat_dir']+'/{}'
 masif_opts['coord_dir_template'] = masif_opts['coord_dir']+'/{}'
@@ -65,4 +67,10 @@ masif_opts['site']['model_dir'] = 'nn_models/all_feat_3l/'
 masif_opts['ligand'] = {}
 masif_opts['ligand']['assembly_dir'] = 'data_preparation/00b-pdbs_assembly'
 masif_opts['ligand']['ligand_coords_dir'] = 'data_preparation/00c-ligand_coords'
-
+masif_opts['ligand']['masif_precomputation_dir'] = 'data_preparation/04a-precomputation_12A/precomputation/'
+masif_opts['ligand']['max_shape_size'] = 200
+masif_opts['ligand']['feat_mask'] = [1.0]*5
+masif_opts['ligand']['train_fract'] = 0.9*0.8
+masif_opts['ligand']['val_fract'] = 0.1*0.8
+masif_opts['ligand']['test_fract'] = 0.2
+masif_opts['ligand']['tfrecords_dir'] = 'data_preparation/tfrecords'

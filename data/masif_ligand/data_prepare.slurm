@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task 1
 #SBATCH --mem 16000
 #SBATCH --time 02:00:00
-#SBATCH --array=1-1000
+#SBATCH --array=1-476
 #SBATCH --output=exelogs/out/_masif_precompute.%A_%a.out
 #SBATCH --error=exelogs/err/_masif_precompute.%A_%a.err
 
@@ -19,4 +19,4 @@ while read p; do
         ./data_prepare_one.sh $PDBID\_$CHAIN1\_$CHAIN2
     fi
     i=$((i+1))
-done < lists/full_list.txt
+done < lists/not_finished.txt

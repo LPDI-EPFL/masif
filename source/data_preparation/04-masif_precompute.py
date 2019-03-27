@@ -29,6 +29,8 @@ if masif_app == 'masif_ppi_search':
 elif masif_app == 'masif_site':
     params = masif_opts['site']
     params['ply_chain_dir'] = masif_opts['ply_chain_dir']
+elif masif_app == 'masif_ligand':
+    params = masif_opts['ligand']
 # Single ppi pair id set
 #if len(sys.argv) == 2: 
 #    ppi_pair_list = [sys.argv[1]]
