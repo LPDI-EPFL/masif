@@ -13,7 +13,7 @@ from default_config.masif_opts import masif_opts
 
 params = masif_opts['ppi_search']
 
-if sys.argv[1] > 0:
+if len(sys.argv) > 0:
     custom_params_file = sys.argv[1]
     custom_params = importlib.import_module(custom_params_file, package=None)
     custom_params = custom_params.custom_params
