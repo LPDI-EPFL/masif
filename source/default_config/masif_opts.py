@@ -1,3 +1,4 @@
+import tempfile
 masif_opts = {}
 # Default directories
 masif_opts['raw_pdb_dir'] = 'data_preparation/00-raw_pdbs/'
@@ -6,7 +7,7 @@ masif_opts['ply_chain_dir'] = 'data_preparation/01-benchmark_surfaces/'
 masif_opts['mat_dir'] = 'data_preparation/02-matfile/'
 masif_opts['coord_dir'] = 'data_preparation/03-coords/'
 masif_opts['coord_dir_npy'] = 'data_preparation/03-coords_npy/'
-masif_opts['tmp_dir'] = '/tmp/'
+masif_opts['tmp_dir'] = tempfile.gettempdir()
 masif_opts['ply_file_template'] = masif_opts['ply_chain_dir']+'/{}_{}.ply'
 masif_opts['mat_dir_template'] = masif_opts['mat_dir']+'/{}'
 masif_opts['coord_dir_template'] = masif_opts['coord_dir']+'/{}'
@@ -57,5 +58,6 @@ masif_opts['site']['max_distance'] = 9.0 # Radius for the neural network.
 masif_opts['site']['masif_precomputation_dir'] = 'data_preparation/04a-precomputation_9A/precomputation/'
 masif_opts['site']['range_val_samples'] = 0.9 # 0.9 to 1.0
 masif_opts['site']['model_dir'] = 'nn_models/all_feat_3l/model_data/'
-masif_opts['site']['out_dir'] = 'output/all_feat_3l/'
+masif_opts['site']['out_pred_dir'] = 'output/all_feat_3l/pred_data/'
+masif_opts['site']['out_surf_dir'] = 'output/all_feat_3l/pred_surfaces/'
 masif_opts['site']['feat_mask'] = [1.0]*5
