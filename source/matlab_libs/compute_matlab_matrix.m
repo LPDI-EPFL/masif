@@ -139,10 +139,10 @@ for cv1_iiix = 1:length(S)
             comp_rings1_50(ring) = prctile(comp1(members), 50);
         end
         % If any elements are nan, a rare case, assign a 0
-        nan_25 = find(isnan(comp_rings1_25));
-        comp_rings1_25(nan_25) = 0;
-        nan_50 = find(isnan(comp_rings1_50));
-        comp_rings1_50(nan_50) = 0;
+        %nan_25 = find(isnan(comp_rings1_25));
+        %comp_rings1_25(nan_25) = 0;
+        %nan_50 = find(isnan(comp_rings1_50));
+        %comp_rings1_50(nan_50) = 0;
         comp1 = median(comp_rings1_25);
         
         % Now s2->s1
@@ -162,10 +162,10 @@ for cv1_iiix = 1:length(S)
                 members
             end
         end
-        nan_25 = find(isnan(comp_rings2_25));
-        comp_rings2_25(nan_25) = 0;
-        nan_50 = find(isnan(comp_rings2_50));
-        comp_rings2_50(nan_50) = 0;
+        %nan_25 = find(isnan(comp_rings2_25));
+        %comp_rings2_25(nan_25) = 0;
+        %nan_50 = find(isnan(comp_rings2_50));
+        %comp_rings2_50(nan_50) = 0;
         comp2 = median(comp_rings2_25);
         shape_comp = min([comp1,comp2]);
 

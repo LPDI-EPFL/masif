@@ -3,12 +3,15 @@
 
 ## About MaSIF
 
-MaSIF is a proof-of-concept method for identifying patterns (fingerprints) in protein surfaces. It contains a protocol to prepare protein structure files into feature-rich surfaces, to decompose these into patches, and to identify patterns in these using deep geometric learning. It is structured to reproduce the experiments found in: 
+MaSIF is a proof-of-concept method for identifying patterns (fingerprints) in protein surfaces. It contains a protocol to prepare protein structure files into feature-rich surfaces, to decompose these into patches, and to identify patterns in these using deep geometric learning.
 
-For more information read: 
-P. Gainza, F. Sverrisson, F Monti, E. Rodola, M. M. Bronstein, B.E. Correia
+This code base is structured to reproduce the experiments found in: 
 
-However, it is meant to form as a base for any protein surface-oriented learning task. 
+P. Gainza, F. Sverrisson, F Monti, E. Rodola, M. M. Bronstein, B.E. Correia. Deciphering interaction fingerprints from protein molecular surfaces. 2019. 
+
+MaSIF it is meant to form as a base for any protein surface-oriented learning task. 
+
+![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Fig0_v11-01.png)
 
 ## Dependencies 
 MaSIF has a long list of dependencies, as it relies on external software/libraries to  work with protein databank files and surface files, and to compute features and coordinates: 
@@ -21,7 +24,7 @@ MaSIF has a long list of dependencies, as it relies on external software/librari
 * [open3D](https://github.com/IntelVCL/Open3D)
 * [matlab](https://ch.mathworks.com/products/matlab.html) 
 * [Pymol](https://pymol.org/2/)(optional)
-* [Tensorflow]
+* [Tensorflow] (https://www.tensorflow.org/)
  
 ## Installation 
 

@@ -12,15 +12,10 @@ import importlib
 import sys
 from default_config.masif_opts import masif_opts
 
-
 # Apply mask to input_feat
 def mask_input_feat(input_feat, mask):
     mymask = np.where(np.array(mask) == 0.0)[0]
     return np.delete(input_feat, mymask, axis=2)
-
-#config_file = sys.argv[1]
-#run_config = importlib.import_module(config_file, package=None)
-#params = run_config.params
 
 params = masif_opts['ppi_search']
 

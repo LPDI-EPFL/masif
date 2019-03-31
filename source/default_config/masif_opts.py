@@ -25,7 +25,7 @@ masif_opts['mesh_res'] = 1.0
 masif_opts['feature_interpolation'] = True
 
 # Parameters for shape complementarity calculations.
-masif_opts['sc_radius'] = 9.0 
+masif_opts['sc_radius'] = 12.0 
 masif_opts['sc_interaction_cutoff'] = 1.5
 masif_opts['sc_w'] = 0.25
 
@@ -40,15 +40,14 @@ masif_opts['ppi_search']['max_shape_size'] = 200
 masif_opts['ppi_search']['max_distance'] = 12.0 # Radius for the neural network.
 masif_opts['ppi_search']['masif_precomputation_dir'] = 'data_preparation/04b-precomputation_12A/precomputation/'
 masif_opts['ppi_search']['feat_mask'] = [1.0]*5
-masif_opts['ppi_search']['max_distance'] = 200
 masif_opts['ppi_search']['max_sc_filt'] = 1.0
 masif_opts['ppi_search']['min_sc_filt'] = 0.5
 masif_opts['ppi_search']['pos_surf_accept_probability'] = 1.0
 masif_opts['ppi_search']['pos_interface_cutoff'] = 1.0
 masif_opts['ppi_search']['range_val_samples'] = 0.9 # 0.9 to 1.0
 masif_opts['ppi_search']['cache_dir'] = 'nn_models/sc05/cache/'
-masif_opts['ppi_search']['model_dir'] = 'nn_models/sc05/all_feat/model/'
-masif_opts['ppi_search']['desc_dir'] = 'descriptors/sc05/all_feat/'
+masif_opts['ppi_search']['model_dir'] = 'nn_models/sc05/all_feat/model_data/'
+masif_opts['ppi_search']['desc_dir'] = 'descriptors/sc05/all_feat/descriptors/'
 
 # Neural network patch application specific parameters. 
 masif_opts['site'] = {}
@@ -58,10 +57,11 @@ masif_opts['site']['max_shape_size'] = 100
 masif_opts['site']['n_conv_layers'] = 3
 masif_opts['site']['max_distance'] = 9.0 # Radius for the neural network.
 masif_opts['site']['masif_precomputation_dir'] = 'data_preparation/04a-precomputation_9A/precomputation/'
-masif_opts['site']['feat_mask'] = [1.0]*5
-masif_opts['site']['max_distance'] = 100
 masif_opts['site']['range_val_samples'] = 0.9 # 0.9 to 1.0
-masif_opts['site']['model_dir'] = 'nn_models/all_feat_3l/'
+masif_opts['site']['model_dir'] = 'nn_models/all_feat_3l/model_data/'
+masif_opts['site']['out_pred_dir'] = 'output/all_feat_3l/pred_data/'
+masif_opts['site']['out_surf_dir'] = 'output/all_feat_3l/pred_surfaces/'
+masif_opts['site']['feat_mask'] = [1.0]*5
 
 # Neural network ligand application specific parameters. 
 masif_opts['ligand'] = {}
@@ -80,3 +80,4 @@ masif_opts['ligand']['feat_mask'] = [1.0,1.0,1.0,1.0,1.0]
 masif_opts['ligand']['costfun'] = 'dprime'
 masif_opts['ligand']['model_dir'] = 'nn_models/all_feat/'
 masif_opts['ligand']['test_set_out_dir'] = 'test_set_predictions/'
+

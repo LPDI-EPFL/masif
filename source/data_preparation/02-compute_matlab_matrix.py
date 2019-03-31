@@ -22,9 +22,9 @@ import json
 
 # 1) As input: A BINDER_PDB, a TARGET_PDB, and their corresponding surfaces.
 if len(sys.argv) != 2: 
-    print "Usage: "+sys.argv[0]+" XXXX_A_XY"
-    print "A or AB are the chains of the binder surface."
-    print "X or XY are the chains of the target surface. (optional)"
+    print("Usage: "+sys.argv[0]+" XXXX_A_XY")
+    print("A or AB are the chains of the binder surface.")
+    print("X or XY are the chains of the target surface. (optional)")
     sys.exit(1)
     
 #### MAIN PROGRAM:
@@ -51,7 +51,7 @@ if not single_chain:
 # 3) Call the matlab function to export to mtlab..
 
 # INITIALIZE MATLAB
-print "Initializing matlab" 
+print("Initializing matlab")
 import matlab
 from core.initialize_matlab import initialize_matlab
 eng = initialize_matlab()
@@ -84,12 +84,12 @@ except:
 
 out_mat_file = out_mat_base+"/"+pdb_id+"_"+chain_ids1+'_'+chain_ids2
 
-print "calling matlab" 
+print("calling matlab")
 central_vertex_index = eng.compute_matlab_matrix(out_mat_file, v1_ml, \
         f1_ml, c1_ml, hb1_ml, hph1_ml, v2_ml, f2_ml, c2_ml, hb2_ml, hph2_ml, masif_opts)
 
 try:
     os.rmdir(out_mat_base)
-    print 'Something went wrong'
+    print('Something went wrong')
 except:
-    print 'Everything OK'
+    print('Everything OK')

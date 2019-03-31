@@ -16,48 +16,13 @@ def pad_indices(indices, max_verts):
         padded_ix[patch_ix] = np.concatenate([indices[patch_ix], [patch_ix]*(max_verts-len(indices[patch_ix]))]) 
     return padded_ix 
 
-def construct_batch(c_pos_training_idx, pos_rho_wrt_center, pos_theta_wrt_center, pos_input_feat, pos_mask, \
-                    c_neg_training_idx, neg_rho_wrt_center, neg_theta_wrt_center, neg_input_feat, neg_mask):
-
-    batch_rho_coords = np.concatenate([pos_rho_wrt_center[c_pos_training_idx], neg_rho_wrt_center[c_neg_training_idx]], axis=0)
-    batch_theta_coords = np.concatenate([pos_theta_wrt_center[c_pos_training_idx], neg_theta_wrt_center[c_neg_training_idx]], axis=0)
-    batch_input_feat = np.concatenate([pos_input_feat[c_pos_training_idx], neg_input_feat[c_neg_training_idx]], axis=0)
-    batch_mask = np.concatenate([pos_mask[c_pos_training_idx], neg_mask[c_neg_training_idx]], axis=0)
-    pos_labels = np.arange(len(c_pos_training_idx))
-    m = len(pos_labels)
-    neg_labels = np.arange(m,m+len(c_neg_training_idx))
-    n = m + len(neg_labels)
-    batch_labels = np.zeros((n,2)) 
-    batch_labels[pos_labels,0] = 1.0
-    batch_labels[neg_labels,1] = 1.0
-    return batch_rho_coords, batch_theta_coords, batch_input_feat, batch_mask, pos_labels, neg_labels, batch_labels
-
-def construct_batch_val_test(c_idx, rho_wrt_center, theta_wrt_center, input_feat, mask):
-    batch_rho_coords = rho_wrt_center[c_idx]
-    batch_theta_coords = theta_wrt_center[c_idx]
-    batch_input_feat = input_feat[c_idx]
-    batch_mask = mask[c_idx]
-    return batch_rho_coords, batch_theta_coords, batch_input_feat, batch_mask
-
-def classify_iface_fp(params, learning_obj, rho_wrt_center, theta_wrt_center, input_feat, mask, indices, iface_labels):
-    batch_size = len(mask)
-    pos_labels = list(np.arange(0,10))
-    neg_labels = list(np.arange(0, len(iface_labels)))
-    tmp = np.zeros((len(iface_labels), 2))
-    for i in range(len(iface_labels)):
-        if iface_labels[i] == 1:
-            tmp[i,0] = 1
-        else:
-            tmp[i,1] = 1
-    iface_labels_dc = tmp
+# Run masif site on a protein, on a previously trained protein.
+def run_masif_site(params, learning_obj, rho_wrt_center, theta_wrt_center, input_feat, mask, indices):
     indices = pad_indices(indices, mask.shape[1])
     feed_dict = {learning_obj.rho_coords: rho_wrt_center,
          learning_obj.theta_coords: theta_wrt_center,
          learning_obj.input_feat: input_feat,
          learning_obj.mask: mask,
-         learning_obj.labels: iface_labels_dc,
-         learning_obj.pos_idx: pos_labels, 
-         learning_obj.neg_idx: neg_labels,
          learning_obj.indices_tensor: indices
     }
 
@@ -65,25 +30,6 @@ def classify_iface_fp(params, learning_obj, rho_wrt_center, theta_wrt_center, in
                                           feed_dict=feed_dict) 
     return score 
 
-def compute_val_test_scores(learning_obj, idx, rho_wrt_center, theta_wrt_center, input_feat, mask, batch_size=100):
-    all_iface_score = []
-    num_batches = int(np.ceil(len(idx)/batch_size))
-    # Compute all scores for positive shapes.
-    for kk in range(num_batches):
-        c_idx = idx[np.arange(kk*batch_size, (kk+1)*batch_size)]
-        batch_rho_coords, batch_theta_coords, batch_input_feat, batch_mask = \
-                        construct_batch_val_test(c_idx, rho_wrt_center, theta_wrt_center, input_feat, mask)
-
-        feed_dict = {learning_obj.rho_coords: batch_rho_coords,
-             learning_obj.theta_coords: batch_theta_coords,
-             learning_obj.input_feat: batch_input_feat,
-             learning_obj.mask: batch_mask}
-             
-        iface_score = learning_obj.session.run([learning_obj.iface_score], feed_dict=feed_dict) 
-        all_iface_score.append(np.squeeze(iface_score))
-    all_iface_score = np.concatenate(all_iface_score, axis=0)
-    return all_iface_score
-    
 def compute_roc_auc(pos, neg):
     labels = np.concatenate([np.ones((len(pos))), np.zeros((len(neg)))])
     dist_pairs = np.concatenate([pos,neg])
@@ -106,6 +52,8 @@ def train_masif_site(learning_obj, params,
 
     out_dir = params['model_dir']
     logfile = open(out_dir+'log.txt', 'w', 0)
+    for key in params: 
+        logfile.write('{}: {}\n'.format(key, params[key]))
 #    logfile = open(out_dir+'log.txt', 'w')
 
     training_list = open(params['training_list']).readlines()
@@ -158,8 +106,10 @@ def train_masif_site(learning_obj, params,
             if pdbid+'_'+ chains2 in training_list:
                 pids.append('p2')
             for pid in pids:
+                #print('Considering: {}\n'.format(mydir+pid))
                 try:
                     iface_labels = np.load(mydir+pid+'_iface_labels.npy')
+                    #print('Reading iface_labels: {}\n'.format(mydir+pid))
                 except:
                     continue
                 if len(iface_labels) > 8000:
@@ -169,6 +119,8 @@ def train_masif_site(learning_obj, params,
                 count_proteins +=1
 
                 rho_wrt_center = np.load(mydir+pid+'_rho_wrt_center.npy')
+                #print('len iface_labels: {}\n'.format(iface_labels.shape))
+                #print('len rho_wrt_center: {}\n'.format(rho_wrt_center.shape))
                 theta_wrt_center = np.load(mydir+pid+'_theta_wrt_center.npy')
                 input_feat = np.load(mydir+pid+'_input_feat.npy')
                 if np.sum(params['feat_mask']) < 5:
@@ -194,6 +146,10 @@ def train_masif_site(learning_obj, params,
                     n = min(len(pos_labels), len(neg_labels))
                     n = min(n, batch_size//2)
                     subset = np.concatenate([neg_labels[:n], pos_labels[:n]])
+                    #logfile.write('Number of vertices: {}\n'.format(iface_labels.shape))
+                    #logfile.write('n: {}\n'.format(n))
+                    #logfile.write('pos: {}\n'.format(pos_labels))
+                    #logfile.write('neg: {}\n'.format(neg_labels))
                     rho_wrt_center = rho_wrt_center[subset]
                     theta_wrt_center = theta_wrt_center[subset]
                     input_feat = input_feat[subset]
@@ -218,6 +174,7 @@ def train_masif_site(learning_obj, params,
                 }
 
                 if ppi_pair_id in val_dirs:
+                    logfile.write('Validating on {} {}\n'.format(ppi_pair_id, pid))
                     feed_dict[learning_obj.keep_prob] = 1.0
                     training_loss, score, eval_labels = learning_obj.session.run([learning_obj.data_loss, learning_obj.eval_score, learning_obj.eval_labels],
                                                       feed_dict=feed_dict) 
@@ -229,6 +186,7 @@ def train_masif_site(learning_obj, params,
                     all_val_labels = np.concatenate([all_val_labels,eval_labels[:,0]])
                     all_val_scores = np.concatenate([all_val_scores,score])
                 else:
+                    logfile.write('Training on {} {}\n'.format(ppi_pair_id, pid))
                     feed_dict[learning_obj.keep_prob] = 1.0
                     _, training_loss, norm_grad, score, eval_labels= \
                                         learning_obj.session.run([learning_obj.optimizer, \
@@ -254,6 +212,7 @@ def train_masif_site(learning_obj, params,
             if pdbid+'_'+ chains2 in testing_list:
                 pids.append('p2')
             for pid in pids:
+                logfile.write('Testing on {} {}\n'.format(ppi_pair_id, pid))
                 try:
                     iface_labels = np.load(mydir+pid+'_iface_labels.npy')
                 except:
