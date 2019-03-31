@@ -20,6 +20,7 @@ def output_pdb_as_xyzrn(pdbfilename, xyzrnfilename):
     atomtype = name[0]
 
     color = 'Green'
+    coords = None
     if atomtype in radii and resname in polarHydrogens:
       if atomtype == 'O':
         color = 'Red'
@@ -34,6 +35,6 @@ def output_pdb_as_xyzrn(pdbfilename, xyzrnfilename):
           insertion = residue.get_id()[2]
       full_id = "{}_{:d}_{}_{}_{}_{}".format(chain, residue.get_id()[1],\
                 insertion, resname, name, color)
-  
-    outfile.write(coords+" "+radii[atomtype]+" 1 "+full_id+"\n")
+    if coords is not None: 
+        outfile.write(coords+" "+radii[atomtype]+" 1 "+full_id+"\n")
 
