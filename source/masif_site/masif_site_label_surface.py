@@ -22,18 +22,19 @@ parent_in_dir = params['masif_precomputation_dir']
 eval_list = []
 
 if len(sys.argv) == 3:
-    eval_list = [sys.argv[2]]
+    eval_list = [sys.argv[2].rstrip('_')]
+    ppi_pair_ids = [sys.argv[2]]
 # Read a list of pdb_chain entries to evaluate. 
-if len(sys.argv) == 4 and sys.argv[2] == '-l':
+elif len(sys.argv) == 4 and sys.argv[2] == '-l':
     listfile = open(sys.argv[3])
     ppi_pair_ids = []
     for line in listfile: 
         eval_list.append(line.rstrip())
+    for mydir in os.listdir(parent_in_dir):
+        ppi_pair_ids.append(mydir)
 else:
     sys.exit(1)
 
-for mydir in os.listdir(parent_in_dir):
-    ppi_pair_ids.append(mydir)
 
 for ppi_pair_id in ppi_pair_ids:
     shape_file = masif_opts['mat_dir']+ppi_pair_id+'/'+ppi_pair_id+'.mat'
@@ -46,11 +47,11 @@ for ppi_pair_id in ppi_pair_ids:
         if pdb_chain_id not in eval_list:
             continue
 
-        
         try:
             p1 = load_matlab_file(shape_file, pid, True)
         except:
-            ipdb.set_trace()
+            print('File does not exist: {}'.format(shape_file))
+            continue
         scores = np.load(params['out_pred_dir']+'/pred_'+pdbid+'_'+chains[ix]+'.npy')
 
         vertices = np.stack([p1['X'][0], p1['Y'][0], p1['Z'][0]], axis=1)
@@ -85,5 +86,6 @@ for ppi_pair_id in ppi_pair_ids:
         if not os.path.exists(params['out_surf_dir']):
             os.makedirs(params['out_surf_dir'])
 
+        print('Saving '+params['out_surf_dir']+pdb_chain_id+'.ply')
         pymesh.save_mesh(params['out_surf_dir']+pdb_chain_id+'.ply', mymesh, *mymesh.get_attribute_names(), use_float=True, ascii=True)
 
