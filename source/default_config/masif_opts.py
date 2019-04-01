@@ -47,6 +47,7 @@ masif_opts['ppi_search']['range_val_samples'] = 0.9 # 0.9 to 1.0
 masif_opts['ppi_search']['cache_dir'] = 'nn_models/sc05/cache/'
 masif_opts['ppi_search']['model_dir'] = 'nn_models/sc05/all_feat/model_data/'
 masif_opts['ppi_search']['desc_dir'] = 'descriptors/sc05/all_feat/descriptors/'
+masif_opts['ppi_search']['gif_descriptors_out'] = 'gif_descriptors/'
 
 # Neural network patch application specific parameters. 
 masif_opts['site'] = {}
