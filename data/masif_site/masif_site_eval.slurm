@@ -13,5 +13,6 @@
 module purge
 slmodules -r deprecated
 module load gcc/5.4.0 cuda cudnn mvapich2 openblas
-source /home/gainza/lpdi_fs/seednet/monet_seeder/tensorflow_on_gpu/bin/activate
+masif_root=$(git rev-parse --show-toplevel)
+source $masif_root/tensorflow_on_gpu/bin/activate
 ./predict_site.sh nn_models.all_feat_3l.custom_params
