@@ -22,7 +22,7 @@ parent_in_dir = params['masif_precomputation_dir']
 eval_list = []
 
 if len(sys.argv) == 3:
-    eval_list = [sys.argv[2].rstrip('_')]
+    #eval_list = [sys.argv[2].rstrip('_')]
     ppi_pair_ids = [sys.argv[2]]
 # Read a list of pdb_chain entries to evaluate. 
 elif len(sys.argv) == 4 and sys.argv[2] == '-l':
@@ -33,8 +33,8 @@ elif len(sys.argv) == 4 and sys.argv[2] == '-l':
     for mydir in os.listdir(parent_in_dir):
         ppi_pair_ids.append(mydir)
 else:
+    print('Not enough parameters')
     sys.exit(1)
-
 
 for ppi_pair_id in ppi_pair_ids:
     shape_file = masif_opts['mat_dir']+ppi_pair_id+'/'+ppi_pair_id+'.mat'
@@ -44,7 +44,7 @@ for ppi_pair_id in ppi_pair_ids:
     for ix, pid in enumerate(['p1', 'p2']):
         pdb_chain_id = pdbid+'_'+chains[ix]
 
-        if pdb_chain_id not in eval_list:
+        if pdb_chain_id not in eval_list and len(eval_list) > 0 :
             continue
 
         try:
