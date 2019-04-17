@@ -7,11 +7,12 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=gpu
 #SBATCH --mem 32000
-#SBATCH --output=exelogs/out/gpu_monet_seeder.%A_%a.out
-#SBATCH --error=exelogs/err/gpu_monet_seeder.%A_%a.err
+#SBATCH --output=exelogs/out/masif_gpu%A_%a.out
+#SBATCH --error=exelogs/err/masif_gpu%A_%a.err
 
 module purge
 slmodules -r deprecated
 module load gcc/5.4.0 cuda cudnn mvapich2 openblas
-source /home/gainza/lpdi_fs/seednet/monet_seeder/tensorflow_on_gpu/bin/activate
-./compute_descriptors.sh nn_models.sc05.all_feat.custom_params
+masif_root=$(git rev-parse --show-toplevel)
+source $masif_root/tensorflow_on_gpu/bin/activate
+./compute_descriptors.sh $1
