@@ -53,23 +53,10 @@ def construct_batch(binder_rho_wrt_center, binder_theta_wrt_center, binder_input
     batch_input_feat_neg = neg_input_feat[c_neg_training_idx]
     batch_mask_neg = neg_mask[c_neg_training_idx]
 
-    if c_neg_training_idx_2 is None:
-        batch_rho_coords_neg_2 = batch_rho_coords_binder.copy()
-        batch_theta_coords_neg_2 = batch_theta_coords_binder.copy()
-        batch_input_feat_neg_2 = batch_input_feat_binder.copy()
-        batch_mask_neg_2 = batch_mask_binder.copy()
-    else:
-        batch_rho_coords_neg_2 = np.expand_dims(neg_rho_wrt_center[c_neg_training_idx_2],2)
-        batch_theta_coords_neg_2 = np.expand_dims(neg_theta_wrt_center[c_neg_training_idx_2],2)
-        batch_input_feat_neg_2 = neg_input_feat[c_neg_training_idx_2]
-        batch_mask_neg_2 = neg_mask[c_neg_training_idx_2]
-
-        # Negate the input_features of the negative_2, except the last column.
-        batch_input_feat_neg_2 = -batch_input_feat_neg_2
-        if batch_input_feat_binder.shape[2] == 5 or batch_input_feat_binder.shape[2] == 3:
-            batch_input_feat_neg_2[:,:,-1] = -batch_input_feat_neg_2[:,:,-1] # Do not negate hydrophobicity.
-        # Also negate the theta coords for the neg2. 
-        batch_theta_coords_neg_2 = 2*np.pi -batch_theta_coords_neg_2
+    batch_rho_coords_neg_2 = batch_rho_coords_binder.copy()
+    batch_theta_coords_neg_2 = batch_theta_coords_binder.copy()
+    batch_input_feat_neg_2 = batch_input_feat_binder.copy()
+    batch_mask_neg_2 = batch_mask_binder.copy()
 
     batch_rho_coords = np.concatenate([batch_rho_coords_pos, batch_rho_coords_binder, batch_rho_coords_neg, batch_rho_coords_neg_2], axis=0)
     batch_theta_coords = np.concatenate([batch_theta_coords_pos, batch_theta_coords_binder, batch_theta_coords_neg, batch_theta_coords_neg_2], axis=0)
@@ -140,7 +127,7 @@ def train_ppi_search(learning_obj, params,
                     binder_rho_wrt_center, binder_theta_wrt_center, binder_input_feat, binder_mask, \
                     pos_training_idx, pos_val_idx, pos_test_idx, pos_rho_wrt_center, pos_theta_wrt_center, pos_input_feat, pos_mask, \
                     neg_training_idx, neg_val_idx, neg_test_idx, neg_rho_wrt_center, neg_theta_wrt_center, neg_input_feat, neg_mask, \
-                    num_iterations=100000, num_iter_test=1000, batch_size=32, batch_size_val_test=1000):
+                    num_iterations=1000000, num_iter_test=1000, batch_size=32, batch_size_val_test=1000):
 
     out_dir = params['model_dir']
     logfile = open(out_dir+'log.txt', 'w', 0)
@@ -186,10 +173,7 @@ def train_ppi_search(learning_obj, params,
         #logfile.write('positives {}\n'.format(c_pos_training_idx))
         #logfile.write('negatives {}\n'.format(c_neg_training_idx))
 
-        if 'pos_neg_negatives' in params and params['pos_neg_negatives'] == 1:
-            c_neg_training_idx_2 = None
-        else: 
-            c_neg_training_idx_2 = neg_training_idx_copy[batch_size//4:batch_size//2]
+        c_neg_training_idx_2 = None
 
 #        logfile.write('negatives_2 {}\n'.format(c_neg_training_idx_2))
 #        else:
@@ -266,11 +250,7 @@ def train_ppi_search(learning_obj, params,
             neg_desc = compute_val_test_desc(learning_obj, \
                                             neg_val_idx, neg_rho_wrt_center, neg_theta_wrt_center, neg_input_feat, neg_mask, batch_size=batch_size_val_test)
 
-            if 'pos_neg_negatives' in params and params['pos_neg_negatives'] == 1:
-                neg_desc_2 = binder_desc.copy()
-            else: 
-                neg_desc_2 = compute_val_test_desc(learning_obj, \
-                                            neg_val_idx, neg_rho_wrt_center, neg_theta_wrt_center, neg_input_feat, neg_mask, batch_size=batch_size_val_test, flip = True)
+            neg_desc_2 = binder_desc.copy()
             # Simply shuffle negative descriptors. 
             np.random.shuffle(neg_desc)
 
@@ -301,11 +281,7 @@ def train_ppi_search(learning_obj, params,
             neg_desc = compute_val_test_desc(learning_obj, \
                                             neg_test_idx, neg_rho_wrt_center, neg_theta_wrt_center, neg_input_feat, neg_mask, batch_size=batch_size_val_test)
 
-            if 'pos_neg_negatives' in params and params['pos_neg_negatives'] == 1:
-                neg_desc_2 = binder_desc.copy()
-            else: 
-                neg_desc_2 = compute_val_test_desc(learning_obj, \
-                                            neg_test_idx, neg_rho_wrt_center, neg_theta_wrt_center, neg_input_feat, neg_mask, batch_size=batch_size_val_test, flip=True)
+            neg_desc_2 = binder_desc.copy()
 
             # Compute test ROC AUC.
             pos_dists = compute_dists(pos_desc, binder_desc)
@@ -324,8 +300,8 @@ def train_ppi_search(learning_obj, params,
             tic = time.time()
 
             # Always Save all the distances for the testing set. 
-            np.save(out_dir+'pos_dists_iter_{:05d}.npy'.format(num_iter), pos_dists)
-            np.save(out_dir+'neg_dists_iter_{:05d}.npy'.format(num_iter), neg_dists)
+#            np.save(out_dir+'pos_dists_iter_{:05d}.npy'.format(num_iter), pos_dists)
+#            np.save(out_dir+'neg_dists_iter_{:05d}.npy'.format(num_iter), neg_dists)
 
             if val_auc > best_val_auc:
                 logfile.write('>>> Saving model.\n')
