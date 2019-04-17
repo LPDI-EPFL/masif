@@ -141,7 +141,7 @@ def multidock(source_pcd,source_patch_coords,source_descs,cand_pts,target_pcd,ta
             [CorrespondenceCheckerBasedOnEdgeLength(0.9),
             CorrespondenceCheckerBasedOnDistance(2.0),
             CorrespondenceCheckerBasedOnNormal(np.pi/2)],
-            RANSACConvergenceCriteria(ransac_iter, 500),0,1)
+            RANSACConvergenceCriteria(ransac_iter, 500))
         ransac_time = ransac_time + (time.time() - tic)
         
         tic = time.time()
@@ -453,7 +453,7 @@ for pdb_ix in range(len(all_positive_scores)):
         number_better_than_best_pos = np.sum(neg_scores > best_pos_score )+1
         if number_better_than_best_pos > num_success:
             print('{} N/D'.format(rand_list[pdb_ix]))
-            unranked+= 1
+            unranked += 1
         else:
             rmsds.append(best_rmsd)
             print('{} {} out of {} -- pos scores: {}'.format(rand_list[pdb_ix], number_better_than_best_pos, len(neg_scores)+len(pos_scores), len(pos_scores)))
