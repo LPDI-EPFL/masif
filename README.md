@@ -37,7 +37,7 @@ MaSIF relies on external software/libraries to handle  protein databank files an
 * [open3D] (>= 0.5.0.0)(https://github.com/IntelVCL/Open3D). Mainly used for RANSAC alignment.
 * [matlab] (>= R2018a)(https://ch.mathworks.com/products/matlab.html). Used to compute some geometric features and angular/radial coordinates.
 * [Pymol](https://pymol.org/2/). This optional plugin allows one to visualize surface files in PyMOL.
-* [Tensorflow] (>= 1.9)(https://www.tensorflow.org/). For the neural network models.
+* [Tensorflow] (>= 1.9)(https://www.tensorflow.org/). For the neural network models. Models were trained and evaluated on a NVIDIA Tesla K40 GPU.
  
 We are working to reduce this list of requirements for future versions.
 
