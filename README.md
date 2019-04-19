@@ -9,6 +9,9 @@
 - [Description](#description)
 - [Software requirements](#software-requirements)
 - [Installation](#Installation)
+- [Data preparation](#Data-preparation)
+- [MaSIF applications](#MaSIF-applications)
+- [License](#License)
 # Description
 
 MaSIF is a proof-of-concept method for identifying patterns (fingerprints) in protein surfaces. It contains a protocol to prepare protein structure files into feature-rich surfaces, to decompose these into patches, and to identify patterns in these using deep geometric learning.
@@ -22,7 +25,7 @@ MaSIF it is meant to form as a base for any protein surface-oriented learning ta
 ![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Fig0_v11-01.png)
 
 
-## Software requirements 
+# Software requirements 
 MaSIF relies on external software/libraries to handle  protein databank files and surface files, to compute chemical/geometric features and coordinates, and to perform neural network calculations.  
 * Python (>= 2.7)
 * [reduce](http://kinemage.biochem.duke.edu/software/reduce.php). To add protons to proteins. 
@@ -39,8 +42,19 @@ MaSIF relies on external software/libraries to handle  protein databank files an
 We are working to reduce this list of requirements for future versions.
 
 
-## Installation 
+# Installation 
 
-## Data preparation
+# Data preparation
 
-## Training
+Mention zenodo repository with data. 
+Description on data preparation for each application
+
+# MaSIF applications
+
+## MaSIF-ligand
+## MaSIF-site
+## MaSIF-search
+
+## License
+
+MaSIF is released under an Apache v2 license.
