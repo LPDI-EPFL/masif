@@ -28,16 +28,16 @@ MaSIF it is meant to form as a base for any protein surface-oriented learning ta
 # Software requirements 
 MaSIF relies on external software/libraries to handle  protein databank files and surface files, to compute chemical/geometric features and coordinates, and to perform neural network calculations.  
 * Python (>= 2.7)
-* [reduce](http://kinemage.biochem.duke.edu/software/reduce.php). To add protons to proteins. 
-* [MSMS](http://mgltools.scripps.edu/packages/MSMS/). To compute the surface of proteins. 
-* [BioPython](https://github.com/biopython/biopython). To parse PDB files. 
-* [PyMesh](https://github.com/PyMesh/PyMesh). To handle ply surface files, attributes, and to regularize meshes.
-* [pyflann](https://github.com/primetang/pyflann). To perform nearest neighbor searches of vertices.
-* PDB2PQR, multivalue, and [APBS](http://www.poissonboltzmann.org/). These programs are necessary to compute electrostatics charges.
-* [open3D](https://github.com/IntelVCL/Open3D). Mainly used for RANSAC alignment.
-* [matlab](https://ch.mathworks.com/products/matlab.html). Used to compute some geometric features and angular/radial coordinates.
+* [reduce] (>= 3.23)(http://kinemage.biochem.duke.edu/software/reduce.php). To add protons to proteins. 
+* [MSMS](>= 2.6.1)(http://mgltools.scripps.edu/packages/MSMS/). To compute the surface of proteins. 
+* [BioPython] (>= 1.66)(https://github.com/biopython/biopython). To parse PDB files. 
+* [PyMesh](>= 0.1.14)(https://github.com/PyMesh/PyMesh). To handle ply surface files, attributes, and to regularize meshes.
+* [pyflann] (>= 1.6.14)(https://github.com/primetang/pyflann). To perform nearest neighbor searches of vertices.
+* PDB2PQR (>= 2.1.1), multivalue, and [APBS] (>= 1.5)(http://www.poissonboltzmann.org/). These programs are necessary to compute electrostatics charges.
+* [open3D] (>= 0.5.0.0)(https://github.com/IntelVCL/Open3D). Mainly used for RANSAC alignment.
+* [matlab] (>= R2018a)(https://ch.mathworks.com/products/matlab.html). Used to compute some geometric features and angular/radial coordinates.
 * [Pymol](https://pymol.org/2/). This optional plugin allows one to visualize surface files in PyMOL.
-* [Tensorflow](https://www.tensorflow.org/). For the neural network models.
+* [Tensorflow] (>= 1.9)(https://www.tensorflow.org/). For the neural network models.
  
 We are working to reduce this list of requirements for future versions.
 
