@@ -14,7 +14,10 @@ Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, 
 
 MaSIF it is meant to form as a base for any protein surface-oriented learning task. 
 
-![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Fig0_v11-01.png)
+![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Fig0_v11-01.png | width=100)
+
+## Table of Contents: 
+
 
 ## Software requirements 
 MaSIF relies on external software/libraries to handle  protein databank files and surface files, to compute chemical/geometric features and coordinates, and to perform neural network calculations.  
@@ -30,9 +33,8 @@ MaSIF relies on external software/libraries to handle  protein databank files an
 * [Pymol](https://pymol.org/2/). This optional plugin allows one to visualize surface files in PyMOL.
 * [Tensorflow](https://www.tensorflow.org/). For the neural network models.
  
- In future versions we hope to reduce this list of requirements.
+We are working to reduce this list of requirements for future versions.
 
-## Table of Contents: 
 
 ## Installation 
 
