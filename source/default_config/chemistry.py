@@ -39,6 +39,8 @@ hbond_std_dev = np.pi/3
 # compute the angle.
 acceptorAngleAtom = {}
 acceptorAngleAtom['O'] = 'C'
+acceptorAngleAtom['O1'] = 'C'
+acceptorAngleAtom['O2'] = 'C'
 acceptorAngleAtom['OXT'] = 'C'
 # Dictionary from acceptor atom to a third atom on which to compute the plane.
 acceptorPlaneAtom = {}
