@@ -1,4 +1,5 @@
 import tempfile
+
 masif_opts = {}
 # Default directories
 masif_opts['raw_pdb_dir'] = 'data_preparation/00-raw_pdbs/'
@@ -62,3 +63,22 @@ masif_opts['site']['model_dir'] = 'nn_models/all_feat_3l/model_data/'
 masif_opts['site']['out_pred_dir'] = 'output/all_feat_3l/pred_data/'
 masif_opts['site']['out_surf_dir'] = 'output/all_feat_3l/pred_surfaces/'
 masif_opts['site']['feat_mask'] = [1.0]*5
+
+# Neural network ligand application specific parameters. 
+masif_opts['ligand'] = {}
+masif_opts['ligand']['assembly_dir'] = 'data_preparation/00b-pdbs_assembly'
+masif_opts['ligand']['ligand_coords_dir'] = 'data_preparation/00c-ligand_coords'
+masif_opts['ligand']['masif_precomputation_dir'] = 'data_preparation/04a-precomputation_12A/precomputation/'
+masif_opts['ligand']['max_shape_size'] = 200
+masif_opts['ligand']['feat_mask'] = [1.0]*5
+masif_opts['ligand']['train_fract'] = 0.9*0.8
+masif_opts['ligand']['val_fract'] = 0.1*0.8
+masif_opts['ligand']['test_fract'] = 0.2
+masif_opts['ligand']['tfrecords_dir'] = 'data_preparation/tfrecords'
+masif_opts['ligand']['max_distance'] = 12.0
+masif_opts['ligand']['n_classes'] = 7
+masif_opts['ligand']['feat_mask'] = [1.0,1.0,1.0,1.0,1.0]
+masif_opts['ligand']['costfun'] = 'dprime'
+masif_opts['ligand']['model_dir'] = 'nn_models/all_feat/'
+masif_opts['ligand']['test_set_out_dir'] = 'test_set_predictions/'
+
