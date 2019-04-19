@@ -57,4 +57,4 @@ Description on data preparation for each application
 
 ## License
 
-MaSIF is released under an Apache v2 license.
+MaSIF is released under an Apache v2 license. Copyright Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E.
