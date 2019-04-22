@@ -52,6 +52,12 @@ Description on data preparation for each application
 # MaSIF applications
 
 ## MaSIF-ligand
+
+MaSIF-ligand is run from the data/masif_ligand directory. 
+The first step is to prepare the dataset by running data_prepare_one.sh on every structure identifier in the dataset. An example of how to do this and parallelise over multiple nodes can be found in data_prepare.slurm.
+The next step is to combine the pre-processed data into a single TFRecords file by running the commands in make_tfrecord.slurm. 
+The neural network is trained and finally evaluated by running the commands in train_model.slurm and evaluate_test.slurm respectively.
+
 ## MaSIF-site
 ## MaSIF-search
 
