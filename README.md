@@ -10,15 +10,20 @@
 ## Table of Contents: 
 
 - [Description](#description)
+- [Software requirements](#system-and-hardware-requirements)
 - [Software requirements](#software-requirements)
 - [Installation](#Installation)
 - [Data preparation](#Data-preparation)
 - [MaSIF applications](#MaSIF-applications)
+- [MaSIF-ligand](#MaSIF-ligand)
+- [MaSIF-site](#MaSIF-site)
+- [MaSIF-search](#MaSIF-search)
 - [License](#License)
+- [Reference](#Reference)
 ## Description
 
-MaSIF is a proof-of-concept method to identify patterns (fingerprints)
-in protein surfaces, which may be important for specific biomolecular interactions. 
+MaSIF is a proof-of-concept method to decipher patterns
+in protein surfaces important for specific biomolecular interactions. 
 To achieve this, MaSIF exploits techniques from the field of geometric deep learning.
 First, MaSIF decomposes a surface into overlapping radial patches with a fixed geodesic radius, wherein each 
 point is assigned an array of geometric and chemical features. MaSIF then computes a descriptor 
@@ -43,9 +48,9 @@ This repository reproduces the experiments of:
 Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E. (2019). Deciphering interaction fingerprints from protein molecular surfaces. bioRxiv, 606202.
 
 MaSIF is distributed under an [Apache License](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/LICENSE). This 
-code is meant to serve as a tutorial, and the basis for researchers to exploit MaSIF in protein surface-oriented learning tasks. 
+code is meant to serve as a tutorial, and the basis for researchers to exploit MaSIF in protein-surface learning tasks. 
 
-## System requirements
+## System and hardware requirements
 
 MaSIF has been tested on both Linux (Red Hat Enterprise Linux Server release 7.4, with a Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz 
 processesor and 16GB of memory allotment) and Mac OS environments (macOS High Sierra, processor 2.8 GHz Intel Core i7, 16GB memory). 
@@ -75,7 +80,6 @@ The following is the list of required libraries and programs, as well as the ver
 We are working to reduce this list of requirements for future versions.
 
 ## Installation 
-
 After preinstalling dependencies, add the following environment variables to your path, changing the appropriate directories:
 
 ```
@@ -101,8 +105,7 @@ Since MaSIF is written in Python and Matlab, no compilation is required.
 
 ## Method overview 
 
-From a protein structure 
-MaSIF computes a molecular surface discretized as a mesh according to the solvent 
+From a protein structure MaSIF computes a molecular surface discretized as a mesh according to the solvent 
 excluded surface (computed using MSMS), and assigns geometric and chemical features to every point (vertex) 
 in the mesh. 
 Around each vertex of the mesh, we extract a patch with geodesic radius of r=9 Å or r=12 Å.
@@ -152,6 +155,8 @@ If you have access to a cluster (strongly recommended), then this process can be
 sbatch data_prepare.slurm
 ```
 
+All the PDBs that were used for the paper, and their corresponding surfaces (with precomputed chemical features) are available at: https://doi.org/10.5281/zenodo.2625420 
+
 ## MaSIF proof-of-concept applications
 
 MaSIF was tested on three proof-of-concept applications. 
@@ -159,7 +164,6 @@ MaSIF was tested on three proof-of-concept applications.
 ![MaSIF proof-of-concept applications](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/Applications-01.png)
 
 ### MaSIF-ligand
-
 
 MaSIF-ligand is run from the data/masif_ligand directory. 
 
@@ -171,15 +175,61 @@ The neural network is trained and finally evaluated by running the commands in t
 
 ### MaSIF-site
 
-#### Data preparation
+Change in to the masif-site data directory. 
 
 ```
 cd data/masif_site/
 ```
 
-To precomputte 
+The lists of pdb ids and chains used in the training and test sets are located under: 
+
+```
+data/masif_site/data/lists/full_list.txt
+data/masif_site/data/lists/training.txt
+data/masif_site/data/lists/testing.txt
+```
+
+Precompute the datasets (see [Data preparation](#Data-preparation)), ideally using slurm:
+
+```
+sbatch prepare_data.slurm
+```
+
+Be sure you have enough disk space, about 400GB.
+
+Once the data has been precomputed, the training for the network can start:
+
+```
+./train_nn.sh
+```
+
+For the experiments in the paper we trained MaSIF-site for 40 hours. 
+
+Once a network has been trained, specific proteins can be evaluated. For example to evaluate
+the selected subset of transient interactions: 
+
+```
+./predict_site.sh
+```
+
+The surfaces of the predicted sites can be colored according to the site prediction: 
+
+```
+./color_site.sh
+```
+
+These surfaces can then be 
+
+A comparison of th
 
 ### MaSIF-search
+
+## PyMOL plugin installation
+
+A PyMOL plugin to visualize protein surfaces is provided in the source/pymol subdirectory. We used this plugin for all the structural figures 
+shown in our paper. This plugin requires PyMOL and PyMesh to be installed in your local computer. 
+
+To install the plugin go to the Plugin -> Plugin Manager window in PyMOL and choose the Install new plugin tab. Then select the masif/source/pymol/masif_plugin.py file. 
 
 ## License
 
