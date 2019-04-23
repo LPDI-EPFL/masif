@@ -18,7 +18,7 @@
 ## Description
 
 MaSIF is a proof-of-concept method to identify patterns (fingerprints)
-in protein surfaces which may be important for specific biomolecular interactions. 
+in protein surfaces, which may be important for specific biomolecular interactions. 
 To achieve this, MaSIF exploits techniques from the field of geometric deep learning.
 First, MaSIF decomposes a surface into overlapping radial patches with a fixed geodesic radius, wherein each 
 point is assigned an array of geometric and chemical features. MaSIF then computes a descriptor 
@@ -124,7 +124,7 @@ MaSIF was tested on three proof-of-concept applications.
 
 ### MaSIF-ligand
 
-### Data preparation
+#### Data preparation
 
 MaSIF-ligand is run from the data/masif_ligand directory. 
 
@@ -142,7 +142,4 @@ The neural network is trained and finally evaluated by running the commands in t
 MaSIF is released under an Apache v2 license. Copyright Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E.
 
 ## Reference
-If you use this code, please cite:
-```
-Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E. (2019). Deciphering interaction fingerprints from protein molecular surfaces. bioRxiv, 606202.
-```
+If you use this code, please use the bibtex entry in [citation.bib](citation.bib)
