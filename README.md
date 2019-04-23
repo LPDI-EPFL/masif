@@ -15,9 +15,9 @@
 - [Installation](#Installation)
 - [Data preparation](#Data-preparation)
 - [MaSIF applications](#MaSIF-applications)
- - [MaSIF-ligand](#MaSIF-ligand)
- - [MaSIF-site](#MaSIF-site)
- - [MaSIF-search](#MaSIF-search)
+     * [MaSIF-ligand](#MaSIF-ligand)
+     * [MaSIF-site](#MaSIF-site)
+     * [MaSIF-search](#MaSIF-search)
 - [License](#License)
 - [Reference](#Reference)
 ## Description
