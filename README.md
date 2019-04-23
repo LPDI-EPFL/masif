@@ -1,5 +1,5 @@
 
-![MaSIF banner and concept](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Concept-01.png)
+![MaSIF banner and concept](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/Concept-01.png)
 
 ## MaSIF- Molecular Surface Interaction Fingerprints: Geometric deep learning to decipher patterns in molecular surfaces.
 
@@ -107,7 +107,7 @@ The neural network consists of one or more layers applied sequentially; a key co
 of the architecture is the geodesic convolution, generalizing the classical convolution 
 to surfaces and implemented as an operation on local patches. 
 
-![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Method-01.png)
+![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/Method-01.png)
 
 The procedure is repeated for different patch locations 
 similarly to a sliding window operation on images, producing the surface fingerprint descriptor
@@ -120,7 +120,7 @@ present here.
 
 MaSIF was tested on three proof-of-concept applications. 
 
-![MaSIF proof-of-concept applications](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Applications-01.png)
+![MaSIF proof-of-concept applications](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/Applications-01.png)
 
 ### MaSIF-ligand
 
@@ -139,7 +139,7 @@ The neural network is trained and finally evaluated by running the commands in t
 
 ## License
 
-MaSIF is released under an Apache v2 license. Copyright Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E.
+MaSIF is released under an [Apache v2.0 license](LICENSE).
 
 ## Reference
 If you use this code, please use the bibtex entry in [citation.bib](citation.bib)
