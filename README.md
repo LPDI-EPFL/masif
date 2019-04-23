@@ -26,14 +26,15 @@ Then, this descriptor can be processed in a set of additional layers depending o
 encoded in each descriptor and the final output depend on the application-specific training data and the 
 optimization objective, meaning that the same architecture can be repurposed for various tasks.
 
-This repository contains a protocol to prepare protein structure files into feature-rich surfaces (with both geometric and chemical features), 
+This repository contains a protocol to prepare protein structure files into feature-rich surfaces (with both geometric and chemical features),
 to decompose these into patches, and to identify patterns in these using deep geometric learning.
-To show the potential of the approach, we showcase three proof-of-concept applications (Fig. 1e): 
+To show the potential of the approach, we showcase three proof-of-concept applications: 
 a) ligand prediction for protein binding pockets (MaSIF-ligand); b) protein-protein interaction 
 (PPI) site prediction in protein surfaces, to predict which surface patches on a protein are more 
 likely to interact with other proteins (MaSIF-site); c) ultrafast scanning of surfaces, where we use 
 surface fingerprints from binding partners to predict the structural configuration of protein-protein complexes (MaSIF-search). 
-The repository reproduces the experiments found in: 
+
+This repository reproduces the experiments of: 
 
 Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E. (2019). Deciphering interaction fingerprints from protein molecular surfaces. bioRxiv, 606202.
 
@@ -60,8 +61,8 @@ The following is the list of required libraries and programs, as well as the ver
 * [PyMesh](https://github.com/PyMesh/PyMesh) (0.1.14). To handle ply surface files, attributes, and to regularize meshes.
 * [pyflann](https://github.com/primetang/pyflann) (1.6.14). To perform nearest neighbor searches of vertices.
 * PDB2PQR (2.1.1), multivalue, and [APBS](http://www.poissonboltzmann.org/) (1.5). These programs are necessary to compute electrostatics charges.
-* [open3D] (https://github.com/IntelVCL/Open3D) (0.5.0.0). Mainly used for RANSAC alignment.
-* [matlab] (https://ch.mathworks.com/products/matlab.html) (R2018a). Used to compute some geometric features and angular/radial coordinates.
+* [open3D](https://github.com/IntelVCL/Open3D) (0.5.0.0). Mainly used for RANSAC alignment.
+* [matlab](https://ch.mathworks.com/products/matlab.html) (R2018a). Used to compute some geometric features and angular/radial coordinates.
 * [Python bindings for matlab](https://www.mathworks.com/help/matlab/matlab_external/get-started-with-matlab-engine-for-python.html) - To call matlab functions from within Python.
 * [Tensorflow](https://www.tensorflow.org/) (1.9). Use to model, train, and evaluate the actual neural networks. Models were trained and evaluated on a NVIDIA Tesla K40 GPU.
 * [Pymol](https://pymol.org/2/). This optional plugin allows one to visualize surface files in PyMOL.
