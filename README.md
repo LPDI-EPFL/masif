@@ -1,3 +1,6 @@
+
+![MaSIF banner and concept](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Concept-01.png)
+
 # MaSIF- Molecular Surface Interaction Fingerprints: Geometric deep learning to decipher patterns in molecular surfaces.
 
 [![bioRxiv shield](https://img.shields.io/badge/bioRxiv-1709.01233-green.svg?style=flat)](https://www.biorxiv.org/content/10.1101/606202v1)
@@ -24,8 +27,9 @@ MaSIF it is meant to form as a base for any protein surface-oriented learning ta
 
 ![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Fig0_v11-01.png)
 
+# System requirements
 
-# Software requirements 
+# Software prerequisites 
 MaSIF relies on external software/libraries to handle  protein databank files and surface files, to compute chemical/geometric features and coordinates, and to perform neural network calculations.  
 * Python (>= 2.7)
 * [reduce] (>= 3.23)(http://kinemage.biochem.duke.edu/software/reduce.php). To add protons to proteins. 
@@ -36,20 +40,26 @@ MaSIF relies on external software/libraries to handle  protein databank files an
 * PDB2PQR (>= 2.1.1), multivalue, and [APBS] (>= 1.5)(http://www.poissonboltzmann.org/). These programs are necessary to compute electrostatics charges.
 * [open3D] (>= 0.5.0.0)(https://github.com/IntelVCL/Open3D). Mainly used for RANSAC alignment.
 * [matlab] (>= R2018a)(https://ch.mathworks.com/products/matlab.html). Used to compute some geometric features and angular/radial coordinates.
+* [Python bindings for matlab]
 * [Pymol](https://pymol.org/2/). This optional plugin allows one to visualize surface files in PyMOL.
 * [Tensorflow](https://www.tensorflow.org/) (>= 1.9). Use to model, train, and evaluate the actual neural networks. Models were trained and evaluated on a NVIDIA Tesla K40 GPU.
  
 We are working to reduce this list of requirements for future versions.
 
-
 # Installation 
+
+# Method overview 
+
+![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Method-01.png)
 
 # Data preparation
 
 Mention zenodo repository with data. 
 Description on data preparation for each application
 
-# MaSIF applications
+# MaSIF proof-of-concept applications
+
+![MaSIF proof-of-concept applications](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Applications-01.png)
 
 ## MaSIF-ligand
 
@@ -67,3 +77,5 @@ The neural network is trained and finally evaluated by running the commands in t
 ## License
 
 MaSIF is released under an Apache v2 license. Copyright Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E.
+
+## 
