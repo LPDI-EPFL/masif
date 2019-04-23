@@ -99,52 +99,32 @@ git clone https://github.com/lpdi-epfl/masif
 
 From a protein structure 
 MaSIF computes a molecular surface discretized as a mesh according to the solvent 
-excluded surface (using MSMS), and assigns geometric and chemical features to every point (vertex) 
-in the mesh. Then, MaSIF applies a geometric deep neural network to these features. 
+excluded surface (computed using MSMS), and assigns geometric and chemical features to every point (vertex) 
+in the mesh. 
+Around each vertex of the mesh, we extract a patch with geodesic radius of r=9 Å or r=12 Å.
+Then, MaSIF applies a geometric deep neural network to these patches. 
 The neural network consists of one or more layers applied sequentially; a key component 
 of the architecture is the geodesic convolution, generalizing the classical convolution 
 to surfaces and implemented as an operation on local patches. 
 
 ![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Method-01.png)
 
-Around each vertex of the mesh, we extract a patch with geodesic radius of r=9 Å or r=12 Å. 
-For each vertex within the patch, we compute two geometric features (shape index and distance-dependent curvature) 
-and three chemical features (hydropathy index, continuum electrostatics, and the location of free electrons and proton donors), 
-further described in the Methods of the paper. The vertices within a patch are assigned geodesic 
-polar coordinates: the radial coordinate, representing the geodesic distance 
-to the center of the patch; and the angular coordinate, computed with respect to 
-a random direction from the center of the patch, as the patch lacks a canonical orientation. 
-In these coordinates, we then construct a family of learnable parametric kernels 
-that locally average the vertex-wise patch features and produce an output of 
-fixed dimension, which is correlated with a set of learnable filters. We refer 
-to this family of learnable parametric kernels as a learned soft polar grid. 
-Note that since the angular coordinates were computed with respect to a random 
-direction, it becomes essential to compute information that is invariant to different 
-directions (rotation invariance). To this end, we perform K rotations on the 
-patch and compute the maximum over all rotations, producing the geodesic convolution 
-output for the patch location. The procedure is repeated for different patch locations 
-similarly to a sliding window operation on images, producing the surface fingerprint 
+The procedure is repeated for different patch locations 
+similarly to a sliding window operation on images, producing the surface fingerprint descriptor
 at each point, in the form of a vector that stores information about the surface patterns 
-of the center point and its neighborhood. The learning procedure consists of finding the 
-optimal parameter set of the local kernels and filter weights. The parameter set minimizes 
+of the center point and its neighborhood. The parameter set minimizes 
 a cost function on the training dataset, which is specific to each application that we 
 present here. 
 
-We have thus created descriptors for surface patches that can be further 
-processed in neural network architectures. Each descriptor can then be further
-processed by each application. 
-
 ## MaSIF proof-of-concept applications
 
-MaSIF was tested on three proof of concept applications. 
+MaSIF was tested on three proof-of-concept applications. 
 
 ![MaSIF proof-of-concept applications](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Applications-01.png)
 
 ### MaSIF-ligand
 
 ### Data preparation
-
-
 
 MaSIF-ligand is run from the data/masif_ligand directory. 
 
@@ -162,6 +142,7 @@ The neural network is trained and finally evaluated by running the commands in t
 MaSIF is released under an Apache v2 license. Copyright Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E.
 
 ## Reference
-
-Please cite: 
-[1] Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E. (2019). Deciphering interaction fingerprints from protein molecular surfaces. bioRxiv, 606202.
+If you use this code, please cite:
+```
+Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E. (2019). Deciphering interaction fingerprints from protein molecular surfaces. bioRxiv, 606202.
+```
