@@ -47,8 +47,9 @@ code is meant to serve as a tutorial, and the basis for researchers to exploit M
 
 ## System requirements
 
-MaSIF has been tested on both Linux (Red Hat Enterprise Linux Server release 7.4, with a Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz processesor and 16GB of memory allotment) 
-and Mac OS environments (macOS High Sierra, processor 2.8 GHz Intel Core i7, 16GB memory).
+MaSIF has been tested on both Linux (Red Hat Enterprise Linux Server release 7.4, with a Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz 
+processesor and 16GB of memory allotment) and Mac OS environments (macOS High Sierra, processor 2.8 GHz Intel Core i7, 16GB memory). 
+To reproduce the experiments in the paper, the entire datasets for all proteins consume about 1.4 terabytes.
 
 Currently, MaSIF takes about 2 minutes to preprocess every protein. For this reason, we recommend a distributed cluster to 
 preprocess the data for large datasets of proteins. Once data has been preprocessed, we strongly recommend using a GPU to 
@@ -88,12 +89,15 @@ export MSMS_BIN=/path/to/msms/msms
 export PDB2XYZRN=/path/to/msms/pdb_to_xyzrn
 ```
 
-Clone masif to a new directory:
+Clone masif to a local directory
 
 ```
 git clone https://github.com/lpdi-epfl/masif
+
+cd masif/
 ```
 
+Since MaSIF is written in Python and Matlab, no compilation is required.
 
 ## Method overview 
 
@@ -116,6 +120,38 @@ of the center point and its neighborhood. The parameter set minimizes
 a cost function on the training dataset, which is specific to each application that we 
 present here. 
 
+
+### MaSIF data preparation
+
+For each application, MaSIF requires a preprocessing of data. This entails a running a scripted protocol, 
+which performs the following steps: 
+
+1. Download the PDB. 
+2. Protonate the PDB, extract the desired chains, triangulate the surface (using MSMS), and compute chemical features. 
+3. Translate the surface to a matlab file and compute the shape index on each vertex. 
+4. Compute the angular and radial geodesic coordinates for each patch. 
+5. Extract all patches, with features and coordinates, for each protein.
+
+Each application data directory (under masif/data/masif\*) contains a script to precompute the data.
+
+To run this protocol for a single protein, (e.g. chain A of PDB id code 1MBN ) run: 
+
+```
+./data_prepare_one.sh 1MBN_A_
+```
+
+To run it on a pair of interacting protein domains (chains A,B, of PDB id 1AKJ form the first domain and chains D,E form the second domain): 
+
+```
+./data_prepare_one.sh 1AKJ_AB_DE
+```
+
+If you have access to a cluster (strongly recommended), then this process can be run in parallel. If your cluster supports slurm files, we provide a slurm file under each application data directory. which can be run using sbatch: 
+
+```
+sbatch data_prepare.slurm
+```
+
 ## MaSIF proof-of-concept applications
 
 MaSIF was tested on three proof-of-concept applications. 
@@ -124,7 +160,6 @@ MaSIF was tested on three proof-of-concept applications.
 
 ### MaSIF-ligand
 
-#### Data preparation
 
 MaSIF-ligand is run from the data/masif_ligand directory. 
 
@@ -135,6 +170,15 @@ The next step is to combine the pre-processed data into a single TFRecords file 
 The neural network is trained and finally evaluated by running the commands in train_model.slurm and evaluate_test.slurm respectively.
 
 ### MaSIF-site
+
+#### Data preparation
+
+```
+cd data/masif_site/
+```
+
+To precomputte 
+
 ### MaSIF-search
 
 ## License
