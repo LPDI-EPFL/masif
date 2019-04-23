@@ -25,8 +25,6 @@ Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, 
 
 MaSIF it is meant to form as a base for any protein surface-oriented learning task. 
 
-![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Fig0_v11-01.png)
-
 # System requirements
 
 # Software prerequisites 
