@@ -17,17 +17,21 @@
 - [License](#License)
 ## Description
 
-MaSIF is a proof-of-concept method based on geometric deep learning to identify patterns (fingerprints)
-in protein surfaces important for specific biomolecular interactions. MaSIF exploits geometric deep learning tools to learn interaction fingerprints in protein molecular surfaces. 
+MaSIF is a proof-of-concept method to identify patterns (fingerprints)
+in protein surfaces which may be important for specific biomolecular interactions. 
+To achieve this, MaSIF exploits techniques from the field of geometric deep learning.
 First, MaSIF decomposes a surface into overlapping radial patches with a fixed geodesic radius, wherein each 
-point is assigned an array of geometric and chemical features (Fig. 1c). MaSIF then computes a descriptor 
-for each surface patch, a vector that encodes a description of the features present in the patch (Fig. 1d). 
-Then, this descriptor can be processed in a set of additional layers depending on the application. The features 
+point is assigned an array of geometric and chemical features. MaSIF then computes a descriptor 
+for each surface patch, a vector that encodes a description of the features present in the patch. 
+Then, this descriptor can be processed in a set of additional layers where different interactions 
+can be classified. The features 
 encoded in each descriptor and the final output depend on the application-specific training data and the 
 optimization objective, meaning that the same architecture can be repurposed for various tasks.
 
-This repository contains a protocol to prepare protein structure files into feature-rich surfaces (with both geometric and chemical features),
-to decompose these into patches, and to identify patterns in these using deep geometric learning.
+This repository contains a protocol to prepare protein structure files into feature-rich surfaces 
+(with both geometric and chemical features),
+to decompose these into patches, and tensorflow-based neural network code
+to identify patterns in these using deep geometric learning.
 To show the potential of the approach, we showcase three proof-of-concept applications: 
 a) ligand prediction for protein binding pockets (MaSIF-ligand); b) protein-protein interaction 
 (PPI) site prediction in protein surfaces, to predict which surface patches on a protein are more 
@@ -38,8 +42,8 @@ This repository reproduces the experiments of:
 
 Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E. (2019). Deciphering interaction fingerprints from protein molecular surfaces. bioRxiv, 606202.
 
-MaSIF is distributed under an [Apache License](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/LICENSE) and 
-the code itself is meant to form as a base for any protein surface-oriented learning task. 
+MaSIF is distributed under an [Apache License](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/LICENSE). This 
+code is meant to serve as a tutorial, and the basis for researchers to exploit MaSIF in protein surface-oriented learning tasks. 
 
 ## System requirements
 
@@ -71,24 +75,76 @@ We are working to reduce this list of requirements for future versions.
 
 ## Installation 
 
+After preinstalling dependencies, add the following environment variables to your path, changing the appropriate directories:
+
+```
+export APBS_BIN=/path/to/apbs/APBS-1.5-linux64/bin/apbs
+export MULTIVALUE_BIN=/path/to/apbs/APBS-1.5-linux64/share/apbs/tools/bin/multivalue
+export PDB2PQR_BIN=/path/to/apbs/apbs/pdb2pqr-linux-bin64-2.1.1/pdb2pqr
+export PATH=$PATH:/path/to/reduce/
+export REDUCE_HET_DICT=/path/to/reduce/reduce_wwPDB_het_dict.txt
+export PYMESH_PATH=/path/to/PyMesh
+export MSMS_BIN=/path/to/msms/msms
+export PDB2XYZRN=/path/to/msms/pdb_to_xyzrn
+```
+
+Clone masif to a new directory:
+
+```
+git clone https://github.com/lpdi-epfl/masif
+```
+
+
 ## Method overview 
 
-MaSIF exploits GDL techniques to learn interaction fingerprints in protein molecular surfaces. First, MaSIF decomposes a surface into overlapping radial patches with a fixed geodesic radius (Fig. 1b), wherein each point is assigned an array of geometric and chemical features (Fig. 1c). MaSIF then computes a descriptor for each surface patch, a vector that encodes a description of the features present in the patch (Fig. 1d). Then, this descriptor can be processed in a set of additional layers depending on the application. The features encoded in each descriptor and the final output depend on the application-specific training data and the optimization objective, meaning that the same architecture can be repurposed for various tasks.
+From a protein structure 
+MaSIF computes a molecular surface discretized as a mesh according to the solvent 
+excluded surface (using MSMS), and assigns geometric and chemical features to every point (vertex) 
+in the mesh. Then, MaSIF applies a geometric deep neural network to these features. 
+The neural network consists of one or more layers applied sequentially; a key component 
+of the architecture is the geodesic convolution, generalizing the classical convolution 
+to surfaces and implemented as an operation on local patches. 
 
 ![MaSIF conceptual framework and method](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Method-01.png)
 
+Around each vertex of the mesh, we extract a patch with geodesic radius of r=9 Å or r=12 Å. 
+For each vertex within the patch, we compute two geometric features (shape index and distance-dependent curvature) 
+and three chemical features (hydropathy index, continuum electrostatics, and the location of free electrons and proton donors), 
+further described in the Methods of the paper. The vertices within a patch are assigned geodesic 
+polar coordinates: the radial coordinate, representing the geodesic distance 
+to the center of the patch; and the angular coordinate, computed with respect to 
+a random direction from the center of the patch, as the patch lacks a canonical orientation. 
+In these coordinates, we then construct a family of learnable parametric kernels 
+that locally average the vertex-wise patch features and produce an output of 
+fixed dimension, which is correlated with a set of learnable filters. We refer 
+to this family of learnable parametric kernels as a learned soft polar grid. 
+Note that since the angular coordinates were computed with respect to a random 
+direction, it becomes essential to compute information that is invariant to different 
+directions (rotation invariance). To this end, we perform K rotations on the 
+patch and compute the maximum over all rotations, producing the geodesic convolution 
+output for the patch location. The procedure is repeated for different patch locations 
+similarly to a sliding window operation on images, producing the surface fingerprint 
+at each point, in the form of a vector that stores information about the surface patterns 
+of the center point and its neighborhood. The learning procedure consists of finding the 
+optimal parameter set of the local kernels and filter weights. The parameter set minimizes 
+a cost function on the training dataset, which is specific to each application that we 
+present here. 
 
-
-### Data preparation
-
-Mention zenodo repository with data. 
-Description on data preparation for each application
+We have thus created descriptors for surface patches that can be further 
+processed in neural network architectures. Each descriptor can then be further
+processed by each application. 
 
 ## MaSIF proof-of-concept applications
+
+MaSIF was tested on three proof of concept applications. 
 
 ![MaSIF proof-of-concept applications](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/Applications-01.png)
 
 ### MaSIF-ligand
+
+### Data preparation
+
+
 
 MaSIF-ligand is run from the data/masif_ligand directory. 
 
