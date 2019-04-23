@@ -10,14 +10,14 @@
 ## Table of Contents: 
 
 - [Description](#description)
-- [Software requirements](#system-and-hardware-requirements)
+- [System and hardware requirements](#system-and-hardware-requirements)
 - [Software requirements](#software-requirements)
 - [Installation](#Installation)
 - [Data preparation](#Data-preparation)
 - [MaSIF applications](#MaSIF-applications)
-- [MaSIF-ligand](#MaSIF-ligand)
-- [MaSIF-site](#MaSIF-site)
-- [MaSIF-search](#MaSIF-search)
+ - [MaSIF-ligand](#MaSIF-ligand)
+ - [MaSIF-site](#MaSIF-site)
+ - [MaSIF-search](#MaSIF-search)
 - [License](#License)
 - [Reference](#Reference)
 ## Description
