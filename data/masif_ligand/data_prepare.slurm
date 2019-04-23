@@ -19,4 +19,4 @@ while read p; do
         ./data_prepare_one.sh $PDBID\_$CHAIN1\_$CHAIN2
     fi
     i=$((i+1))
-done < lists/not_finished.txt
+done < lists/sequence_split_list.txt
