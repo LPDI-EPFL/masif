@@ -180,7 +180,7 @@ data/masif_ligand/lists/val_pdbs_sequence.npy
 
 Each of these files can be read using the numpy.load function.
 
-Precompute the datasets (see [Data preparation](#Data-preparation)), ideally using slurm:
+Precompute the datasets (see [MaSIF data preparation](#MaSIF-data-preparation)), ideally using slurm:
 
 ```
 sbatch prepare_data.slurm
@@ -232,7 +232,7 @@ data/masif_site/data/lists/training.txt
 data/masif_site/data/lists/testing.txt
 ```
 
-Precompute the datasets (see [Data preparation](#Data-preparation)), ideally using slurm:
+Precompute the datasets (see [MaSIF data preparation](#MaSIF-data-preparation)), ideally using slurm:
 
 ```
 sbatch prepare_data.slurm
