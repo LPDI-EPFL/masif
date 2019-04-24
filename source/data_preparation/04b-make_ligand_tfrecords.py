@@ -8,15 +8,18 @@ from default_config.masif_opts import masif_opts
 
 params = masif_opts['ligand']
 ligands = ['ADP','COA','FAD','HEM','NAD','NAP','SAM']
+# List all structures that have been preprocessed
 precomputed_pdbs = glob.glob(os.path.join(params['masif_precomputation_dir'],'*','p1_X.npy'))
 precomputed_pdbs = [p.split('/')[-2] for p in precomputed_pdbs]
 
+# Only use the ones selected based on sequence homology
 selected_pdbs = np.load(os.path.join('lists','selected_pdb_ids_30.npy'))
 selected_pdbs = selected_pdbs.astype(str)
 all_pdbs = [p for p in precomputed_pdbs if p.split('_')[0] in selected_pdbs]
 
 labels_dict = {'ADP':1, 'COA':2,'FAD':3,'HEM':4,'NAD':5,'NAP':6,'SAM':7}
 
+# Structures are randomly assigned to train, validation and test sets
 shuffle(all_pdbs)
 train = int(len(all_pdbs)*params['train_fract'])
 val = int(len(all_pdbs)*params['val_fract'])
@@ -30,6 +33,8 @@ test_pdbs = all_pdbs[train+val:train+val+test]
 #np.save('lists/train_pdbs_sequence.npy',train_pdbs)
 #np.save('lists/val_pdbs_sequence.npy',val_pdbs)
 #np.save('lists/test_pdbs_sequence.npy',test_pdbs)
+
+# For this run use the train, validation and test sets actually used 
 train_pdbs = np.load('lists/train_pdbs_sequence.npy')
 val_pdbs = np.load('lists/val_pdbs_sequence.npy')
 test_pdbs = np.load('lists/test_pdbs_sequence.npy')
@@ -60,6 +65,7 @@ with tf.python_io.TFRecordWriter(os.path.join(tfrecords_dir,'training_data_seque
         xyz_coords = np.vstack([X,Y,Z]).T
         tree = spatial.KDTree(xyz_coords)
         pocket_labels = np.zeros((xyz_coords.shape[0],len(all_ligand_types)),dtype=np.int)
+        # Label points on surface within 3A distance from ligand with corresponding ligand type 
         for j, structure_ligand in enumerate(all_ligand_types):
             ligand_coords = all_ligand_coords[j]
             pocket_points = tree.query_ball_point(ligand_coords,3.0)
@@ -124,6 +130,7 @@ with tf.python_io.TFRecordWriter(os.path.join(tfrecords_dir,'validation_data_seq
         xyz_coords = np.vstack([X,Y,Z]).T
         tree = spatial.KDTree(xyz_coords)
         pocket_labels = np.zeros((xyz_coords.shape[0],len(all_ligand_types)),dtype=np.int)
+        # Label points on surface within 3A distance from ligand with corresponding ligand type 
         for j, structure_ligand in enumerate(all_ligand_types):
             ligand_coords = all_ligand_coords[j]
             pocket_points = tree.query_ball_point(ligand_coords,3.0)
@@ -188,6 +195,7 @@ with tf.python_io.TFRecordWriter(os.path.join(tfrecords_dir,'testing_data_sequen
         xyz_coords = np.vstack([X,Y,Z]).T
         tree = spatial.KDTree(xyz_coords)
         pocket_labels = np.zeros((xyz_coords.shape[0],len(all_ligand_types)),dtype=np.int)
+        # Label points on surface within 3A distance from ligand with corresponding ligand type 
         for j, structure_ligand in enumerate(all_ligand_types):
             ligand_coords = all_ligand_coords[j]
             pocket_points = tree.query_ball_point(ligand_coords,3.0)

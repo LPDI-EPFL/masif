@@ -12,6 +12,7 @@ import tensorflow as tf
 
 params = masif_opts['ligand']
 
+# Load dataset
 training_data = tf.contrib.data.TFRecordDataset(os.path.join(params['tfrecords_dir'],'training_data_sequenceSplit_30.tfrecord'))
 validation_data = tf.contrib.data.TFRecordDataset(os.path.join(params['tfrecords_dir'],'validation_data_sequenceSplit_30.tfrecord'))
 testing_data = tf.contrib.data.TFRecordDataset(os.path.join(params['tfrecords_dir'],'testing_data_sequenceSplit_30.tfrecord'))
@@ -47,6 +48,7 @@ with tf.Session() as sess:
         training_ypred = []
         print('Total iterations', total_iterations)
         print('Calulating training loss')
+        # Compute accuracy on a subset of the training set
         for num_train_sample in range(int(num_training_samples/10)):
             try:
                 data_element = sess.run(training_next_element)
@@ -54,6 +56,7 @@ with tf.Session() as sess:
                 continue
             labels = data_element[4]
             n_ligands = labels.shape[1]
+            # Choose a random ligand from the structure
             random_ligand = np.random.choice(n_ligands,1)
             pocket_points = np.where(labels[:,random_ligand] != 0.0)[0]
             label = np.max(labels[:,random_ligand])-1
@@ -63,6 +66,7 @@ with tf.Session() as sess:
             if npoints<32:
                 continue
             sample = np.random.choice(pocket_points,32,replace=False)
+            # For evaluating take the first 32 points of the pocket
             feed_dict = {learning_obj.input_feat: data_element[0][pocket_points[:32],:,:],
                          learning_obj.rho_coords: np.expand_dims(data_element[1],-1)[pocket_points[:32],:,:],
                          learning_obj.theta_coords: np.expand_dims(data_element[2],-1)[pocket_points[:32],:,:],
@@ -206,21 +210,4 @@ with tf.Session() as sess:
             total_iterations +=1
             if total_iterations == 40000:
                 break
-        #print('Epoch {}, mean training loss {}, median training loss {}'.format(num_epoch+1,np.mean(training_losses), np.median(training_losses)))
-        #training_conf_mat = confusion_matrix(training_ytrue, training_ypred)
-        #training_accuracy = float(np.sum(np.diag(training_conf_mat)))/np.sum(training_conf_mat)
-        #print(training_conf_mat)
-        #print('Training accuracy:', training_accuracy)
-
-
-
-#if not os.path.exists(params['model_dir']):
-#    os.makedirs(params['model_dir'])
-
-#else:
-#    # Load existing network.
-#    print ('Reading pre-trained network')
-#    learning_obj.saver.restore(learning_obj.session, params['out_dir']+'model')
-
-#train_masif_site(learning_obj, params)
 

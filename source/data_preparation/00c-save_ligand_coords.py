@@ -11,6 +11,7 @@ pdb_id = in_fields[0]
 if not os.path.exists(masif_opts['ligand']['ligand_coords_dir']):
         os.mkdir(masif_opts['ligand']['ligand_coords_dir'])
 
+# Ligands of interest
 ligands = ['ADP','COA','FAD','HEM','NAD','NAP','SAM']
 
 structure_ligands_type = []
@@ -21,6 +22,7 @@ except:
     print('Problem with opening structure',pdb)
 for chain in structure.chains:
     for het in chain.heteroatoms:
+        # Check all ligands in structure and save coordinates if they are of interest
         if het.type in ligands:
             structure_ligands_type.append(het.type)
             structure_ligands_coords.append(het.all_coordinates)

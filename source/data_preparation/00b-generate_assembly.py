@@ -10,6 +10,7 @@ if not os.path.exists(masif_opts['ligand']['assembly_dir']):
     os.mkdir(masif_opts['ligand']['assembly_dir'])
 
 def assemble(pdb_id):
+    # Reads and builds the biological assembly of a structure
     struct = PDB(os.path.join(masif_opts['raw_pdb_dir'],'{}.pdb'.format(pdb_id)), header=True)
     try:
         struct_assembly = struct.apply_biomolecule_matrices()[0]

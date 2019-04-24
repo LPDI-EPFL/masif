@@ -22,6 +22,7 @@ if not os.path.exists(test_set_out_dir):
 
 
 with tf.Session() as sess:
+    # Build trained network
     learning_obj = MaSIF_ligand(sess,params['max_distance'],params['n_classes'], idx_gpu = '/gpu:0', feat_mask=params['feat_mask'], costfun=params['costfun'])
     learning_obj.saver.restore(learning_obj.session,output_model) 
     
@@ -59,7 +60,7 @@ with tf.Session() as sess:
 
             samples_logits_softmax = []
             samples_data_loss = []
-            #for i in range(int(npoints/32)):
+            # Make 100 predictions
             for i in range(100):
                 #sample = samples[int(i*32):int((i+1)*32)]
                 sample = np.random.choice(pocket_points,32,replace=False)
