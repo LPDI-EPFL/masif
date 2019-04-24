@@ -1,7 +1,7 @@
 
 ![MaSIF banner and concept](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/Concept-01.png)
 
-## MaSIF- Molecular Surface Interaction Fingerprints: Geometric deep learning to decipher patterns in molecular surfaces.
+## MaSIF- Molecular Surface Interaction Fingerprints: Geometric deep learning to decipher patterns in protein molecular surfaces.
 
 [![bioRxiv shield](https://img.shields.io/badge/bioRxiv-1709.01233-green.svg?style=flat)](https://www.biorxiv.org/content/10.1101/606202v1)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2625420.svg)](https://doi.org/10.5281/zenodo.2625420)
@@ -161,7 +161,7 @@ All the PDBs that were used for the paper, and their corresponding surfaces (wit
 
 ## MaSIF proof-of-concept applications
 
-MaSIF was tested on three proof-of-concept applications. 
+MaSIF was tested on three proof-of-concept applications. For each application we provide the trained neural network model that was used for the main experiments in the paper.
 
 ![MaSIF proof-of-concept applications](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/Applications-01.png)
 
@@ -219,7 +219,7 @@ where the labels file contains the ground truth, and the logits file contains th
 
 ### MaSIF-site
 
-Change in to the masif-site data directory. 
+Change to the masif-site data directory. 
 
 ```
 cd data/masif_site/
@@ -275,6 +275,20 @@ masif/comparison/masif_site/masif_vs_sppider/masif_sppider_comp.ipynb
 ```
 
 ### MaSIF-search
+
+Change to the masif-search data directory. 
+
+```
+cd data/masif_ppi_search/
+```
+
+The lists of pdb ids and chains used in the training and test sets are located under: 
+
+```
+data/masif_site/data/lists/full_list.txt
+data/masif_site/data/lists/training.txt
+data/masif_site/data/lists/testing.txt
+```
 
 ## PyMOL plugin installation
 
