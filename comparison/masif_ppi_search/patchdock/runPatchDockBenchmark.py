@@ -8,7 +8,7 @@ import pyflann
 from IPython.core.debugger import set_trace
 from Bio.PDB import * 
 struct_dir = 'pdbs/'
-benchmark_list_fn = 'benchmark_list.txt'
+benchmark_list_fn = '../benchmark_list.txt'
 # Precomputation dir for masif. The location of the target vertex is extracted from here.
 precomp_dir = '../../../data/masif_ppi_search/data_preparation/04b-precomputation_12A/'
 # Set location of your patchdock binarires here.

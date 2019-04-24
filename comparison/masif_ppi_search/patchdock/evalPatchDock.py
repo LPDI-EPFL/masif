@@ -38,8 +38,8 @@ def test_alignment(target_pdb_fn, source_pdb_fn, aligned_pdb_fn, interface_dist 
 
 # Go to directory
 
-struct_dir = '/home/gainza/lpdi_fs/seeder/data/ppi_benchmark_complexes/01-benchmark_pdbs/'
-trans_output_bin = '/home/gainza/lpdi_fs/seeder/data/ppi_benchmark_complexes/10-patchdock/PatchDock/transOutput.pl'
+struct_dir = 'pdbs/'
+trans_output_bin = '/your/path/to/patchdock/PatchDock/transOutput.pl'
 
 pdbid = sys.argv[1]
 # Open all results file and get the top 1000 structures by geometric score. 
@@ -109,9 +109,3 @@ else:
         print('Not found')
     outfile.close()
     
-# For each entry in the top 1000 from the wildtype: 
-    # Translate output for this structure
-    # Open it 
-    # Measure the RMSD. 
-    
-
