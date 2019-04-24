@@ -97,7 +97,6 @@ Clone masif to a local directory
 
 ```
 git clone https://github.com/lpdi-epfl/masif
-
 cd masif/
 ```
 
@@ -218,9 +217,14 @@ The surfaces of the predicted sites can be colored according to the site predict
 ./color_site.sh
 ```
 
-These surfaces can then be 
+These surfaces can then be visualized using our [PyMOL plugin](#PyMOL-plugin-installation).
 
-A comparison of th
+A jupyter notebook with code to compare the prediction on the transient interactiosn of this test set 
+to the program [SPPIDER](#http://sppider.cchmc.org/) can be found at:
+
+```
+masif/comparison/masif_site/masif_vs_sppider/masif_sppider_comp.ipynb
+```
 
 ### MaSIF-search
 
