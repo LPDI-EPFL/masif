@@ -45,7 +45,9 @@ surface fingerprints from binding partners to predict the structural configurati
 
 This repository reproduces the experiments of: 
 
-Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E. (2019). Deciphering interaction fingerprints from protein molecular surfaces. bioRxiv, 606202.
+Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E. (2019).
+Deciphering interaction fingerprints from protein molecular surfaces.
+[bioRxiv, 606202.](https://www.biorxiv.org/content/10.1101/606202v1)
 
 MaSIF is distributed under an [Apache License](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/LICENSE). This 
 code is meant to serve as a tutorial, and the basis for researchers to exploit MaSIF in protein-surface learning tasks. 
