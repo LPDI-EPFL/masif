@@ -11,9 +11,9 @@
 
 - [Description](#description)
 - [System and hardware requirements](#system-and-hardware-requirements)
-- [Software requirements](#software-requirements)
+- [Software prerequisites](#software-prerequisites)
 - [Installation](#Installation)
-- [Data preparation](#Data-preparation)
+- [MaSIF data preparation](#MaSIF-data-preparation)
 - [MaSIF applications](#MaSIF-applications)
      * [MaSIF-ligand](#MaSIF-ligand)
      * [MaSIF-site](#MaSIF-site)
