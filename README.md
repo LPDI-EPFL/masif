@@ -157,7 +157,7 @@ If you have access to a cluster (strongly recommended), then this process can be
 sbatch data_prepare.slurm
 ```
 
-All the PDBs that were used for the paper, and their corresponding surfaces (with precomputed chemical features) are available at: https://doi.org/10.5281/zenodo.2625420 
+Most of the PDBs that were used for the paper, and their corresponding surfaces (with precomputed chemical features) are available at: https://doi.org/10.5281/zenodo.2625420 . The unbound proteins are available in this repository under [data/masif_ppi_search_ub/data_preparation/00-raw_pdbs/](https://github.com/LPDI-EPFL/masif/tree/master/data/masif_ppi_search_ub/data_preparation/00-raw_pdbs).
 
 ## MaSIF proof-of-concept applications
 
@@ -285,7 +285,7 @@ cd data/masif_ppi_search/
 The lists of pdb ids and chains used in the training and test sets are located under: 
 
 ```
-data/masif_site/data/lists/full_list.txt
+data/masif_ppi_searhc/data/lists/full_list.txt
 data/masif_site/data/lists/training.txt
 data/masif_site/data/lists/testing.txt
 ```
