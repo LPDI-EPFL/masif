@@ -6,6 +6,7 @@ data/**/02-matfile/
 data/**/02-matfile/
 data/**/03-coords/
 data/**/04*precomputation*/
+data/**/data_preparation
 *.out
 *.err
 *.mat
@@ -14,5 +15,9 @@ data/**/04*precomputation*/
 checkpoint
 data/**/cache/
 **/obsolete/*
+.ipynb_checkpoints
 **/model_data
-**/data_preparation
+data/masif_ppi_search/descriptors/
+data/masif_site/output/
+tensorflow-1.9/
+tensorflow_on_gpu/
