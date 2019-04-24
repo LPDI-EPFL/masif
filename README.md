@@ -164,13 +164,46 @@ MaSIF was tested on three proof-of-concept applications.
 
 ### MaSIF-ligand
 
-MaSIF-ligand is run from the data/masif_ligand directory. 
+```
+cd data/masif_site/
+```
 
-The first step is to prepare the dataset by running data_prepare_one.sh on every structure identifier in the dataset. An example of how to do this and parallelise over multiple nodes can be found in data_prepare.slurm.
+The lists of pdb ids and chains used in the training and test sets are located, in numpy format, under: 
 
-The next step is to combine the pre-processed data into a single TFRecords file by running the commands in make_tfrecord.slurm. 
+```
+data/masif_ligand/lists/test_pdbs_sequence.npy
+data/masif_ligand/lists/train_pdbs_sequence.npy
+data/masif_ligand/lists/val_pdbs_sequence.npy
+```
 
-The neural network is trained and finally evaluated by running the commands in train_model.slurm and evaluate_test.slurm respectively.
+Each of these files can be read using the numpy.load function.
+
+Precompute the datasets (see [Data preparation](#Data-preparation)), ideally using slurm:
+
+```
+sbatch prepare_data.slurm
+```
+
+Be sure you have enough disk space, about 400GB.
+
+Once the data has been precomputed, MaSIF-ligand requires the generation of Tensorflow 
+[TFRecords](#https://www.tensorflow.org/tutorials/load_data/tf_records) for training.
+For this, either run slurm or execute the command present in the make_tfrecord.slurm file:
+
+```
+sbatch make_tfrecord.slurm
+```
+
+Once the tfrecords have been precomputed, the training for the network can start (again, run the commands in the slurm file one by one if you do not have slurm):
+
+```
+sbatch train_model.slurm
+```
+
+To evaluate the neural network run: 
+```
+sbatch evaluate_test.slurm
+```
 
 ### MaSIF-site
 
@@ -211,11 +244,14 @@ the selected subset of transient interactions:
 ./predict_site.sh
 ```
 
+The predictions for each vertex in each protein are stored in the directory data/masif_site/output/all_feat_3l/pred_data/. 
 The surfaces of the predicted sites can be colored according to the site prediction: 
 
 ```
 ./color_site.sh
 ```
+
+and saved to a ply file, under the directory: data/masif_site/output/all_feat_3l/pred_surfaces/
 
 These surfaces can then be visualized using our [PyMOL plugin](#PyMOL-plugin-installation).
 
@@ -234,6 +270,12 @@ A PyMOL plugin to visualize protein surfaces is provided in the source/pymol sub
 shown in our paper. This plugin requires PyMOL and PyMesh to be installed in your local computer. 
 
 To install the plugin go to the Plugin -> Plugin Manager window in PyMOL and choose the Install new plugin tab. Then select the masif/source/pymol/masif_plugin.py file. 
+
+To load a protein surface file run, from within PyMOL: 
+
+```
+loadply ABCD_E.ply
+```
 
 ## License
 
