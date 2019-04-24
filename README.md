@@ -194,7 +194,8 @@ For this, either run slurm or execute the command present in the make_tfrecord.s
 sbatch make_tfrecord.slurm
 ```
 
-Once the tfrecords have been precomputed, the training for the network can start (again, run the commands in the slurm file one by one if you do not have slurm):
+Once the tfrecords have been precomputed, the training for the network can start, where we strongly recommend a GPU
+(run the commands in the slurm file one by one if you do not have slurm):
 
 ```
 sbatch train_model.slurm
@@ -204,6 +205,14 @@ To evaluate the neural network run:
 ```
 sbatch evaluate_test.slurm
 ```
+
+The output of the evaluation is placed under the data/masif_ligand/test_set_predictions/ directory, with two numpy files per input protein databank structure, e.g.: 
+
+```
+5LXM_AD_labels.npy
+5LXM_AD_logits.npy
+```
+where the labels file contains the ground truth, and the logits file contains the prediction logits.
 
 ### MaSIF-site
 
