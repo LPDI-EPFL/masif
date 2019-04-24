@@ -3,9 +3,9 @@
 #SBATCH --partition=serial
 #SBATCH --ntasks-per-node 1
 #SBATCH --cpus-per-task 1
-#SBATCH --mem 8192
+#SBATCH --mem 16384
 #SBATCH --time 03:00:00
-#SBATCH --array=1-1000
+#SBATCH --array=1-4
 #SBATCH --output=exelogs/out/data_prepare.%A_%a.out
 #SBATCH --error=exelogs/err/data_prepare.%A_%a.err
 
@@ -20,4 +20,3 @@ while read p; do
     fi
     i=$((i+1))
 done < lists/full_list.txt
-#done < lists/short_list.txt
