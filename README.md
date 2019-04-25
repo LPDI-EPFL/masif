@@ -290,6 +290,49 @@ data/masif_site/data/lists/training.txt
 data/masif_site/data/lists/testing.txt
 ```
 
+Precompute the datasets (see [MaSIF data preparation](#MaSIF-data-preparation)), ideally using slurm:
+
+```
+sbatch prepare_data.slurm
+```
+
+Be sure you have enough disk space, about 400GB. 
+
+For speed reasons, the actual data that will be used by the neural network is cached in a separate directory. This data consists of the pairs of patches that pass a shape complementarity threshold and an equal number of random patches. This process is run by executing: 
+
+```
+./cache_nn.sh nn_models.sc05.custom_params
+```
+
+Once the data has been cached, the training for the network can start:
+
+./train.sh nn_models.sc05.custom_params
+
+For the paper we trained for about 40 hours. The neural network model is saved  in the nn_models/sc05/all_feat/model_data directory whenever the validation ROC AUC improves over the previously saved model's validation ROC AUC. 
+
+Once the neural network has been trained and saved, descriptors for specific proteins can be computed using the command: 
+
+```
+./compute_descriptors.sh lists/testing.txt
+```
+
+These descriptors are saved under the descriptors/ directory.
+
+To evaluate the second stage ransac protocol, go to the masif/comparison/masif_ppi_search directory: 
+
+```
+cd $masif_root/comparison/masif_ppi_search/masif_descriptors/
+./second_stage.sh
+```
+
+To reproduce the large PD-L1:PD1 benchmark presented in the paper: 
+
+```
+cd data/masif_ppi_search/pdl1_benchmark
+./run_benchmark.sh
+```
+
+
 ## PyMOL plugin installation
 
 A PyMOL plugin to visualize protein surfaces is provided in the source/pymol subdirectory. We used this plugin for all the structural figures 
@@ -297,7 +340,7 @@ shown in our paper. This plugin requires PyMOL and PyMesh to be installed in you
 
 To install the plugin go to the Plugin -> Plugin Manager window in PyMOL and choose the Install new plugin tab. Then select the masif/source/pymol/masif_plugin.py file. 
 
-To load a protein surface file run, from within PyMOL: 
+To load a protein surface file, run this command inside PyMOL: 
 
 ```
 loadply ABCD_E.ply
