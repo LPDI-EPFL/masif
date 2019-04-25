@@ -303,6 +303,10 @@ To load a protein surface file run, from within PyMOL:
 loadply ABCD_E.ply
 ```
 
+Example:
+![MaSIF PyMOL plugin example](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/PyMOL-01.png)
+
+
 ## License
 
 MaSIF is released under an [Apache v2.0 license](LICENSE).
