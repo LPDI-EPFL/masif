@@ -19,7 +19,7 @@
      * [MaSIF-ligand](#MaSIF-ligand)
      * [MaSIF-site](#MaSIF-site)
      * [MaSIF-search](#MaSIF-search)
-- [PyMOL plugin](#PyMOL plugin)
+- [PyMOL plugin](#PyMOL-plugin)
 - [License](#License)
 - [Reference](#Reference)
 ## Description
