@@ -44,7 +44,7 @@ for ppi_pair_id in ppi_pair_ids:
     for ix, pid in enumerate(['p1', 'p2']):
         pdb_chain_id = pdbid+'_'+chains[ix]
 
-        if pdb_chain_id not in eval_list and len(eval_list) > 0 :
+        if pdb_chain_id not in eval_list and pdb_chain_id+'_' not in eval_list  and len(eval_list) > 0 :
             continue
 
         try:
@@ -52,7 +52,11 @@ for ppi_pair_id in ppi_pair_ids:
         except:
             print('File does not exist: {}'.format(shape_file))
             continue
-        scores = np.load(params['out_pred_dir']+'/pred_'+pdbid+'_'+chains[ix]+'.npy')
+        try:
+            scores = np.load(params['out_pred_dir']+'/pred_'+pdbid+'_'+chains[ix]+'.npy')
+        except:
+            print('File does not exist: {}'.format(params['out_pred_dir']+'/pred_'+pdbid+'_'+chains[ix]+'.npy'))
+            continue
 
         vertices = np.stack([p1['X'][0], p1['Y'][0], p1['Z'][0]], axis=1)
         faces = p1['TRIV'].T
