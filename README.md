@@ -19,6 +19,7 @@
      * [MaSIF-ligand](#MaSIF-ligand)
      * [MaSIF-site](#MaSIF-site)
      * [MaSIF-search](#MaSIF-search)
+- [PyMOL plugin](#PyMOL plugin)
 - [License](#License)
 - [Reference](#Reference)
 ## Description
@@ -158,6 +159,8 @@ sbatch data_prepare.slurm
 ```
 
 Most of the PDBs that were used for the paper, and their corresponding surfaces (with precomputed chemical features) are available at: https://doi.org/10.5281/zenodo.2625420 . The unbound proteins are available in this repository under [data/masif_ppi_search_ub/data_preparation/00-raw_pdbs/](https://github.com/LPDI-EPFL/masif/tree/master/data/masif_ppi_search_ub/data_preparation/00-raw_pdbs).
+
+Note that the preparation of the data can consume a large amount of space for large protein databases. This is due to the fact that the preprocessing step decomposes protein surfaces into overlapping patches, which results in a large amount of duplicated data. In the near future we hope to reduce the amount of space required.
 
 ## MaSIF proof-of-concept applications
 
@@ -333,7 +336,7 @@ cd data/masif_ppi_search/pdl1_benchmark
 ```
 
 
-## PyMOL plugin installation
+## PyMOL plugin
 
 A PyMOL plugin to visualize protein surfaces is provided in the source/pymol subdirectory. We used this plugin for all the structural figures 
 shown in our paper. This plugin requires PyMOL and PyMesh to be installed in your local computer. 
