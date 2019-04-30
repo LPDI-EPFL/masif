@@ -1,17 +1,13 @@
 # Pablo Gainza Cirauqui 2016 
 # This pymol function loads ply files into pymol. 
 from pymol import cmd, stored
-import sys, urllib, zlib
+import sys 
 import subprocess
 import os,math,re
-import string
 from pymol.cgo import *
 from subprocess import Popen, PIPE
 import pymesh
-import Queue
-import threading
 import os.path
-from utils.xyzrn import *
 from colour import Color, hex2rgb
 from scipy.spatial import distance
 import numpy as np
@@ -133,7 +129,6 @@ def hphob_color(hphob):
 # The most red colors are the most negative values, and the most 
 # blue colors are the most positive colors.
 def charge_color(charges):
-    print "Charges information:" 
     # Assume a std deviation equal for all proteins.... 
     max_val = 1.0
     min_val = -1.0
@@ -168,9 +163,7 @@ def load_ply(filename, color="white", name='ply', dotSize=0.2, lineSize = 0.5, d
         
     group_names = ''
 
-    print mesh.get_attribute_names()
     verts = mesh.vertices
-    print mesh.get_attribute_names()
     try:
         charge = mesh.get_attribute("vertex_charge")
         color_array = charge_color(charge)
@@ -182,16 +175,13 @@ def load_ply(filename, color="white", name='ply', dotSize=0.2, lineSize = 0.5, d
         for i in range(len(vertex_cb)):
             if vertex_cb[i] > 0.0:
                 color_array[i] = np.array(colorDict['green'])
-                print 'Found CB'
     except:
-        print 'vertex_cb not defined'
         color_array = color_array
     try: 
         center_vertex = mesh.get_attribute('vertex_green')
         center_vertex = numpy.argmax(center_vertex)
     except: 
         center_vertex = -1
-    print "Center_vertex = "+`center_vertex`
     if 'vertex_nx' in mesh.get_attribute_names():
         nx = mesh.get_attribute('vertex_nx')
         ny = mesh.get_attribute('vertex_ny')
@@ -200,10 +190,8 @@ def load_ply(filename, color="white", name='ply', dotSize=0.2, lineSize = 0.5, d
         print(normals.shape)
         
     
-    print "Center_vertex = "+`center_vertex`
 
     # Draw vertices 
-    print "Counted + "+`len(verts)`+" vertices"
     obj = []
     color = 'green'
 
@@ -519,7 +507,6 @@ def load_ply(filename, color="white", name='ply', dotSize=0.2, lineSize = 0.5, d
         group_names = group_names+' '+name
 
     # Draw triangles (faces)
-    print "Length faces: "+`len(faces)`
     for tri in faces: 
         pairs = [[tri[0],tri[1]], [tri[0],tri[2]], [tri[1],tri[2]]]
         colorToAdd = colorDict['gray']
@@ -567,7 +554,6 @@ def load_giface(filename, color="white", name='giface', dotSize=0.2, lineSize = 
     faces = mesh.faces
     verts = mesh.vertices
     obj = []
-    print "Length faces: "+`len(faces)`
     visited = set()
     colorToAdd = colorDict['green']
     obj.extend([BEGIN, LINES])
