@@ -106,9 +106,10 @@ def charge_color(charges):
     return mycolor
 
 def load_ply(filename, color="white", name='ply', dotSize=0.2, lineSize = 0.5, doStatistics=False):
-## Pymesh should be faster... 
+## Pymesh should be faster and supports binary ply files. However it is difficult to install with pymol... 
 #        import pymesh
 #        mesh = pymesh.load_mesh(filename)
+    
     from simple_mesh import Simple_mesh
     mesh = Simple_mesh()
     mesh.load_mesh(filename)
