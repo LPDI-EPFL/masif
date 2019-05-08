@@ -341,7 +341,7 @@ cd data/masif_ppi_search/pdl1_benchmark
 A PyMOL plugin to visualize protein surfaces is provided in the source/pymol subdirectory. We used this plugin for all the structural figures 
 shown in our paper. This plugin requires PyMOL and PyMesh to be installed in your local computer. 
 
-To install the plugin go to the Plugin -> Plugin Manager window in PyMOL and choose the Install new plugin tab. Then select the masif/source/pymol/masif_plugin.py file. 
+To install the plugin go to the Plugin -> Plugin Manager window in PyMOL and choose the Install new plugin tab. Then select the masif/source/masif_pymol_plugin.zip file.
 
 To load a protein surface file, run this command inside PyMOL: 
 
