@@ -7,7 +7,6 @@ import os,math,re
 from pymol.cgo import *
 from subprocess import Popen, PIPE
 import os.path
-from colour import Color, hex2rgb
 from scipy.spatial import distance
 import numpy as np
 
@@ -36,23 +35,6 @@ def color_gradient(vals, color1, color2):
     for x in ix: 
         myc = crange[x].get_rgb()
         mycolor.append([COLOR, myc[0], myc[1], myc[2]]) 
-    return mycolor
-
-# Color for rho coordinate in plots
-def rho_color(rho):
-    hp = rho/12
-    print('Max rho = {}'.format(np.max(rho)))
-    mycolor = color_gradient(hp, None, None)
-    return mycolor
-
-# Color for theta coordinate in plots
-def theta_color(theta):
-    hp = theta/(np.pi) 
-    hp = hp/2 + 0.5
-    # Initial colors for gradient.
-    c1 = [232/255.0, 146/255.0, 5/255.0]
-    c2 = [13/255.0, 209/255.0, 255/255.0]
-    mycolor = color_gradient(hp, c1, c2)
     return mycolor
 
 def iface_color(iface):
@@ -299,65 +281,6 @@ def load_ply(filename, color="white", name='ply', dotSize=0.2, lineSize = 0.5, d
         obj = []
         group_names = group_names+' '+name
 
-    obj = []
-    # Draw rho
-    if 'vertex_rho' in mesh.get_attribute_names() and 'vertex_nx' in mesh.get_attribute_names(): 
-        rho = mesh.get_attribute('vertex_rho')
-        color_array_surf = rho_color(rho)
-        for tri in faces:
-            vert1 = verts[int(tri[0])]
-            vert2 = verts[int(tri[1])]
-            vert3 = verts[int(tri[2])]
-            na = normals[int(tri[0])]
-            nb = normals[int(tri[1])]
-            nc = normals[int(tri[2])]
-            obj.extend([BEGIN, TRIANGLES])
-            #obj.extend([ALPHA, 0.5])
-            obj.extend(color_array_surf[int(tri[0])])
-            obj.extend([NORMAL, (na[0]), (na[1]), (na[2])])
-            obj.extend([VERTEX, (vert1[0]), (vert1[1]), (vert1[2])])
-            obj.extend(color_array_surf[int(tri[1])])
-            obj.extend([NORMAL, (nb[0]), (nb[1]), (nb[2])])
-            obj.extend([VERTEX, (vert2[0]), (vert2[1]), (vert2[2])])
-            obj.extend(color_array_surf[int(tri[2])])
-            obj.extend([NORMAL, (nc[0]), (nc[1]), (nc[2])])
-            obj.extend([VERTEX, (vert3[0]), (vert3[1]), (vert3[2])])
-            obj.append(END)
-        name = "rho_"+filename
-        cmd.load_cgo(obj,name, 1.0)
-        obj = []
-        group_names = group_names+' '+name
-        # Draw the center vertex? 
-
-    obj = []
-    # Draw theta
-    if 'vertex_theta' in mesh.get_attribute_names() and 'vertex_nx' in mesh.get_attribute_names(): 
-        theta = mesh.get_attribute('vertex_theta')
-        color_array_surf = theta_color(theta)
-        for tri in faces:
-            vert1 = verts[int(tri[0])]
-            vert2 = verts[int(tri[1])]
-            vert3 = verts[int(tri[2])]
-            na = normals[int(tri[0])]
-            nb = normals[int(tri[1])]
-            nc = normals[int(tri[2])]
-            obj.extend([BEGIN, TRIANGLES])
-            #obj.extend([ALPHA, 0.5])
-            obj.extend(color_array_surf[int(tri[0])])
-            obj.extend([NORMAL, (na[0]), (na[1]), (na[2])])
-            obj.extend([VERTEX, (vert1[0]), (vert1[1]), (vert1[2])])
-            obj.extend(color_array_surf[int(tri[1])])
-            obj.extend([NORMAL, (nb[0]), (nb[1]), (nb[2])])
-            obj.extend([VERTEX, (vert2[0]), (vert2[1]), (vert2[2])])
-            obj.extend(color_array_surf[int(tri[2])])
-            obj.extend([NORMAL, (nc[0]), (nc[1]), (nc[2])])
-            obj.extend([VERTEX, (vert3[0]), (vert3[1]), (vert3[2])])
-            obj.append(END)
-        name = "theta_"+filename
-        cmd.load_cgo(obj,name, 1.0)
-        obj = []
-        group_names = group_names+' '+name
-        # Draw the center vertex? 
     obj = []
     # Draw geodesic line.
     if 'vertex_theta' in mesh.get_attribute_names() and 'vertex_nx' in mesh.get_attribute_names(): 
