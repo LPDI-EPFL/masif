@@ -3,7 +3,6 @@
 from pymol import cmd, stored
 from pymol.cgo import *
 import os.path
-from scipy.spatial import distance
 import numpy as np
 
 colorDict = {'sky': [COLOR, 0.0, 0.76, 1.0 ],

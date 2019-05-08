@@ -2,12 +2,9 @@
 # This pymol function loads ply files into pymol. 
 from pymol import cmd, stored
 import sys 
-import subprocess
 import os,math,re
 from pymol.cgo import *
-from subprocess import Popen, PIPE
 import os.path
-from scipy.spatial import distance
 import numpy as np
 
 colorDict = {'sky': [COLOR, 0.0, 0.76, 1.0 ],
