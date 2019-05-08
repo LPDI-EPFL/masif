@@ -3,8 +3,10 @@
 
 from pymol import cmd
 from loadPLY import *
+from loadDOTS import *
 import sys
 
 cmd.extend('loadply', load_ply)
+cmd.extend('loaddots', load_dots)
 cmd.extend('loadgiface', load_giface)
 

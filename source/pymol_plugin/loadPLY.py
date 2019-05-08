@@ -6,7 +6,6 @@ import subprocess
 import os,math,re
 from pymol.cgo import *
 from subprocess import Popen, PIPE
-import pymesh
 import os.path
 from colour import Color, hex2rgb
 from scipy.spatial import distance
@@ -26,37 +25,12 @@ colorDict = {'sky': [COLOR, 0.0, 0.76, 1.0 ],
         'white': [COLOR, 1.0, 1.0, 1.0],
         'gray': [COLOR, 0.9, 0.9, 0.9] }
 
-# Color a line from the center of the patch to the limit based on theta.
-def geodesic_line_color(theta):
-    # For each theta
-    glc = np.zeros(len(theta))
-    eps = np.pi/12
-    # Go through each rho step.
-#    rho_steps = np.arange(0,12,0.5)
-#    for step in rho_steps:
-#        members = [x for x in theta 
-    for i in range(len(theta)):
-        if theta[i] < -np.pi + eps or theta[i] > np.pi - eps:
-            glc[i] = 1.0
-        else: 
-            glc[i] = 0.0
-    mycolor = [ [COLOR, 1.0, 1.0-glc[i], 1.0-glc[i]]  for i in range(len(glc)) ]
-    return mycolor
-
 # Create a gradient color from color 1 to whitish, to color 2. val goes from 0 (color1) to 1 (color2).
 def color_gradient(vals, color1, color2):
-#    c1 = Color(rgb=color1)
-#    c2 = Color(rgb=color2)
-#    c3 = Color("white")
     c1 = Color("white")
     c2 = Color("orange")
-#    c1 = Color("blue")
-#    c3 = Color("white")
     ix = np.floor(vals*100).astype(int)
     crange = list(c1.range_to(c2, 100))
-#    crange2 = list(c3.range_to(c2, 100))
-#    crange = crange1
-    #crange = crange1[0:50]+crange2[50:100]
     mycolor = []
     print(crange[0].get_rgb())
     for x in ix: 
@@ -64,40 +38,28 @@ def color_gradient(vals, color1, color2):
         mycolor.append([COLOR, myc[0], myc[1], myc[2]]) 
     return mycolor
 
+# Color for rho coordinate in plots
 def rho_color(rho):
     hp = rho/12
     print('Max rho = {}'.format(np.max(rho)))
-#    hp = (hp-0.5)*2
     mycolor = color_gradient(hp, None, None)
-    #mycolor = charge_color(hp)
-    #mycolor = [ [COLOR, 1.0-hp[i], 1.0-hp[i], 1.0-hp[i]]  for i in range(len(hp)) ]
-#    mycolor = [ [COLOR, 0.0, hp[i], 0.0]  for i in range(len(hp)) ]
     return mycolor
 
+# Color for theta coordinate in plots
 def theta_color(theta):
     hp = theta/(np.pi) 
-#    hp = (hp-0.5)*2
     hp = hp/2 + 0.5
-    #mycolor = charge_color(hp)
-    # black to white: 
-#    mycolor = [ [COLOR, 1.0-hp[i], 1.0-hp[i], 1.0-hp[i]]  for i in range(len(hp)) ]
-    # black to white
-#    mycolor = [ [COLOR, 1.0-hp[i], 1.0-hp[i], 1.0-hp[i]]  for i in range(len(hp)) ]
+    # Initial colors for gradient.
     c1 = [232/255.0, 146/255.0, 5/255.0]
     c2 = [13/255.0, 209/255.0, 255/255.0]
-#    c1 = [']
-#    c2 = Color("yellow")
     mycolor = color_gradient(hp, c1, c2)
-#    print(color_gradient(1.0, [232/255.0, 146/255.0, 5/255.0], [13/255.0, 209/255.0, 255/255.0]))
     return mycolor
 
 def iface_color(iface):
     # max value is 1, min values is 0
     hp = iface.copy()
-#    hp = np.rint(hp)
     hp = hp*2 - 1
     mycolor = charge_color(-hp)
-#    mycolor = [ [COLOR, 1.0, 1.0-hp[i], 1.0-hp[i]]  for i in range(len(hp)) ]
     return mycolor
 
 # Returns the color of each vertex according to the charge. 
@@ -112,18 +74,6 @@ def hphob_color(hphob):
     #mycolor = [ [COLOR, 1.0, hp[i], 1.0]  for i in range(len(hp)) ]
     mycolor = [ [COLOR, 1.0, 1.0-hp[i], 1.0]  for i in range(len(hp)) ]
     return mycolor
-
-
-#def hbond_color(hbond):
-    # max value is 1.0, min value is 1.0
-#    hb = hbond.copy()
-    # normalize
-#    blue_charges[blue_charges < 0] = 0
-#    red_charges[red_charges > 0] = 0
-#    red_charges = abs(red_charges) 
-
-#    mycolor = [ [COLOR, 1.0, hp[i], 1.0]  for i in range(len(hp)) ]
-#    return mycolor
 
 # Returns the color of each vertex according to the charge. 
 # The most red colors are the most negative values, and the most 
@@ -156,7 +106,13 @@ def charge_color(charges):
     return mycolor
 
 def load_ply(filename, color="white", name='ply', dotSize=0.2, lineSize = 0.5, doStatistics=False):
-    mesh = pymesh.load_mesh(filename)
+## Pymesh should be faster... 
+#        import pymesh
+#        mesh = pymesh.load_mesh(filename)
+    from simple_mesh import Simple_mesh
+    mesh = Simple_mesh()
+    mesh.load_mesh(filename)
+
     ignore_normal = False 
     with_normal = False
     with_color = False
@@ -170,18 +126,6 @@ def load_ply(filename, color="white", name='ply', dotSize=0.2, lineSize = 0.5, d
     except:
         print('Could not load vertex charges.')
         color_array = [colorDict['green']]*len(verts)
-    try: 
-        vertex_cb = mesh.get_attribute('vertex_cb')
-        for i in range(len(vertex_cb)):
-            if vertex_cb[i] > 0.0:
-                color_array[i] = np.array(colorDict['green'])
-    except:
-        color_array = color_array
-    try: 
-        center_vertex = mesh.get_attribute('vertex_green')
-        center_vertex = numpy.argmax(center_vertex)
-    except: 
-        center_vertex = -1
     if 'vertex_nx' in mesh.get_attribute_names():
         nx = mesh.get_attribute('vertex_nx')
         ny = mesh.get_attribute('vertex_ny')
@@ -199,12 +143,8 @@ def load_ply(filename, color="white", name='ply', dotSize=0.2, lineSize = 0.5, d
         vert = verts[v_ix]
         colorToAdd = color_array[v_ix]
         # Vertices
-        if v_ix == center_vertex:
-            obj.extend(colorDict['green'])
-            obj.extend([SPHERE, vert[0], vert[1], vert[2], dotSize*2])
-        else:
-            obj.extend(colorToAdd)
-            obj.extend([SPHERE, vert[0], vert[1], vert[2], dotSize])
+        obj.extend(colorToAdd)
+        obj.extend([SPHERE, vert[0], vert[1], vert[2], dotSize])
 
     name = "vert_"+filename
     group_names = name
@@ -565,11 +505,6 @@ def load_giface(filename, color="white", name='giface', dotSize=0.2, lineSize = 
             if iface[pair[0]] > 0 and iface[pair[1]] > 0 and iface[pair[2]] == 0:
                 vert1 = verts[pair[0]]
                 vert2 = verts[pair[1]]
-    #            if pair[0] in visited or pair[1] in visited:
-    #                continue
-    #            else:
-    #                visited.add(pair[0])
-    #                visited.add(pair[1])
 
                 obj.extend([VERTEX, (vert1[0]), (vert1[1]), (vert1[2])])
                 obj.extend([VERTEX, (vert2[0]), (vert2[1]), (vert2[2])])
