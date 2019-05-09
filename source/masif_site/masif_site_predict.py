@@ -65,7 +65,7 @@ for ppi_pair_id in ppi_pair_ids:
     
     for ix, pid in enumerate(pids):
         pdb_chain_id = pdbid+'_'+chains[ix]
-        if len(eval_list) > 0  and pdb_chain_id not in eval_list:
+        if len(eval_list) > 0  and pdb_chain_id not in eval_list and pdb_chain_id+'_' not in eval_list:
             continue
         
         print('Evaluating {}'.format(pdb_chain_id))
@@ -73,6 +73,7 @@ for ppi_pair_id in ppi_pair_ids:
         try:
             rho_wrt_center = np.load(in_dir+pid+'_rho_wrt_center.npy')
         except:
+            print('File not found')
             continue
         theta_wrt_center = np.load(in_dir+pid+'_theta_wrt_center.npy')
         input_feat = np.load(in_dir+pid+'_input_feat.npy')
@@ -84,6 +85,6 @@ for ppi_pair_id in ppi_pair_ids:
         print ("Total number of patches:{} \n".format(len(mask)))
 
         scores = run_masif_site(params, learning_obj, rho_wrt_center, theta_wrt_center, input_feat, mask, indices)
-        print ("Total number of patches for which scores were computed: {}\n".format(len(scores)))
+        print ("Total number of patches for which scores were computed: {}\n".format(len(scores[0])))
         np.save(params['out_pred_dir']+'/pred_'+pdbid+'_'+chains[ix]+'.npy', scores)
 
