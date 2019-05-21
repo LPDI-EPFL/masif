@@ -180,7 +180,7 @@ for site_ix, site_vix in enumerate(target_vertices):
                 source_vix, target_patch, target_patch_descs, 
                 target_patch_mesh, triangle_centroids, 
                 source_geodists, target_patch_geodists, target_ckdtree,
-                source_iface, target_patch_iface, params
+                source_iface, target_patch_iface, nn_score, params
                 ) 
     #    print('Multidock took {}'.format(time.time()- tic))
         scores = np.asarray(all_source_scores)
