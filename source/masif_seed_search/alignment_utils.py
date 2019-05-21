@@ -275,7 +275,7 @@ def multidock(source_pcd, source_patch_coords, source_descs, cand_pts, target_pc
                 [CorrespondenceCheckerBasedOnEdgeLength(0.9),
                  CorrespondenceCheckerBasedOnDistance(1.0),
                  CorrespondenceCheckerBasedOnNormal(np.pi/2)],
-                RANSACConvergenceCriteria(ransac_iter, 500), 0.0, 2
+                RANSACConvergenceCriteria(ransac_iter, 500)
             )
         #print('{} {}'.format(len(np.asarray(result.correspondence_set)), result.fitness))
         ransac_time = ransac_time + (time.time() - tic)
