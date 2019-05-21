@@ -22,10 +22,16 @@ params['target_iface_dir'] = os.path.join(params['masif_root'],'data/masif_targe
 params['target_ply_iface_dir'] = os.path.join(params['masif_root'],'data/masif_targets',masif_opts['site']['out_surf_dir'])
 params['target_pdb_dir'] = os.path.join(params['top_target_dir'],masif_opts['pdb_chain_dir'])
 params['target_desc_dir'] = os.path.join(params['top_target_dir'],masif_opts['ppi_search']['desc_dir'])
+params['target_desc_dir_no_scfilt_chem'] = os.path.join(params['top_target_dir'],'descriptors/no_scfilt/chem/')
+params['target_desc_dir_no_scfilt_all_feat'] = os.path.join(params['top_target_dir'],'descriptors/no_scfilt/all_feat/')
+params['target_desc_dir'] = os.path.join(params['top_target_dir'],masif_opts['ppi_search']['desc_dir'])
+# 12 A
 params['target_precomp_dir'] = os.path.join(params['top_target_dir'],masif_opts['ppi_search']['masif_precomputation_dir'])
+# 9 A
+#params['target_precomp_dir'] = os.path.join(params['top_target_dir'],masif_opts['site']['masif_precomputation_dir'])
 
 # Number of sites to target in the protein
-params['num_sites'] = 10
+params['num_sites'] = 1
 
 # Number of clashes to tolerate.
 params['clashing_cutoff'] = float('inf')
