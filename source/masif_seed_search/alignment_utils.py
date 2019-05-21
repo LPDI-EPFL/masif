@@ -53,7 +53,7 @@ def load_protein_pcd(full_pdb_id, chain_number, paths, flipped_features=False, r
 #            'p{}_desc_flipped.npy'.format(chain_number))
     else:
         pdb_desc_sc05 = np.load(
-            paths['desc_dir'] /
+            Path(paths['desc_dir']) /
             full_pdb_id /
             'p{}_desc_straight.npy'.format(chain_number))
 #        pdb_desc_no_scfilt_chem = np.load(
@@ -242,61 +242,53 @@ def match_descriptors(in_desc_dir, in_iface_dir, pids, target_desc, params, desc
 
 
 def multidock(source_pcd, source_patch_coords, source_descs, cand_pts, target_pcd, target_descs,
-              target_patch_mesh, target_patch_mesh_centroids, params):
+              target_patch_mesh, target_patch_mesh_centroids, 
+              source_geodists, target_patch_geodists, target_ckdtree,
+              source_iface, target_patch_iface,           
+              nn_score, params):
     ransac_radius=params['ransac_radius'] 
     ransac_iter=params['ransac_iter']
     all_results = []
     all_source_patch = []
     all_source_scores = []
-    patch_time = 0.0
-    ransac_time = 0.0
-    transform_time = 0.0
-    score_time = 0.0
     for pt in cand_pts:
-        tic = time.time()
-        source_patch, source_patch_descs = get_patch_geo(
-            source_pcd, source_patch_coords, pt, source_descs)
-        patch_time = patch_time + (time.time() - tic)
-        tic = time.time()
+        source_patch, source_patch_descs, source_patch_iface = get_patch_geo(
+            source_pcd, source_patch_coords, pt, source_descs, source_iface)
+        source_patch_geodists = source_geodists[pt]
         if params['ransac_type'] == 'shape_comp':
-            result = registration_ransac_based_on_shape_complementarity(
-                source_patch, target_pcd, target_patch_mesh, target_patch_mesh_centroids, source_patch_descs, target_descs,
+            result = o3d.registration_ransac_based_on_shape_complementarity(
+                source_patch, target_pcd, target_patch_mesh, target_patch_mesh_centroids, source_patch_descs[0], target_descs[0],
                 ransac_radius,
-                TransformationEstimationPointToPoint(False), 3,
-                [CorrespondenceCheckerBasedOnEdgeLength(0.9),
-                 CorrespondenceCheckerBasedOnDistance(2.0),
-                 CorrespondenceCheckerBasedOnNormal(np.pi/2)],
-                RANSACConvergenceCriteria(ransac_iter, 500), 0, 3)
+                o3d.TransformationEstimationPointToPoint(False), 3,
+                [o3d.CorrespondenceCheckerBasedOnEdgeLength(0.9),
+                 o3d.CorrespondenceCheckerBasedOnDistance(2.0),
+                 o3d.CorrespondenceCheckerBasedOnNormal(np.pi/2)],
+                o3d.RANSACConvergenceCriteria(ransac_iter, 500), 0, 3)
         else:
-            result = registration_ransac_based_on_feature_matching(
-                source_patch, target_pcd, source_patch_descs, target_descs,
+            result = o3d.registration_ransac_based_on_feature_matching(
+                source_patch, target_pcd, source_patch_descs[0], target_descs[0],
                 ransac_radius,
-                TransformationEstimationPointToPoint(False), 3,
-                [CorrespondenceCheckerBasedOnEdgeLength(0.9),
-                 CorrespondenceCheckerBasedOnDistance(1.0),
-                 CorrespondenceCheckerBasedOnNormal(np.pi/2)],
-                RANSACConvergenceCriteria(ransac_iter, 500)
+                o3d.TransformationEstimationPointToPoint(False), 3,
+                [o3d.CorrespondenceCheckerBasedOnEdgeLength(0.9),
+                 o3d.CorrespondenceCheckerBasedOnDistance(1.0),
+                 o3d.CorrespondenceCheckerBasedOnNormal(np.pi/2)],
+                o3d.RANSACConvergenceCriteria(ransac_iter, 500)
             )
         #print('{} {}'.format(len(np.asarray(result.correspondence_set)), result.fitness))
-        ransac_time = ransac_time + (time.time() - tic)
         # result = registration_icp(source_patch, target_pcd, 1.5,
         # result.transformation,
         # TransformationEstimationPointToPoint())
 
-        tic = time.time()
         source_patch.transform(result.transformation)
         all_results.append(result)
         all_source_patch.append(source_patch)
-        transform_time = transform_time + (time.time() - tic)
 
-        tic = time.time()
-        source_scores = compute_desc_dist_score(target_pcd, source_patch, np.asarray(
-            result.correspondence_set), target_descs, source_patch_descs)
+        source_scores = compute_desc_dist_score(target_pcd, source_patch, np.asarray(result.correspondence_set),
+                source_patch_geodists, target_patch_geodists,
+                target_descs, source_patch_descs, \
+                source_patch_iface, target_patch_iface,
+                target_ckdtree, nn_score)
         all_source_scores.append(source_scores)
-        score_time = score_time + (time.time() - tic)
-    #print('Ransac time = {:.2f}'.format(ransac_time))
-    #print('Extraction time = {:.2f}'.format(patch_time))
-    #print('Score time = {:.2f}'.format(score_time))
 
     return all_results, all_source_patch, all_source_scores
 
@@ -337,62 +329,68 @@ def align_and_save(out_filename_base, patch, transformation, source_structure, t
         return False
 
 
-def compute_desc_dist_score(
-        target_pcd, 
-        source_pcd, 
-        corr, 
-        target_desc, 
-        source_desc, 
-        target_ckdtree = None,
-        nn_model = None, 
-        cutoff=2.0):
+# Compute different types of scores: 
+# -- Inverted sum of the minimum descriptor distances squared cutoff.
+def compute_desc_dist_score(target_pcd, source_pcd, corr, 
+        source_patch_geo_dists, target_patch_geo_dists,
+        target_desc, source_desc, 
+        target_patch_iface_scores, source_patch_iface_scores,
+        target_ckdtree, nn_score ):
 
     # Compute scores based on correspondences.
     if len(corr) < 1:
-        dists_cutoff = np.array([1000.0])
+        dists_cutoff_0= np.array([1000.0])
+        dists_cutoff_1= np.array([1000.0])
+        dists_cutoff_2= np.array([1000.0])
         inliers = 0
     else:
-        target_p = corr[:, 1]
-        source_p = corr[:, 0]
+        target_p = corr[:,1]
+        source_p = corr[:,0]    
         try:
-            dists_cutoff = target_desc.data[:,
-                                            target_p] - source_desc.data[:, source_p]
+            dists_cutoff_0 = target_desc[0].data[:,target_p] - source_desc[0].data[:,source_p]
+            dists_cutoff_1 = target_desc[1].data[:,target_p] - source_desc[1].data[:,source_p]
+            dists_cutoff_2 = target_desc[2].data[:,target_p] - source_desc[2].data[:,source_p]
         except:
             set_trace()
-        dists_cutoff = np.sqrt(np.sum(np.square(dists_cutoff.T), axis=1))
+        dists_cutoff_0 = np.sqrt(np.sum(np.square(dists_cutoff_0.T), axis=1))
+        dists_cutoff_1 = np.sqrt(np.sum(np.square(dists_cutoff_1.T), axis=1))
+        dists_cutoff_2 = np.sqrt(np.sum(np.square(dists_cutoff_2.T), axis=1))
         inliers = len(corr)
-    # Compute neural network score
+    
+    scores_corr_0 = np.sum(np.square(1.0/dists_cutoff_0))
+    scores_corr_1 = np.sum(np.square(1.0/dists_cutoff_1))
+    scores_corr_2 = np.sum(np.square(1.0/dists_cutoff_2))
 
-    nn_score = 0.0
-    if nn_score is not None: 
-        # Compute nn scores 
+    # Compute nn scores 
+    # Compute all points correspondences and distances for nn
+    d, r = target_ckdtree.query(source_pcd.points)
 
-        # Compute all points correspondences and distances for nn
-        d, r = target_ckdtree.query(source_pcd.points)
-        # r: for every point in source, what is its correspondence in target
+    # r: for every point in source, what is its correspondence in target
 
-        # distances between points 
-        feat0 = d 
-        # feat1-feat3: descriptors
-        feat1 = target_desc[0].data[:,r] - source_desc[0].data[:,:]
-        feat1 = np.sqrt(np.sum(np.square(feat1.T), axis=1))
-        feat2 = target_desc[1].data[:,r] - source_desc[1].data[:,:]
-        feat2 = np.sqrt(np.sum(np.square(feat2.T), axis=1))
-        feat3 = target_desc[2].data[:,r] - source_desc[2].data[:,:]
-        feat3 = np.sqrt(np.sum(np.square(feat3.T), axis=1))
-        # feat4 = source_geo_dists
-        feat4 = source_patch_geo_dists
-        # feat5 = target_geo_dists
-        feat5 = target_patch_geo_dists[r]
-        # feat6-7 = source iface, target iface
-        feat6 = source_desc[3] 
-        feat7 = target_desc[3] 
-        # feat8: normal dot product
-        n1 = np.asarray(source_pcd.normals)
-        n2 = np.asarray(target_pcd.normals)[r]
-        feat8 = np.multiply(n1, n2).sum(1)
-
-    nn_score_pred = nn_model.eval_model(feat0, feat1, feat2, feat3, feat4, feat5, feat6, feat7, feat8)
+    feat0 = d # distances between points 
+    # feat1-feat3: descriptors
+    feat1 = target_desc[0].data[:,r] - source_desc[0].data[:,:]
+    feat1 = np.sqrt(np.sum(np.square(feat1.T), axis=1))
+    feat2 = target_desc[1].data[:,r] - source_desc[1].data[:,:]
+    feat2 = np.sqrt(np.sum(np.square(feat2.T), axis=1))
+    feat3 = target_desc[2].data[:,r] - source_desc[2].data[:,:]
+    feat3 = np.sqrt(np.sum(np.square(feat3.T), axis=1))
+    # feat4 = source_geo_dists
+    feat4 = source_patch_geo_dists
+    # feat5 = target_geo_dists
+    feat5 = target_patch_geo_dists[r]
+    # feat6-7 = source iface, target iface
+    feat6 = source_patch_iface_scores
+    feat7 = target_patch_iface_scores[r]
+    # feat8: normal dot product
+    n1 = np.asarray(source_pcd.normals)
+    n2 = np.asarray(target_pcd.normals)[r]
+    feat8 = np.multiply(n1, n2).sum(1)
 
 
-    return np.array([scores_corr, inliers, nn_score]).T
+#    feat8 = np.diag(np.dot(np.asarray(source_pcd.normals), np.asarray(target_pcd.normals)[r].T))
+
+    nn_score_pred = nn_score.eval_model(feat0, feat1, feat2, feat3, feat4, feat5, feat6, feat7, feat8)
+
+    return np.array([scores_corr_0, inliers, scores_corr_1, scores_corr_2, nn_score_pred[0][0]]).T
+

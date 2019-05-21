@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 import sys
+from scipy.spatial import cKDTree
 from IPython.core.debugger import set_trace
 import time
 import os 
 from default_config.masif_opts import masif_opts
 from open3d import *
 from input_output.simple_mesh import Simple_mesh
+from  score_with_nn import Masif_search_score
 
 import numpy as np
 import os
@@ -35,6 +37,10 @@ mesh.load_mesh(target_ply_fn)
 
 iface = mesh.get_attribute('vertex_iface')
 
+# Initialize neural network 
+nn_score = Masif_search_score()
+
+
 target_coord, target_geodists = get_geodists_and_patch_coords(params['target_precomp_dir'], target_ppi_pair_id, 'p1')
 
 target_vertices= get_target_vix(target_coord, iface,num_sites=params['num_sites'])
@@ -45,6 +51,13 @@ target_paths['iface_dir'] = params['target_iface_dir']
 target_paths['desc_dir'] = params['target_desc_dir'] 
 target_paths['desc_dir_no_scfilt_all_feat'] = params['target_desc_dir_no_scfilt_all_feat']
 target_paths['desc_dir_no_scfilt_chem'] = params['target_desc_dir_no_scfilt_chem']
+
+source_paths = {}
+source_paths['surf_dir'] = params['seed_surf_dir'] 
+source_paths['iface_dir'] = params['seed_iface_dir'] 
+source_paths['desc_dir'] = params['seed_desc_dir'] 
+source_paths['desc_dir_no_scfilt_all_feat'] = params['seed_desc_dir_no_scfilt_all_feat']
+source_paths['desc_dir_no_scfilt_chem'] = params['seed_desc_dir_no_scfilt_chem']
 
 target_pcd, target_desc, target_iface, target_mesh = load_protein_pcd(target_ppi_pair_id, 1, target_paths, flipped_features=True, read_mesh=True)
 
@@ -89,6 +102,10 @@ for site_ix, site_vix in enumerate(target_vertices):
     target_patch, target_patch_descs, target_patch_iface = \
                 get_patch_geo(target_pcd,target_coord,site_vix,\
                         target_desc, target_iface, flip_normals=True)
+
+    # Make a ckdtree with the target.
+    target_ckdtree = cKDTree(target_patch.points)
+
     # Compute the geodesic coordinates of the target.
     target_patch_geodists = target_geodists[site_vix]
      
@@ -145,23 +162,26 @@ for site_ix, site_vix in enumerate(target_vertices):
         tic = time.time()
         
         print('{}'.format(pdb+'_'+chain))
-        source_pcd = read_point_cloud(os.path.join(params['seed_surf_dir'],'{}.ply'.format(pdb+'_'+chain)))
+        source_pcd, source_desc, source_iface = load_protein_pcd(ppi_pair_id, 1, source_paths, flipped_features=False, read_mesh=False)
     #    print('Reading ply {}'.format(time.time()- tic))
 
         tic = time.time()
         source_vix = matched_dict[name]
         try:
-            source_coords = subsample_patch_coords_fast(params['seed_precomp_dir'], ppi_pair_id, pid, cv=source_vix, frac=1.0)
+            source_coord, source_geodists =  get_geodists_and_patch_coords(params['seed_precomp_dir'], ppi_pair_id, pid, cv=source_vix)
         except:
             print('Coordinates not found. continuing.')
             continue
-    #    source_coords = subsample_patch_coords(coords_dir, ppi_pair_id, pid, frac=1.0)
-    #    print('Reading coords {}'.format(time.time()- tic))
-        source_desc = np.load(os.path.join(params['seed_desc_dir'],ppi_pair_id,pid+'_desc_straight.npy'))
         
         # Perform all alignments to target. 
         tic = time.time()
-        all_results, all_source_patch, all_source_scores = multidock(source_pcd,source_coords,source_desc,source_vix,target_patch,target_patch_descs, target_patch_mesh, triangle_centroids) 
+        all_results, all_source_patch, all_source_scores = multidock(
+                source_pcd, source_coord, source_desc,
+                source_vix, target_patch, target_patch_descs, 
+                target_patch_mesh, triangle_centroids, 
+                source_geodists, target_patch_geodists, target_ckdtree,
+                source_iface, target_patch_iface, params
+                ) 
     #    print('Multidock took {}'.format(time.time()- tic))
         scores = np.asarray(all_source_scores)
         desc_scores.append(scores[:,0])
