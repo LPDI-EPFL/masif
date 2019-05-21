@@ -53,7 +53,7 @@ class Masif_search_score:
 
         np.random.seed(42)
         tf.random.set_random_seed(42)
-        self.load_model(weighs_file)
+        self.load_model(weights_file)
     
         # Model order: 
         # [Distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp]
