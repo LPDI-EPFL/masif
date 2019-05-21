@@ -11,7 +11,7 @@ import glob
 
 class Masif_search_score:
 
-    def load_model(self):
+    def load_model(self, weights_file):
         reg = keras.regularizers.l2(l=0.0)
         model = keras.models.Sequential()
         #model.add(keras.layers.Conv1D(filters=4,kernel_size=1,strides=1,activation=tf.nn.relu,kernel_regularizer=reg))
@@ -43,17 +43,17 @@ class Masif_search_score:
         model.add(keras.layers.Dense(2, activation='softmax'))
         opt = keras.optimizers.Adam(lr=1e-4)
         model.compile(optimizer=opt,loss='sparse_categorical_crossentropy',metrics=['accuracy'])
-        model.load_weights('models/weights_0123458.hdf5')
+        model.load_weights(weights_file)
         self.model = model
 
-    def __init__(self):
+    def __init__(self, weights_file):
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         session = tf.Session(config=config)
 
         np.random.seed(42)
         tf.random.set_random_seed(42)
-        self.load_model()
+        self.load_model(weighs_file)
     
         # Model order: 
         # [Distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp]

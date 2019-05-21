@@ -38,7 +38,7 @@ mesh.load_mesh(target_ply_fn)
 iface = mesh.get_attribute('vertex_iface')
 
 # Initialize neural network 
-nn_score = Masif_search_score()
+nn_score = Masif_search_score(params['nn_score_weights'])
 
 
 target_coord, target_geodists = get_geodists_and_patch_coords(params['target_precomp_dir'], target_ppi_pair_id, 'p1')

@@ -15,8 +15,10 @@ params['seed_desc_dir_no_scfilt_all_feat'] = os.path.join(params['top_seed_dir']
 # Here is where you set up the radius.
 # 12 A
 params['seed_precomp_dir'] = os.path.join(params['top_seed_dir'],masif_opts['ppi_search']['masif_precomputation_dir'])
+params['nn_score_weights'] = '/work/upcorreia/users/freyr/alignment_evaluation/models/weights_12A_012345678.hdf5'
 # 9 A
 #params['seed_precomp_dir'] = os.path.join(params['top_seed_dir'],masif_opts['site']['masif_precomputation_dir'])
+#params['nn_score_weights'] = '/work/upcorreia/users/freyr/alignment_evaluation/models/weights_012345678.hdf5'
 
 # Target locations
 params['top_target_dir'] = os.path.join(params['masif_db_root'], 'data/masif_targets/')
