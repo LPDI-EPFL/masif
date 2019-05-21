@@ -212,7 +212,8 @@ for site_ix, site_vix in enumerate(target_vertices):
                     out_log.write('{} {} {}\n'.format(ppi_pair_id, scores[j], pid))
 
                     # Align and save the ply file for convenience.     
-                    mesh = pymesh.load_mesh(os.path.join(params['seed_surf_dir'],'{}.ply'.format(pdb+'_'+chain)))
+                    mesh = Simple_mesh()
+                    mesh.load_mesh(os.path.join(params['seed_surf_dir'],'{}.ply'.format(pdb+'_'+chain)))
                     
                     # Output the score for convenience. 
                     out_score = open(out_fn+'.score', 'w+')

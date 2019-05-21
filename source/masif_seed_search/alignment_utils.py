@@ -3,7 +3,7 @@ from IPython.core.debugger import set_trace
 import numpy as np
 from pathlib import Path
 import scipy.sparse as spio
-from Bio.PDB import PDBParser
+from Bio.PDB import PDBParser, PDBIO
 import os
 
 
@@ -241,7 +241,8 @@ def match_descriptors(in_desc_dir, in_iface_dir, pids, target_desc, params, desc
     return all_matched_names, all_matched_vix, all_matched_desc_dist, count_proteins
 
 
-def multidock(source_pcd, source_patch_coords, source_descs, cand_pts, target_pcd, target_descs,
+def multidock(source_pcd, source_patch_coords, source_descs, 
+            cand_pts, target_pcd, target_descs,
               target_patch_mesh, target_patch_mesh_centroids, 
               source_geodists, target_patch_geodists, target_ckdtree,
               source_iface, target_patch_iface,           
@@ -284,9 +285,9 @@ def multidock(source_pcd, source_patch_coords, source_descs, cand_pts, target_pc
         all_source_patch.append(source_patch)
 
         source_scores = compute_desc_dist_score(target_pcd, source_patch, np.asarray(result.correspondence_set),
-                source_patch_geodists, target_patch_geodists,
+                target_patch_geodists, source_patch_geodists,
                 target_descs, source_patch_descs, \
-                source_patch_iface, target_patch_iface,
+                target_patch_iface, source_patch_iface, 
                 target_ckdtree, nn_score)
         all_source_scores.append(source_scores)
 
@@ -299,8 +300,8 @@ def align_and_save(out_filename_base, patch, transformation, source_structure, t
     structure_atoms = [atom for atom in source_structure.get_atoms()]
     structure_coords = [x.get_coord() for x in structure_atoms]
 
-    structure_coord_pcd = PointCloud()
-    structure_coord_pcd.points = Vector3dVector(structure_coords)
+    structure_coord_pcd = o3d.PointCloud()
+    structure_coord_pcd.points = o3d.Vector3dVector(structure_coords)
     structure_coord_pcd.transform(transformation)
 
     clashing = 0
@@ -332,7 +333,7 @@ def align_and_save(out_filename_base, patch, transformation, source_structure, t
 # Compute different types of scores: 
 # -- Inverted sum of the minimum descriptor distances squared cutoff.
 def compute_desc_dist_score(target_pcd, source_pcd, corr, 
-        source_patch_geo_dists, target_patch_geo_dists,
+        target_patch_geo_dists, source_patch_geo_dists, 
         target_desc, source_desc, 
         target_patch_iface_scores, source_patch_iface_scores,
         target_ckdtree, nn_score ):
