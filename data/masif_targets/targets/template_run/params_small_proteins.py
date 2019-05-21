@@ -2,7 +2,6 @@ import os
 from default_config.masif_opts import masif_opts
 params = {}
 # Directory locations
-#params['masif_root'] = os.environ['masif_root']
 params['masif_db_root'] = os.environ['masif_db_root']
 # Seed locations
 params['top_seed_dir'] = os.path.join(params['masif_db_root'], 'data/masif_small_proteins/')
