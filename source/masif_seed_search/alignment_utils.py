@@ -43,36 +43,34 @@ def load_protein_pcd(full_pdb_id, chain_number, paths, flipped_features=False, r
             Path(paths['desc_dir']) /
             full_pdb_id /
             'p{}_desc_flipped.npy'.format(chain_number))
-#        pdb_desc_no_scfilt_chem = np.load(
-#            Path(paths['desc_dir_no_scfilt_chem']) /
-#            full_pdb_id /
-#            'p{}_desc_flipped.npy'.format(chain_number))
-#        pdb_desc_no_scfilt_all_feat = np.load(
-#            paths['desc_dir_no_scfilt_all_feat'] /
-#            full_pdb_id /
-#            'p{}_desc_flipped.npy'.format(chain_number))
+
+        pdb_desc_sc_nofilt_chem = np.load(
+            Path(paths['desc_dir_sc_nofilt_chem']) /
+            full_pdb_id /
+            'p{}_desc_flipped.npy'.format(chain_number))
+        pdb_desc_sc_nofilt_all_feat = np.load(
+            Path(paths['desc_dir_sc_nofilt_all_feat']) /
+            full_pdb_id /
+            'p{}_desc_flipped.npy'.format(chain_number))
     else:
         pdb_desc_sc05 = np.load(
             Path(paths['desc_dir']) /
             full_pdb_id /
             'p{}_desc_straight.npy'.format(chain_number))
-#        pdb_desc_no_scfilt_chem = np.load(
-#            paths['desc_dir_no_scfilt_chem'] /
-#            full_pdb_id /
-#            'p{}_desc_straight.npy'.format(chain_number))
-#        pdb_desc_no_scfilt_all_feat = np.load(
-#            paths['desc_dir_no_scfilt_all_feat'] /
-#            full_pdb_id /
-#            'p{}_desc_straight.npy'.format(chain_number))
-
-    pdb_desc_no_scfilt_chem = np.copy(pdb_desc_sc05)
-    pdb_desc_no_scfilt_all_feat = np.copy(pdb_desc_sc05)
+        pdb_desc_sc_nofilt_chem = np.load(
+            Path(paths['desc_dir_sc_nofilt_chem']) /
+            full_pdb_id /
+            'p{}_desc_straight.npy'.format(chain_number))
+        pdb_desc_sc_nofilt_all_feat = np.load(
+            Path(paths['desc_dir_sc_nofilt_all_feat']) /
+            full_pdb_id /
+            'p{}_desc_straight.npy'.format(chain_number))
 
 
     pdb_desc = np.stack([
         pdb_desc_sc05,
-        pdb_desc_no_scfilt_chem,
-        pdb_desc_no_scfilt_all_feat])
+        pdb_desc_sc_nofilt_chem,
+        pdb_desc_sc_nofilt_all_feat])
 
     if read_mesh:
         return pdb_pcd, pdb_desc, pdb_iface, pdb_mesh
@@ -111,7 +109,7 @@ def get_patch_geo(
     patch = o3d.PointCloud()
     patch.points = o3d.Vector3dVector(patch_pts)
     patch.normals = o3d.Vector3dVector(patch_nrmls)
-    patch_descs = [o3d.Feature()]*3
+    patch_descs = [o3d.Feature(), o3d.Feature(), o3d.Feature()]
     patch_descs[0].data = descriptors[0,patch_idxs, :].T
     patch_descs[1].data = descriptors[1,patch_idxs, :].T
     patch_descs[2].data = descriptors[2,patch_idxs, :].T

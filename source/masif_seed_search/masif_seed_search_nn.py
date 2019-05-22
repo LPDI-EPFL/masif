@@ -49,15 +49,15 @@ target_paths = {}
 target_paths['surf_dir'] = params['target_surf_dir'] 
 target_paths['iface_dir'] = params['target_iface_dir'] 
 target_paths['desc_dir'] = params['target_desc_dir'] 
-target_paths['desc_dir_no_scfilt_all_feat'] = params['target_desc_dir_no_scfilt_all_feat']
-target_paths['desc_dir_no_scfilt_chem'] = params['target_desc_dir_no_scfilt_chem']
+target_paths['desc_dir_sc_nofilt_all_feat'] = params['target_desc_dir_sc_nofilt_all_feat']
+target_paths['desc_dir_sc_nofilt_chem'] = params['target_desc_dir_sc_nofilt_chem']
 
 source_paths = {}
 source_paths['surf_dir'] = params['seed_surf_dir'] 
 source_paths['iface_dir'] = params['seed_iface_dir'] 
 source_paths['desc_dir'] = params['seed_desc_dir'] 
-source_paths['desc_dir_no_scfilt_all_feat'] = params['seed_desc_dir_no_scfilt_all_feat']
-source_paths['desc_dir_no_scfilt_chem'] = params['seed_desc_dir_no_scfilt_chem']
+source_paths['desc_dir_sc_nofilt_all_feat'] = params['seed_desc_dir_sc_nofilt_all_feat']
+source_paths['desc_dir_sc_nofilt_chem'] = params['seed_desc_dir_sc_nofilt_chem']
 
 target_pcd, target_desc, target_iface, target_mesh = load_protein_pcd(target_ppi_pair_id, 1, target_paths, flipped_features=True, read_mesh=True)
 
@@ -155,14 +155,16 @@ for site_ix, site_vix in enumerate(target_vertices):
 
         if pid == 'p1':
             chain = ppi_pair_id.split('_')[1]
+            chain_number = 1
         else: 
             chain = ppi_pair_id.split('_')[2]
+            chain_number = 2
             
         # Load source ply file, coords, and descriptors.
         tic = time.time()
         
         print('{}'.format(pdb+'_'+chain))
-        source_pcd, source_desc, source_iface = load_protein_pcd(ppi_pair_id, 1, source_paths, flipped_features=False, read_mesh=False)
+        source_pcd, source_desc, source_iface = load_protein_pcd(ppi_pair_id, chain_number, source_paths, flipped_features=False, read_mesh=False)
     #    print('Reading ply {}'.format(time.time()- tic))
 
         tic = time.time()
@@ -204,6 +206,13 @@ for site_ix, site_vix in enumerate(target_vertices):
                 res = all_results[j]
                     
                 out_fn = source_outdir+'/{}_{}_{}'.format(pdb, chain, j)
+
+                # Save the matched vertex -- for debug.
+                out_matched_vx = open(out_fn+'cv.vert', 'w')
+                cpd = np.asarray(source_pcd.points)[source_vix[j]]
+                out_matched_vx.write('{}, {}, {}\n'.format(cpd[0], cpd[1], cpd[2]))
+                out_matched_vx.close()
+
                 
                 # Align and save the pdb + patch 
                 is_not_clashing = align_and_save(out_fn, all_source_patch[j], res.transformation, source_struct, target_ca_pcd_tree,target_pcd_tree,\
