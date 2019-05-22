@@ -38,7 +38,7 @@ mesh.load_mesh(target_ply_fn)
 iface = mesh.get_attribute('vertex_iface')
 
 # Initialize neural network 
-nn_score = Masif_search_score(params['nn_score_weights'])
+nn_score = Masif_search_score(params['nn_score_weights'], max_npoints=params['max_npoints'], nn_score_cutoff=params['nn_score_cutoff'])
 
 
 target_coord, target_geodists = get_geodists_and_patch_coords(params['target_precomp_dir'], target_ppi_pair_id, 'p1')
@@ -126,9 +126,7 @@ for site_ix, site_vix in enumerate(target_vertices):
         out_patch.write('{}, {}, {}\n'.format(point[0], point[1], point[2]))
     out_patch.close()
 
-    desc_scores = []
     desc_pos = []
-    inlier_scores = []
     inlier_pos = []
 
     (matched_names, matched_vix, matched_desc_dist, count_proteins) = match_descriptors(params['seed_desc_dir'], params['seed_iface_dir'], ['p1', 'p2'], target_desc[0][site_vix], params)        
@@ -145,7 +143,6 @@ for site_ix, site_vix in enumerate(target_vertices):
             matched_dict[name] = []
         matched_dict[name].append(matched_vix[name_ix])
     
-    desc_scores = []
     inlier_scores = []
 
     for name in matched_dict.keys():
@@ -188,9 +185,9 @@ for site_ix, site_vix in enumerate(target_vertices):
                 source_iface, target_patch_iface, nn_score, params
                 ) 
     #    print('Multidock took {}'.format(time.time()- tic))
+        all_point_importance = [x[1] for x in all_source_scores]
+        all_source_scores = [x[0] for x in all_source_scores]
         scores = np.asarray(all_source_scores)
-        desc_scores.append(scores[:,0])
-        inlier_scores.append(scores[:,1])
         
         # Filter anything above cutoff
         top_scorers = np.where(scores[:,4] > params['nn_score_cutoff'])[0]
@@ -210,16 +207,9 @@ for site_ix, site_vix in enumerate(target_vertices):
                     
                 out_fn = source_outdir+'/{}_{}_{}'.format(pdb, chain, j)
 
-                # Save the matched vertex -- for debug.
-                out_matched_vx = open(out_fn+'cv.vert', 'w')
-                cpd = np.asarray(source_pcd.points)[source_vix[j]]
-                out_matched_vx.write('{}, {}, {}\n'.format(cpd[0], cpd[1], cpd[2]))
-                out_matched_vx.close()
-
-                
                 # Align and save the pdb + patch 
                 is_not_clashing = align_and_save(out_fn, all_source_patch[j], res.transformation, source_struct, target_ca_pcd_tree,target_pcd_tree,\
-                                                params['clashing_cutoff'])
+                                                clashing_cutoff=params['clashing_cutoff'], point_importance=all_point_importance[j])
                 if is_not_clashing:
                     out_log.write('{} {} {}\n'.format(ppi_pair_id, scores[j], pid))
 
@@ -229,14 +219,15 @@ for site_ix, site_vix in enumerate(target_vertices):
                     
                     # Output the score for convenience. 
                     out_score = open(out_fn+'.score', 'w+')
-                    out_score.write('{} {} {}\n'.format(ppi_pair_id, scores[j], pid))
+                    out_score.write('{} {} {} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], pid))
                     out_score.close()
-
 
                     source_pcd_copy = copy.deepcopy(source_pcd)
                     source_pcd_copy.transform(res.transformation)
                     out_vertices = np.asarray(source_pcd_copy.points)
                     out_normals = np.asarray(source_pcd_copy.normals)
+                    mesh.set_attribute('vertex_iface', source_iface) 
+                    mesh.save_mesh(out_fn+'.ply')
                     #save_ply(out_fn+'.ply', out_vertices, mesh.faces, out_normals, charges=mesh.get_attribute('vertex_charge'))
         
 

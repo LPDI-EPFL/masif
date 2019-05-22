@@ -47,7 +47,9 @@ class Masif_search_score:
         model.load_weights(weights_file)
         self.model = model
 
-    def __init__(self, weights_file):
+    def __init__(self, weights_file, max_npoints=300, nn_score_cutoff=0.85):
+        self.max_npoints = max_npoints
+        self.nn_score_cutoff = nn_score_cutoff
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         session = tf.Session(config=config)
@@ -71,7 +73,7 @@ class Masif_search_score:
             target_geo_dists = 1.0/target_geo_dists
 
             features = np.vstack([distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp]).T
-            max_npoints = 200
+            max_npoints = self.max_npoints 
             features = np.expand_dims(features, 0)
             n_features = features.shape[2]
     
@@ -87,22 +89,24 @@ class Masif_search_score:
             y_test_pred = y_test_pred[:,1].reshape((-1,1))
 
 
-#            point_importance = np.zeros(len(distance))
+            point_importance = np.zeros(len(distance))
 # 
-#            if y_test_pred[0,0] > 0.5:
-#                set_trace()
+            if y_test_pred[0,0] > self.nn_score_cutoff:
                 # Evaluate point by point. 
-#                for i in range(len(distance)):
-#                    feat_copy = np.copy(features_trimmed)
-#                    feat_copy[0,i,:] = 0.0
-#                    point_val = self.model.predict(feat_copy)
-#                    point_val = point_val[:,1].reshape((-1,1))
-#                    point_importance[i] = point_val[0,0] - y_test_pred[0,0]
+                for i in range(len(distance)):
+                    feat_copy = np.copy(features_trimmed)
+                    feat_copy[0,i,:] = 0.0
+                    point_val = self.model.predict(feat_copy)
+                    point_val = point_val[:,1].reshape((-1,1))
+                    point_importance[i] = point_val[0,0] - y_test_pred[0,0]
                 # Normalize
-#                point_importance = preprocessing.normalize(point_importance)
+                d = point_importance
+                const = np.max(np.abs(d))/np.std(d)
+                d_std = d/(const*np.std(d))
+                point_importance = d_std
 
 
-            return y_test_pred
+            return y_test_pred, point_importance
 
 
 
