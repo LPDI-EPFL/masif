@@ -44,8 +44,8 @@ params['clashing_cutoff'] = float('inf')
 # Ransac parameters
 params['ransac_iter'] = 4000
 # Ransac type: normal or shape_comp
-#params['ransac_type'] = 'shape_comp'
-params['ransac_type'] = 'normal'
+params['ransac_type'] = 'shape_comp'
+#params['ransac_type'] = 'normal'
 params['ransac_radius'] = 1.5
 
 ###
@@ -56,9 +56,10 @@ params['desc_dist_cutoff'] = 1.7
 params['iface_cutoff'] = 0.75
 # Post alignment score cutoff
 params['post_alignment_score_cutoff'] = 0
+params['nn_score_cutoff'] = 0.5
 
 # Output directory (target_name, target_site, target_
 params['out_dir_template'] = 'out_large_12A_1.5ransasc/{}/'
 
 # Limit the seed search to these pdbs: 
-params['seed_pdb_list'] = ['4ZQK_A_B']
+#params['seed_pdb_list'] = ['4ZQK_A_B']
