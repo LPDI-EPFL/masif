@@ -73,7 +73,7 @@ for ppi_pair_id in ppi_pair_ids:
         try:
             rho_wrt_center = np.load(in_dir+pid+'_rho_wrt_center.npy')
         except:
-            print('File not found')
+            print('File not found: {}'.format(in_dir+pid+'_rho_wrt_center.npy'))
             continue
         theta_wrt_center = np.load(in_dir+pid+'_theta_wrt_center.npy')
         input_feat = np.load(in_dir+pid+'_input_feat.npy')
