@@ -193,7 +193,7 @@ def get_target_vix(pc, iface, num_sites=1):
     return target_vertices
 
 
-def match_descriptors(in_desc_dir, in_iface_dir, pids, target_desc, params, desc_dist_cutoff=1.7, iface_cutoff=0.75):
+def match_descriptors(in_desc_dir, in_iface_dir, pids, target_desc, params):
 
     all_matched_names = []
     all_matched_vix = []
@@ -206,6 +206,7 @@ def match_descriptors(in_desc_dir, in_iface_dir, pids, target_desc, params, desc
 #            continue
         if '.npy' in ppi_pair_id or '.txt' in ppi_pair_id:
             continue
+        set_trace()
         mydescdir = os.path.join(in_desc_dir, ppi_pair_id)
         for pid in pids:
             try:
@@ -224,8 +225,8 @@ def match_descriptors(in_desc_dir, in_iface_dir, pids, target_desc, params, desc
 
             diff = np.sqrt(np.sum(np.square(descs - target_desc), axis=1))
 
-            true_iface = np.where(iface > iface_cutoff)[0]
-            near_points = np.where(diff < desc_dist_cutoff)[0]
+            true_iface = np.where(iface > params['iface_cutoff'])[0]
+            near_points = np.where(diff < params['desc_dist_cutoff'])[0]
 
             selected = np.intersect1d(true_iface, near_points)
             if len(selected > 0):
