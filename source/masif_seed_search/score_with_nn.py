@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 from IPython.core.debugger import set_trace
 from scipy.spatial import cKDTree
+from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from tensorflow import keras
@@ -70,7 +71,7 @@ class Masif_search_score:
             target_geo_dists = 1.0/target_geo_dists
 
             features = np.vstack([distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp]).T
-            max_npoints =200
+            max_npoints = 200
             features = np.expand_dims(features, 0)
             n_features = features.shape[2]
     
@@ -84,6 +85,22 @@ class Masif_search_score:
         
             y_test_pred = self.model.predict(features_trimmed)
             y_test_pred = y_test_pred[:,1].reshape((-1,1))
+
+
+#            point_importance = np.zeros(len(distance))
+# 
+#            if y_test_pred[0,0] > 0.5:
+#                set_trace()
+                # Evaluate point by point. 
+#                for i in range(len(distance)):
+#                    feat_copy = np.copy(features_trimmed)
+#                    feat_copy[0,i,:] = 0.0
+#                    point_val = self.model.predict(feat_copy)
+#                    point_val = point_val[:,1].reshape((-1,1))
+#                    point_importance[i] = point_val[0,0] - y_test_pred[0,0]
+                # Normalize
+#                point_importance = preprocessing.normalize(point_importance)
+
 
             return y_test_pred
 

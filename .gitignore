@@ -21,3 +21,4 @@ data/masif_ppi_search_ub/descriptors/
 data/masif_site/output/
 tensorflow-1.9/
 tensorflow_on_gpu/
+tensorflow*

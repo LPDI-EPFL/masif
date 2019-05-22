@@ -190,7 +190,7 @@ for site_ix, site_vix in enumerate(target_vertices):
         inlier_scores.append(scores[:,1])
         
         # Filter anything above cutoff
-        top_scorers = np.where(scores[:,0] > params['post_alignment_score_cutoff'])[0]
+        top_scorers = np.where(scores[:,4] > params['nn_score_cutoff'])[0]
         
         if len(top_scorers) > 0:
             source_outdir = os.path.join(site_outdir, '{}'.format(ppi_pair_id))
