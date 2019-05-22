@@ -206,7 +206,6 @@ def match_descriptors(in_desc_dir, in_iface_dir, pids, target_desc, params):
 #            continue
         if '.npy' in ppi_pair_id or '.txt' in ppi_pair_id:
             continue
-        set_trace()
         mydescdir = os.path.join(in_desc_dir, ppi_pair_id)
         for pid in pids:
             try:

@@ -23,7 +23,6 @@ start_time = time.time()
 custom_params_fn = sys.argv[1]
 custom_params_obj = importlib.import_module(custom_params_fn, package=None)
 params = custom_params_obj.params
-
 # # Load target patches.
 
 if len(sys.argv) == 3: 
