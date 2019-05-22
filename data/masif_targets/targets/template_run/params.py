@@ -15,10 +15,13 @@ params['seed_desc_dir_sc_nofilt_all_feat'] = os.path.join(params['top_seed_dir']
 # Here is where you set up the radius.
 # 12 A
 params['seed_precomp_dir'] = os.path.join(params['top_seed_dir'],masif_opts['ppi_search']['masif_precomputation_dir'])
-params['nn_score_weights'] = '/work/upcorreia/users/freyr/alignment_evaluation/models/weights_12A_012345678.hdf5'
+params['nn_score_weights'] = '/work/upcorreia/users/freyr/alignment_evaluation/models/weights_12A_300p_012345678.hdf5'
+params['max_npoints'] = 300
+#params['nn_score_weights'] = '/work/upcorreia/users/freyr/alignment_evaluation/models/weights_12A_012345678.hdf5'
 # 9 A
 #params['seed_precomp_dir'] = os.path.join(params['top_seed_dir'],masif_opts['site']['masif_precomputation_dir'])
 #params['nn_score_weights'] = '/work/upcorreia/users/freyr/alignment_evaluation/models/weights_012345678.hdf5'
+#params['max_n_points'] = 200
 
 # Target locations
 params['top_target_dir'] = os.path.join(params['masif_db_root'], 'data/masif_targets/')
@@ -62,4 +65,4 @@ params['nn_score_cutoff'] = 0.85
 params['out_dir_template'] = 'out_large_12A_1.5ransasc/{}/'
 
 # Limit the seed search to these pdbs: 
-#params['seed_pdb_list'] = ['4ZQK_A_B']
+params['seed_pdb_list'] = ['4ZQK_A_B']
