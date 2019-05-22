@@ -135,13 +135,7 @@ def get_target_vix(pc, iface, num_sites=1):
     
     return target_vertices
 
-
 # # Load target patches.
-
-# In[164]:
-
-# Go through each target
-# Go through each 
 
 target_name = sys.argv[2]
 target_ppi_pair_id = target_name+'_'
