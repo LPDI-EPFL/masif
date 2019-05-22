@@ -26,8 +26,22 @@ params = custom_params_obj.params
 
 # # Load target patches.
 
-target_name = sys.argv[2]
-target_ppi_pair_id = target_name+'_'
+if len(sys.argv) == 3: 
+    target_name = sys.argv[2]
+    target_ppi_pair_id = target_name+'_'
+    target_pid = 'p1'
+    target_chain_ix = 1
+elif len(sys.argv) == 4: 
+    target_pid = sys.argv[3]
+    target_ppi_pair_id = sys.argv[2]
+    fields = target_ppi_pair_id.split('_')
+    if target_pid == 'p1': 
+        target_name = '_'.join([fields[0], fields[1]])
+        target_chain_ix = 1
+    if target_pid == 'p2': 
+        target_name = '_'.join([fields[0], fields[2]])
+        target_chain_ix = 2
+
 
 # Go through every 12A patch in top_dir -- get the one with the highest iface mean 12A around it.
 target_ply_fn = os.path.join(params['target_ply_iface_dir'], target_name+'.ply')
@@ -39,9 +53,7 @@ iface = mesh.get_attribute('vertex_iface')
 
 # Initialize neural network 
 nn_score = Masif_search_score(params['nn_score_weights'], max_npoints=params['max_npoints'], nn_score_cutoff=params['nn_score_cutoff'])
-
-
-target_coord, target_geodists = get_geodists_and_patch_coords(params['target_precomp_dir'], target_ppi_pair_id, 'p1')
+target_coord, target_geodists = get_geodists_and_patch_coords(params['target_precomp_dir'], target_ppi_pair_id, target_pid)
 
 target_vertices= get_target_vix(target_coord, iface,num_sites=params['num_sites'])
 
@@ -58,8 +70,7 @@ source_paths['iface_dir'] = params['seed_iface_dir']
 source_paths['desc_dir'] = params['seed_desc_dir'] 
 source_paths['desc_dir_sc_nofilt_all_feat'] = params['seed_desc_dir_sc_nofilt_all_feat']
 source_paths['desc_dir_sc_nofilt_chem'] = params['seed_desc_dir_sc_nofilt_chem']
-
-target_pcd, target_desc, target_iface, target_mesh = load_protein_pcd(target_ppi_pair_id, 1, target_paths, flipped_features=True, read_mesh=True)
+target_pcd, target_desc, target_iface, target_mesh = load_protein_pcd(target_ppi_pair_id, target_chain_ix, target_paths, flipped_features=True, read_mesh=True)
 
 # Match descriptors that have a descriptor distance less than K 
 
@@ -226,6 +237,13 @@ for site_ix, site_vix in enumerate(target_vertices):
                     source_pcd_copy.transform(res.transformation)
                     out_vertices = np.asarray(source_pcd_copy.points)
                     out_normals = np.asarray(source_pcd_copy.normals)
+                    mesh.set_attribute('vertex_x', out_vertices[:,0])
+                    mesh.set_attribute('vertex_y', out_vertices[:,1])
+                    mesh.set_attribute('vertex_z', out_vertices[:,2])
+                    mesh.set_attribute('vertex_nx', out_normals[:,0])
+                    mesh.set_attribute('vertex_ny', out_normals[:,1])
+                    mesh.set_attribute('vertex_nz', out_normals[:,2])
+                    mesh.vertices = out_vertices
                     mesh.set_attribute('vertex_iface', source_iface) 
                     mesh.save_mesh(out_fn+'.ply')
                     #save_ply(out_fn+'.ply', out_vertices, mesh.faces, out_normals, charges=mesh.get_attribute('vertex_charge'))

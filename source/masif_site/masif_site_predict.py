@@ -65,7 +65,7 @@ for ppi_pair_id in ppi_pair_ids:
     
     for ix, pid in enumerate(pids):
         pdb_chain_id = pdbid+'_'+chains[ix]
-        if len(eval_list) > 0  and pdb_chain_id not in eval_list and pdb_chain_id+'_' not in eval_list:
+        if len(eval_list) > 0  and pdb_chain_id not in eval_list and pdb_chain_id+'_' not in eval_list and ppi_pair_id not in eval_list:
             continue
         
         print('Evaluating {}'.format(pdb_chain_id))

@@ -44,7 +44,7 @@ for ppi_pair_id in ppi_pair_ids:
     for ix, pid in enumerate(['p1', 'p2']):
         pdb_chain_id = pdbid+'_'+chains[ix]
 
-        if pdb_chain_id not in eval_list and pdb_chain_id+'_' not in eval_list  and len(eval_list) > 0 :
+        if pdb_chain_id not in eval_list and pdb_chain_id+'_' not in eval_list  and len(eval_list) > 0 and ppi_pair_id not in eval_list:
             continue
 
         try:
