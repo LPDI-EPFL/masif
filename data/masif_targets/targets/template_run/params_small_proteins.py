@@ -10,10 +10,15 @@ params['seed_iface_dir'] = os.path.join(params['masif_db_root'],'data/masif_smal
 params['seed_ply_iface_dir'] = os.path.join(params['masif_db_root'],'data/masif_site',masif_opts['site']['out_surf_dir'])
 params['seed_pdb_dir'] = os.path.join(params['top_seed_dir'],masif_opts['pdb_chain_dir'])
 params['seed_desc_dir'] = os.path.join(params['top_seed_dir'],masif_opts['ppi_search']['desc_dir'])
-# 12A
+params['seed_desc_dir_sc_nofilt_chem'] = os.path.join(params['top_seed_dir'],'descriptors/sc_nofilt/chem/')
+params['seed_desc_dir_sc_nofilt_all_feat'] = os.path.join(params['top_seed_dir'],'descriptors/sc_nofilt/all_feat/')
+# Here is where you set up the radius.
+# 12 A
 params['seed_precomp_dir'] = os.path.join(params['top_seed_dir'],masif_opts['ppi_search']['masif_precomputation_dir'])
-# 9A
+params['nn_score_weights'] = '/work/upcorreia/users/freyr/alignment_evaluation/models/weights_12A_012345678.hdf5'
+# 9 A
 #params['seed_precomp_dir'] = os.path.join(params['top_seed_dir'],masif_opts['site']['masif_precomputation_dir'])
+#params['nn_score_weights'] = '/work/upcorreia/users/freyr/alignment_evaluation/models/weights_012345678.hdf5'
 
 # Target locations
 params['top_target_dir'] = os.path.join(params['masif_db_root'], 'data/masif_targets/')
@@ -22,8 +27,8 @@ params['target_iface_dir'] = os.path.join(params['masif_db_root'],'data/masif_ta
 params['target_ply_iface_dir'] = os.path.join(params['masif_db_root'],'data/masif_targets',masif_opts['site']['out_surf_dir'])
 params['target_pdb_dir'] = os.path.join(params['top_target_dir'],masif_opts['pdb_chain_dir'])
 params['target_desc_dir'] = os.path.join(params['top_target_dir'],masif_opts['ppi_search']['desc_dir'])
-params['target_desc_dir_no_scfilt_chem'] = os.path.join(params['top_target_dir'],'descriptors/no_scfilt/chem/')
-params['target_desc_dir_no_scfilt_all_feat'] = os.path.join(params['top_target_dir'],'descriptors/no_scfilt/all_feat/')
+params['target_desc_dir_sc_nofilt_chem'] = os.path.join(params['top_target_dir'],'descriptors/sc_nofilt/chem/')
+params['target_desc_dir_sc_nofilt_all_feat'] = os.path.join(params['top_target_dir'],'descriptors/sc_nofilt/all_feat/')
 params['target_desc_dir'] = os.path.join(params['top_target_dir'],masif_opts['ppi_search']['desc_dir'])
 # 12 A
 params['target_precomp_dir'] = os.path.join(params['top_target_dir'],masif_opts['ppi_search']['masif_precomputation_dir'])
@@ -40,6 +45,7 @@ params['clashing_cutoff'] = float('inf')
 params['ransac_iter'] = 4000
 # Ransac type: normal or shape_comp
 params['ransac_type'] = 'shape_comp'
+#params['ransac_type'] = 'normal'
 params['ransac_radius'] = 1.5
 
 ###
@@ -48,8 +54,9 @@ params['ransac_radius'] = 1.5
 params['desc_dist_cutoff'] = 1.7
 # Interface cutoff value, all values below this cutoff are accepted.
 params['iface_cutoff'] = 0.75
-# Post alignment score cutof
-params['post_alignment_score_cutoff'] = 22
+# Post alignment score cutoff
+params['post_alignment_score_cutoff'] = 0
+params['nn_score_cutoff'] = 0.9
 
 # Output directory (target_name, target_site, target_
 params['out_dir_template'] = 'out_small_12A_1.5ransac/{}/'

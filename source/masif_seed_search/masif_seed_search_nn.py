@@ -164,7 +164,10 @@ for site_ix, site_vix in enumerate(target_vertices):
         tic = time.time()
         
         print('{}'.format(pdb+'_'+chain))
-        source_pcd, source_desc, source_iface = load_protein_pcd(ppi_pair_id, chain_number, source_paths, flipped_features=False, read_mesh=False)
+        try:
+            source_pcd, source_desc, source_iface = load_protein_pcd(ppi_pair_id, chain_number, source_paths, flipped_features=False, read_mesh=False)
+        except:
+            continue
     #    print('Reading ply {}'.format(time.time()- tic))
 
         tic = time.time()

@@ -43,7 +43,6 @@ def load_protein_pcd(full_pdb_id, chain_number, paths, flipped_features=False, r
             Path(paths['desc_dir']) /
             full_pdb_id /
             'p{}_desc_flipped.npy'.format(chain_number))
-
         pdb_desc_sc_nofilt_chem = np.load(
             Path(paths['desc_dir_sc_nofilt_chem']) /
             full_pdb_id /

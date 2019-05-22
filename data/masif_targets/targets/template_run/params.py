@@ -56,7 +56,7 @@ params['desc_dist_cutoff'] = 1.7
 params['iface_cutoff'] = 0.75
 # Post alignment score cutoff
 params['post_alignment_score_cutoff'] = 0
-params['nn_score_cutoff'] = 0.5
+params['nn_score_cutoff'] = 0.85
 
 # Output directory (target_name, target_site, target_
 params['out_dir_template'] = 'out_large_12A_1.5ransasc/{}/'
