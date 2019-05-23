@@ -297,13 +297,17 @@ def align_and_save(out_filename_base, patch, transformation, source_structure, t
                    clashing_radius=2.0):
     structure_atoms = [atom for atom in source_structure.get_atoms()]
     structure_coords = [x.get_coord() for x in structure_atoms]
+    structure_ca_coords = [x.get_coord() for x in structure_atoms if x.get_name()=='CA']
 
     structure_coord_pcd = o3d.PointCloud()
     structure_coord_pcd.points = o3d.Vector3dVector(structure_coords)
     structure_coord_pcd.transform(transformation)
+    structure_ca_coord_pcd = o3d.PointCloud()
+    structure_ca_coord_pcd.points = o3d.Vector3dVector(structure_ca_coords)
+    structure_ca_coord_pcd.transform(transformation)
 
     clashing = 0
-    for point in structure_coord_pcd.points:
+    for point in structure_ca_coord_pcd.points:
         [k, idx, _] = target_pcd_tree.search_radius_vector_3d(
             point, clashing_radius)
         if k > 0:
