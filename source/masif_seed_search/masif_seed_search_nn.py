@@ -23,7 +23,6 @@ start_time = time.time()
 custom_params_fn = sys.argv[1]
 custom_params_obj = importlib.import_module(custom_params_fn, package=None)
 params = custom_params_obj.params
-
 # # Load target patches.
 
 if len(sys.argv) == 3: 
@@ -141,7 +140,9 @@ for site_ix, site_vix in enumerate(target_vertices):
     inlier_pos = []
 
     (matched_names, matched_vix, matched_desc_dist, count_proteins) = match_descriptors(params['seed_desc_dir'], params['seed_iface_dir'], ['p1', 'p2'], target_desc[0][site_vix], params)        
-    
+   
+    if len(matched_names)==0:
+        continue 
     matched_names = np.concatenate(matched_names, axis=0)
     matched_vix = np.concatenate(matched_vix, axis=0)
     matched_desc_dist = np.concatenate(matched_desc_dist, axis=0)
