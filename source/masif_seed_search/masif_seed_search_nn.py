@@ -147,7 +147,6 @@ for site_ix, site_vix in enumerate(target_vertices):
     matched_desc_dist = np.concatenate(matched_desc_dist, axis=0)
 
     matched_dict = {}
-    out_log.write('Total number of proteins {}\n'.format(count_proteins))
     for name_ix, name in enumerate(matched_names):
         name = (name[0], name[1])
         if name not in matched_dict:
@@ -211,7 +210,6 @@ for site_ix, site_vix in enumerate(target_vertices):
             # Load source structure 
             # Perform the transformation on the atoms
             for j in top_scorers:
-                print('{} {} {}'.format(ppi_pair_id, scores[j], pid))
                 parser = PDBParser()
                 source_struct = parser.get_structure('{}_{}'.format(pdb,chain), os.path.join(params['seed_pdb_dir'],'{}_{}.pdb'.format(pdb,chain)))
                 res = all_results[j]
@@ -219,10 +217,10 @@ for site_ix, site_vix in enumerate(target_vertices):
                 out_fn = source_outdir+'/{}_{}_{}'.format(pdb, chain, j)
 
                 # Align and save the pdb + patch 
-                is_not_clashing = align_and_save(out_fn, all_source_patch[j], res.transformation, source_struct, target_ca_pcd_tree,target_pcd_tree,\
+                num_clashing = align_and_save(out_fn, all_source_patch[j], res.transformation, source_struct, target_ca_pcd_tree,target_pcd_tree,\
                                                 clashing_cutoff=params['clashing_cutoff'], point_importance=all_point_importance[j])
-                if is_not_clashing:
-                    out_log.write('{} {} {}\n'.format(ppi_pair_id, scores[j], pid))
+                if num_clashing < params['clashing_cutoff']:
+                    print('{} {} {:.2f} {} :{:.2f} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], num_clashing, pid))
 
                     # Align and save the ply file for convenience.     
                     mesh = Simple_mesh()
@@ -230,7 +228,7 @@ for site_ix, site_vix in enumerate(target_vertices):
                     
                     # Output the score for convenience. 
                     out_score = open(out_fn+'.score', 'w+')
-                    out_score.write('{} {} {} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], pid))
+                    out_score.write('{} {} {:.2f} {} :{:.2f} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], num_clashing, pid))
                     out_score.close()
 
                     source_pcd_copy = copy.deepcopy(source_pcd)
@@ -251,8 +249,6 @@ for site_ix, site_vix in enumerate(target_vertices):
 
 # In[ ]:
 
-end_time = time.time()
-out_log.write('Took {}s\n'.format(end_time-start_time))
 
 
 
