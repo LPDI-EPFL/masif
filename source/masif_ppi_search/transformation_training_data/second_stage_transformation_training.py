@@ -2,7 +2,7 @@
 # coding: utf-8
 import sys
 from open3d import *
-import ipdb
+#import ipdb
 import numpy as np
 import os
 from sklearn.manifold import TSNE
@@ -11,10 +11,11 @@ import copy
 import scipy.sparse as spio
 from default_config.masif_opts import masif_opts
 import sys
+from scipy.spatial import cKDTree
 
 print(sys.argv)
-if len(sys.argv) != 6:
-    print('Usage: {} data_dir K ransac_iter patch_radius output_dir'.format(sys.argv[0]))
+if len(sys.argv) != 7:
+    print('Usage: {} data_dir K ransac_iter patch_radius output_dir pdb_list_index'.format(sys.argv[0]))
     print('data_dir: Location of data directory.')
     print('K: Number of descriptors to run')
     sys.exit(1)
@@ -24,6 +25,7 @@ K=int(sys.argv[2])
 ransac_iter = int(sys.argv[3])
 PATCH_RADIUS = float(sys.argv[4])
 out_base = sys.argv[5]
+pdb_list_index = int(sys.argv[6])
 
 
 #scratch_dir = '/
@@ -47,7 +49,7 @@ benchmark_list = 'training_list.txt'
 # In[3]:
 
 pdb_list = open(benchmark_list).readlines()
-pdb_list = [x.rstrip() for x in pdb_list]
+pdb_list = [x.rstrip() for ix, x in enumerate(pdb_list) if ix % 1000 == pdb_list_index ]
 
  
 
@@ -107,8 +109,36 @@ def get_center_and_random_rotate(pcd):
     transform = np.vstack([transform, [0,0,0,1]])
     return transform
 
+def get_patch_mesh_geo(triangle_mesh,patch_coords,center,descriptors,outward_shift=0.25, flip=False):
+    idx = patch_coords[center]
+    n = len(triangle_mesh.vertices)
+    pts = np.asarray(triangle_mesh.vertices)[idx,:]
+    nrmls = np.asarray(triangle_mesh.vertex_normals)[idx,:]
+    pts = pts + outward_shift*nrmls
+    if flip:
+        nrmls = -np.asarray(triangle_mesh.vertex_normals)[idx,:]
+
+    patch = TriangleMesh()
+    patch.vertices= Vector3dVector(pts)
+    patch.vertex_normals = Vector3dVector(nrmls)
+
+    # Extract triangulation.
+    m = np.zeros(n,dtype=int)
+
+    for i in range(len(idx)):
+        m[idx[i]] = i
+    f = triangle_mesh.triangles
+    nf = len(f)
+
+    idx = set(idx)
+    subf = [[m[f[i][0]], m[f[i][1]], m[f[i][2]]] for i in range(nf) \
+             if f[i][0] in idx and f[i][1] in idx and f[i][2] in idx ]
+
+    patch.triangles = Vector3iVector(np.asarray(subf))
+    return patch
+
 # Descriptors is a vector of descriptors of different types of different types.
-def get_patch_geo(pcd,patch_coords,geo_dists, center,descriptors, iface_scores, outward_shift=0.0, flip=False):
+def get_patch_geo(pcd,patch_coords,geo_dists, center,descriptors, iface_scores, outward_shift=0.25, flip=False):
     idx = patch_coords[center]
     patch_geo_dists = geo_dists[center]
     pts = np.asarray(pcd.points)[idx,:]
@@ -129,12 +159,14 @@ def get_patch_geo(pcd,patch_coords,geo_dists, center,descriptors, iface_scores, 
     return patch, patch_descs, patch_iface_scores, patch_geo_dists
 
 def multidock(source_pcd,source_patch_coords,source_descs,cand_pts,target_pcd,target_descs,\
-            source_iface,source_geo_dists,ransac_radius=1.0):
+            source_iface,source_geo_dists,\
+            target_patch_mesh, target_patch_mesh_centroids,ransac_radius=1.0):
     all_results = []
     all_source_patch = []
     all_source_patch_descs = []
     all_source_scores = []
     all_source_geo_dists = []
+    all_source_inlier_onehot = []
     all_source_iface_scores = []
     patch_time = 0.0
     ransac_time = 0.0
@@ -146,23 +178,39 @@ def multidock(source_pcd,source_patch_coords,source_descs,cand_pts,target_pcd,ta
             get_patch_geo(source_pcd,source_patch_coords,source_geo_dists, pt,source_descs, source_iface)
         patch_time = patch_time + (time.time() - tic)
         tic = time.time()
-        result = registration_ransac_based_on_feature_matching(
-            source_patch, target_pcd, source_patch_descs[0], target_descs[0],
-            ransac_radius,
-            TransformationEstimationPointToPoint(False), 3,
-            [CorrespondenceCheckerBasedOnEdgeLength(0.9),
-            CorrespondenceCheckerBasedOnDistance(2.0),
-            CorrespondenceCheckerBasedOnNormal(np.pi/2)],
-            RANSACConvergenceCriteria(ransac_iter, 500),0,0)
+        if True:
+            result = registration_ransac_based_on_shape_complementarity(
+                source_patch, target_pcd, target_patch_mesh, target_patch_mesh_centroids, source_patch_descs[0], target_descs[0],
+                1.5,
+                TransformationEstimationPointToPoint(False), 3,
+                [CorrespondenceCheckerBasedOnEdgeLength(0.9),
+                CorrespondenceCheckerBasedOnDistance(2.0),
+                CorrespondenceCheckerBasedOnNormal(np.pi/2)],
+                RANSACConvergenceCriteria(10000, 500),0,3)
+            result_icp = registration_icp(source_patch, target_patch, 
+                    1.0, result.transformation, TransformationEstimationPointToPlane())
+
+        else:
+            result = registration_ransac_based_on_feature_matching(
+                source_patch, target_pcd, source_patch_descs, target_descs,
+                ransac_radius,
+                TransformationEstimationPointToPoint(False), 3,
+                [CorrespondenceCheckerBasedOnEdgeLength(0.9),
+                CorrespondenceCheckerBasedOnDistance(1.0),
+                CorrespondenceCheckerBasedOnNormal(np.pi/2)],
+                RANSACConvergenceCriteria(ransac_iter, 500), 0.0, 2)
         ransac_time = ransac_time + (time.time() - tic)
-        
         tic = time.time()
-        source_patch.transform(result.transformation)
-        all_results.append(result)
+        source_patch.transform(result_icp.transformation)
+        all_results.append(result_icp)
         all_source_patch.append(source_patch) 
         all_source_patch_descs.append(source_patch_descs) 
         all_source_iface_scores.append(source_patch_iface_scores)
         all_source_geo_dists.append(source_patch_geo_dists)
+        inliers = np.zeros((len(source_patch.points)))
+        vals_w_corr = np.asarray(result.correspondence_set)[:,0]
+        inliers[vals_w_corr] = 1.0
+        all_source_inlier_onehot.append(inliers)
         transform_time = transform_time + (time.time() - tic)
         
         tic = time.time()
@@ -170,31 +218,98 @@ def multidock(source_pcd,source_patch_coords,source_descs,cand_pts,target_pcd,ta
         all_source_scores.append(source_scores)
         score_time = score_time + (time.time() - tic)
     
-    return all_results, all_source_patch, all_source_scores, all_source_patch_descs, all_source_iface_scores, all_source_geo_dists
+    return all_results, all_source_patch, all_source_scores, all_source_patch_descs, all_source_iface_scores, all_source_geo_dists, all_source_inlier_onehot
 
 def test_alignments(transformation, random_transformation,source_structure, target_ca_pcd_tree, target_pcd_tree, radius=2.0, interface_dist=10.0):
-    structure_coords = np.array([atom.get_coord() for atom in source_structure.get_atoms() if atom.get_id() == 'CA'])
+    structure_ca_coords = np.array([atom.get_coord() for atom in source_structure.get_atoms() if atom.get_id() == 'CA'])
+    structure_ca_coord_pcd = PointCloud()
+    structure_ca_coord_pcd.points = Vector3dVector(structure_ca_coords)
+    structure_ca_coord_pcd_notTransformed = copy.deepcopy(structure_ca_coord_pcd)
+    structure_ca_coord_pcd.transform(random_transformation)
+    structure_ca_coord_pcd.transform(transformation)
+        
+    structure_coords = np.array([atom.get_coord() for atom in source_structure.get_atoms()])
     structure_coord_pcd = PointCloud()
     structure_coord_pcd.points = Vector3dVector(structure_coords)
     structure_coord_pcd_notTransformed = copy.deepcopy(structure_coord_pcd)
     structure_coord_pcd.transform(random_transformation)
     structure_coord_pcd.transform(transformation)
-        
-    clashing = 0
-    for point in structure_coord_pcd.points:
-        [k, idx, _] = target_pcd_tree.search_radius_vector_3d(point, radius)
-        if k>0:
-            clashing += 1
     
-    interface_atoms = []
-    for i,point in enumerate(structure_coords):
-        [k, idx, _] = target_ca_pcd_tree.search_radius_vector_3d(point, interface_dist)
-        if k>0:
-            interface_atoms.append(i)
+    #clashing_ca = 0
+    #total_ca_atoms = 0
+    #for point in structure_ca_coord_pcd.points:
+    #    total_ca_atoms += 1
+    #    [k, idx, _] = target_pcd_tree.search_radius_vector_3d(point, radius)
+    #    if k>0:
+    #        clashing_ca += 1
+    
+    #clashing = 0
+    #total_atoms = 0
+    #for point in structure_coord_pcd.points:
+    #    total_atoms += 1
+    #    [k, idx, _] = target_pcd_tree.search_radius_vector_3d(point, radius)
+    #    if k>0:
+    #        clashing += 1
+    d_nn_ca, i_nn_ca = target_pcd_tree.query(np.asarray(structure_ca_coord_pcd.points),k=1,distance_upper_bound=radius)
+    d_nn, i_nn = target_pcd_tree.query(np.asarray(structure_coord_pcd.points),k=1,distance_upper_bound=radius)
+    clashing_ca = np.sum(d_nn_ca<=radius)
+    clashing = np.sum(d_nn<=radius)
+    total_ca_atoms = np.asarray(structure_ca_coord_pcd.points).shape[0]
+    total_atoms = np.asarray(structure_coord_pcd.points).shape[0]
+    
+    #interface_atoms = []
+    #for i,point in enumerate(structure_coords):
+    #    [k, idx, _] = target_ca_pcd_tree.search_radius_vector_3d(point, interface_dist)
+    #    if k>0:
+    #        interface_atoms.append(i)
+    d_nn_interface, i_nn_interface = target_pcd_tree.query(np.asarray(structure_coord_pcd.points),k=1,distance_upper_bound=interface_dist)
+    interface_atoms = np.where(d_nn_interface<=interface_dist)[0]
     rmsd = np.sqrt(np.mean(np.square(np.linalg.norm(structure_coords[interface_atoms,:]-np.asarray(structure_coord_pcd.points)[interface_atoms,:],axis=1))))
-    return rmsd,clashing,structure_coord_pcd,structure_coord_pcd_notTransformed#, structure, structure_coord_pcd
+    return rmsd,clashing_ca,clashing,total_ca_atoms,total_atoms,structure_ca_coord_pcd,structure_ca_coord_pcd_notTransformed#, structure, structure_coord_pcd
 
 
+def count_clashes(transformation, random_transformation,source_structure, target_ca_pcd_tree, target_pcd_tree, radius=2.0, interface_dist=10.0):
+    structure_ca_coords = np.array([atom.get_coord() for atom in source_structure.get_atoms() if atom.get_id() == 'CA'])
+    structure_ca_coord_pcd = PointCloud()
+    structure_ca_coord_pcd.points = Vector3dVector(structure_ca_coords)
+    structure_ca_coord_pcd_notTransformed = copy.deepcopy(structure_ca_coord_pcd)
+    structure_ca_coord_pcd.transform(random_transformation)
+    structure_ca_coord_pcd.transform(transformation)
+        
+    structure_coords = np.array([atom.get_coord() for atom in source_structure.get_atoms()])
+    structure_coord_pcd = PointCloud()
+    structure_coord_pcd.points = Vector3dVector(structure_coords)
+    structure_coord_pcd_notTransformed = copy.deepcopy(structure_coord_pcd)
+    structure_coord_pcd.transform(random_transformation)
+    structure_coord_pcd.transform(transformation)
+    
+    # Invoke cKDTree with (structure_coord_pcd)
+
+    # Count how many are <radius
+    
+    #clashing_ca = 0
+    #total_ca_atoms = 0
+    #for point in structure_ca_coord_pcd.points:
+    #    total_ca_atoms += 1
+    #    [k, idx, _] = target_pcd_tree.search_radius_vector_3d(point, radius)
+    #    if k>0:
+    #        clashing_ca += 1
+    
+    #clashing = 0
+    #total_atoms = 0
+    #for point in structure_coord_pcd.points:
+    #    total_atoms += 1
+    #    [k, idx, _] = target_pcd_tree.search_radius_vector_3d(point, radius)
+    #    if k>0:
+    #        clashing += 1
+    d_nn_ca, i_nn_ca = target_pcd_tree.query(np.asarray(structure_ca_coord_pcd.points),k=1,distance_upper_bound=radius)
+    d_nn, i_nn = target_pcd_tree.query(np.asarray(structure_coord_pcd.points),k=1,distance_upper_bound=radius)
+    clashing_ca = np.sum(d_nn_ca<=radius)
+    clashing = np.sum(d_nn<=radius)
+    total_ca_atoms = np.asarray(structure_ca_coord_pcd.points).shape[0]
+    total_atoms = np.asarray(structure_coord_pcd.points).shape[0]
+    
+    return clashing_ca,clashing,total_ca_atoms,total_atoms#, structure, structure_coord_pcd
 # In[5]:
 
 
@@ -306,6 +421,8 @@ for target_ix,target_pdb in enumerate(rand_list):
     target_pc = os.path.join(surf_dir,'{}.ply'.format(target_pdb_id+'_'+chains[0]))
     source_pc_gt = os.path.join(surf_dir,'{}.ply'.format(target_pdb_id+'_'+chains[1]))
     target_pcd = read_point_cloud(target_pc)
+
+    target_mesh = read_triangle_mesh(target_pc)
     
     # Read the point with the highest shape compl.
     sc_labels = np.load(os.path.join(precomp_dir,target_pdb,'p1_sc_labels.npy'))
@@ -321,9 +438,9 @@ for target_ix,target_pdb in enumerate(rand_list):
 
     for source_ix, source_pdb in enumerate(rand_list):
 
-        if source_pdb != target_pdb:
-            if np.random.random() < 0.999:
-                continue
+#        if source_pdb != target_pdb:
+#            if np.random.random() < 0.999:
+#                continue
         
         source_desc = np.load(os.path.join(desc_dir,source_pdb,'p2_desc_straight.npy'))
 
@@ -347,6 +464,18 @@ for target_ix,target_pdb in enumerate(rand_list):
     target_patch, target_patch_descs, target_patch_iface_scores, target_patch_geo_dists = \
              get_patch_geo(target_pcd,target_coord,target_geo_dists,center_point,\
                      target_desc, target_iface,flip=True)
+
+    target_patch_mesh = get_patch_mesh_geo(target_mesh,target_coord,center_point,target_desc,flip=False)
+
+    # Make a pointcloud where the centroids of the mesh have a point
+    centroids = []
+    for f in target_patch_mesh.triangles:
+        v0 = target_patch_mesh.vertices[f[0]]
+        v1 = target_patch_mesh.vertices[f[1]]
+        v2 = target_patch_mesh.vertices[f[2]]
+        centroids.append((v0+v1+v2)/3)
+    triangle_centroids = PointCloud()
+    triangle_centroids.points = Vector3dVector(np.asarray(centroids))
     
     ## Load the structures of the target and the source (to get the ground truth).    
     parser = PDBParser()
@@ -359,8 +488,9 @@ for target_ix,target_pdb in enumerate(rand_list):
     target_ca_coord_pcd = PointCloud()
     target_atom_coord_pcd.points = Vector3dVector(np.array(target_atom_coords))
     target_ca_coord_pcd.points = Vector3dVector(np.array(target_ca_coords))
-    target_atom_pcd_tree = KDTreeFlann(target_atom_coord_pcd)
-    target_ca_pcd_tree = KDTreeFlann(target_ca_coord_pcd)
+    # Create with cKDTree 
+    target_atom_pcd_tree = cKDTree(np.array(target_atom_coords))#KDTreeFlann(target_atom_coord_pcd)
+    target_ca_pcd_tree = cKDTree(np.array(target_ca_coords))#KDTreeFlann(target_ca_coord_pcd)
     
     found = False
     myrank_desc = float('inf')
@@ -384,6 +514,8 @@ for target_ix,target_pdb in enumerate(rand_list):
     aligned_source_patches_descs_2 = []
     aligned_source_patches_iface = []
     aligned_source_patches_geo_dists = []
+    clashing_info = []
+    inlier_data = []
 
     # The geodesic distance from the center 
 
@@ -435,12 +567,13 @@ for target_ix,target_pdb in enumerate(rand_list):
         # Randomly rotate and translate.  
         random_transformation = get_center_and_random_rotate(source_pcd)#np.diag([1,1,1,1])#get_center_and_random_rotate(source_pcd)
         source_pcd.transform(random_transformation)
+        tic = time.time()
         all_results, all_source_patch, all_source_scores, \
-            all_source_descs, all_source_iface, all_source_geo_dists \
+            all_source_descs, all_source_iface, all_source_geo_dists, all_source_inlier_onehot \
                 = multidock(source_pcd, source_coords, source_desc,source_vix, target_patch, \
-                        target_patch_descs, source_iface, source_geo_dists) 
+                        target_patch_descs, source_iface, source_geo_dists, target_patch_mesh, triangle_centroids) 
         toc = time.time()
-        time_global += (toc - tic)
+        print('Ransac time {}'.format((toc - tic)))
         num_negs = num_negs
 
         for j,res in enumerate(all_results):
@@ -456,6 +589,7 @@ for target_ix,target_pdb in enumerate(rand_list):
             aligned_source_patches_descs_2.append(np.asarray(all_source_descs[j][2].data).T)
             aligned_source_patches_iface.append(all_source_iface[j])
             aligned_source_patches_geo_dists.append(all_source_geo_dists[j])
+            inlier_data.append(all_source_inlier_onehot[j])
             scores_transforms.append(score)
             center_index_sources.append(source_vix[j])
             source_patch_names.append(source_pdb)
@@ -463,10 +597,11 @@ for target_ix,target_pdb in enumerate(rand_list):
         # If this is the source_pdb, get the ground truth. 
         if source_pdb == target_pdb: 
             
+            tic_cc = time.time()
             for j,res in enumerate(all_results):
-                rmsd, clashing, structure_coord_pcd, structure_coord_pcd_notTransformed =                     test_alignments(res.transformation, random_transformation, gt_source_struct,                     target_ca_pcd_tree, target_atom_pcd_tree, radius=0.5)
+                rmsd, clashing_ca,clashing,total_ca_atoms,total_atoms, structure_coord_pcd, structure_coord_pcd_notTransformed = test_alignments(res.transformation, random_transformation, gt_source_struct,                     target_ca_pcd_tree, target_atom_pcd_tree, radius=0.5)
                 score = list(all_source_scores[j])
-                if rmsd < 5.0 and res.fitness > 0: 
+                if rmsd < 2.0 and res.fitness > 0: 
                     #print('{} {}'.format(rank_val, rmsd))
                     rank_val = np.where(chosen_top == viii[j])[0][0]
                     pos_rmsd.append(rmsd)
@@ -474,15 +609,28 @@ for target_ix,target_pdb in enumerate(rand_list):
                     myrank_desc = min(rank_val, myrank_desc)
                     pos_scores.append(score)
                     source_patch_rmsds.append(rmsd)
+                    clashing_info.append([clashing_ca,clashing,total_ca_atoms,total_atoms])
                 elif res.fitness > 0:
                     neg_scores.append(score)
                     source_patch_rmsds.append(rmsd)
+                    clashing_info.append([clashing_ca,clashing,total_ca_atoms,total_atoms])
+            toc_cc = time.time()
+            print('count clashes time',toc_cc-tic_cc)
         else:
+            tic_cc = time.time()
+            tic_load_struct = time.time()
+            source_struct = parser.get_structure('{}_{}'.format(pdb_id,chain), os.path.join(pdb_dir,'{}_{}.pdb'.format(pdb_id,chain)))
+            print('Load structure time: {}'.format(time.time()- tic_load_struct))
             for j in range(len(all_source_scores)):
                 if all_results[j].fitness > 0:
+                    res = all_results[j]
+                    clashing_ca,clashing,total_ca_atoms,total_atoms =  count_clashes(res.transformation, random_transformation, source_struct, target_ca_pcd_tree, target_atom_pcd_tree, radius=0.5)
                     score = list(all_source_scores[j])
                     neg_scores.append(score)
                     source_patch_rmsds.append(float('inf'))
+                    clashing_info.append([clashing_ca,clashing,total_ca_atoms,total_atoms])
+            toc_cc = time.time()
+            print('count clashes time',toc_cc-tic_cc)
     if found: 
         count_found += 1
         all_rankings_desc.append(myrank_desc)
@@ -500,6 +648,8 @@ for target_ix,target_pdb in enumerate(rand_list):
         os.makedirs(outdir)
     # Save data for this source patch. 
     np.save(os.path.join(outdir,'source_patch_names'), source_patch_names)
+    np.save(os.path.join(outdir,'clashing_info'), clashing_info)
+    np.save(os.path.join(outdir,'inlier_data'), inlier_data)
     np.save(os.path.join(outdir,'random_transformations'), random_transformations)
     np.save(os.path.join(outdir,'alignment_transformations'), alignment_transformations)
     np.save(os.path.join(outdir,'aligned_source_patches'), np.asarray(aligned_source_patches))
