@@ -156,6 +156,7 @@ for site_ix, site_vix in enumerate(target_vertices):
     
     inlier_scores = []
 
+    parser = PDBParser()
     for name in matched_dict.keys():
         ppi_pair_id = name[0]
         pid = name[1]
@@ -174,6 +175,7 @@ for site_ix, site_vix in enumerate(target_vertices):
         print('{}'.format(pdb+'_'+chain))
         try:
             source_pcd, source_desc, source_iface = load_protein_pcd(ppi_pair_id, chain_number, source_paths, flipped_features=False, read_mesh=False)
+            source_struct = parser.get_structure('{}_{}'.format(pdb,chain), os.path.join(params['seed_pdb_dir'],'{}_{}.pdb'.format(pdb,chain)))
         except:
             continue
     #    print('Reading ply {}'.format(time.time()- tic))
@@ -193,7 +195,8 @@ for site_ix, site_vix in enumerate(target_vertices):
                 source_vix, target_patch, target_patch_descs, 
                 target_patch_mesh, triangle_centroids, 
                 source_geodists, target_patch_geodists, target_ckdtree,
-                source_iface, target_patch_iface, nn_score, params
+                source_iface, target_patch_iface, nn_score, params,
+                source_struct, target_ca_pcd_tree,target_pcd_tree
                 ) 
     #    print('Multidock took {}'.format(time.time()- tic))
         all_point_importance = [x[1] for x in all_source_scores]
@@ -211,8 +214,6 @@ for site_ix, site_vix in enumerate(target_vertices):
             # Load source structure 
             # Perform the transformation on the atoms
             for j in top_scorers:
-                parser = PDBParser()
-                source_struct = parser.get_structure('{}_{}'.format(pdb,chain), os.path.join(params['seed_pdb_dir'],'{}_{}.pdb'.format(pdb,chain)))
                 res = all_results[j]
                     
                 out_fn = source_outdir+'/{}_{}_{}'.format(pdb, chain, j)

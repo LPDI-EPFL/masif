@@ -238,13 +238,36 @@ def match_descriptors(in_desc_dir, in_iface_dir, pids, target_desc, params):
     print('Iterated over {} proteins.'.format(count_proteins))
     return all_matched_names, all_matched_vix, all_matched_desc_dist, count_proteins
 
+def count_clashes(transformation, source_structure, target_ca_pcd_tree,
+                   target_pcd_tree, clashing_radius=2.0):
+    structure_atoms = [atom for atom in source_structure.get_atoms()]
+    structure_coords = [x.get_coord() for x in structure_atoms]
+    structure_ca_coords = [x.get_coord() for x in structure_atoms if x.get_name()=='CA']
+
+    structure_coord_pcd = o3d.PointCloud()
+    structure_coord_pcd.points = o3d.Vector3dVector(structure_coords)
+    structure_coord_pcd.transform(transformation)
+    structure_ca_coord_pcd = o3d.PointCloud()
+    structure_ca_coord_pcd.points = o3d.Vector3dVector(structure_ca_coords)
+    structure_ca_coord_pcd.transform(transformation)
+
+    clashing = 0
+    for point in structure_ca_coord_pcd.points:
+        [k, idx, _] = target_pcd_tree.search_radius_vector_3d(
+            point, clashing_radius)
+        if k > 0:
+            clashing += 1
+
+    return clashing
+
 
 def multidock(source_pcd, source_patch_coords, source_descs, 
             cand_pts, target_pcd, target_descs,
               target_patch_mesh, target_patch_mesh_centroids, 
               source_geodists, target_patch_geodists, target_ckdtree,
               source_iface, target_patch_iface,           
-              nn_score, params):
+              nn_score, params,
+              source_struct, target_ca_pcd_tree,target_pcd_tree):
     ransac_radius=params['ransac_radius'] 
     ransac_iter=params['ransac_iter']
     all_results = []
@@ -284,12 +307,13 @@ def multidock(source_pcd, source_patch_coords, source_descs,
         source_patch.transform(result_icp.transformation)
         all_results.append(result_icp)
         all_source_patch.append(source_patch)
+        n_clashes = count_clashes(result_icp.transformation, source_struct, target_ca_pcd_tree,target_pcd_tree)
 
         source_scores = compute_desc_dist_score(target_pcd, source_patch, np.asarray(result.correspondence_set),
                 target_patch_geodists, source_patch_geodists,
                 target_descs, source_patch_descs, \
                 target_patch_iface, source_patch_iface, 
-                target_ckdtree, nn_score)
+                target_ckdtree, nn_score,n_clashes)
         all_source_scores.append(source_scores)
 
     return all_results, all_source_patch, all_source_scores
@@ -345,7 +369,7 @@ def compute_desc_dist_score(target_pcd, source_pcd, corr,
         target_patch_geo_dists, source_patch_geo_dists, 
         target_desc, source_desc, 
         target_patch_iface_scores, source_patch_iface_scores,
-        target_ckdtree, nn_score ):
+        target_ckdtree, nn_score,n_clashes):
 
     # Compute scores based on correspondences.
     if len(corr) < 1:
@@ -353,6 +377,8 @@ def compute_desc_dist_score(target_pcd, source_pcd, corr,
         dists_cutoff_1= np.array([1000.0])
         dists_cutoff_2= np.array([1000.0])
         inliers = 0
+        target_p = []
+        source_p = []
     else:
         target_p = corr[:,1]
         source_p = corr[:,0]    
@@ -396,11 +422,12 @@ def compute_desc_dist_score(target_pcd, source_pcd, corr,
     n1 = np.asarray(source_pcd.normals)
     n2 = np.asarray(target_pcd.normals)[r]
     feat8 = np.multiply(n1, n2).sum(1)
-
-
+    feat9 = np.zeros((len(d)))
+    feat9[source_p] = 1.0
+    feat10 = np.ones((len(d)))*n_clashes
 #    feat8 = np.diag(np.dot(np.asarray(source_pcd.normals), np.asarray(target_pcd.normals)[r].T))
 
-    nn_score_pred, point_importance = nn_score.eval_model(feat0, feat1, feat2, feat3, feat4, feat5, feat6, feat7, feat8)
+    nn_score_pred, point_importance = nn_score.eval_model(feat0, feat1, feat2, feat3, feat4, feat5, feat6, feat7, feat8, feat9, feat10)
 
     return (np.array([scores_corr_0, inliers, scores_corr_1, scores_corr_2, nn_score_pred[0][0]]).T, point_importance)
 

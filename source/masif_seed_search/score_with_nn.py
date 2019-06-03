@@ -60,7 +60,7 @@ class Masif_search_score:
     
         # Model order: 
         # [Distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp]
-    def eval_model(self, distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp):
+    def eval_model(self, distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dpi, inliers, clashes):
 
             distance[distance < 0.5] = 0.5
             distance = 1.0/distance
@@ -72,7 +72,7 @@ class Masif_search_score:
             source_geo_dists = 1.0/source_geo_dists
             target_geo_dists = 1.0/target_geo_dists
 
-            features = np.vstack([distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp]).T
+            features = np.vstack([distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp, inliers, clashes]).T
             max_npoints = self.max_npoints 
             features = np.expand_dims(features, 0)
             n_features = features.shape[2]
