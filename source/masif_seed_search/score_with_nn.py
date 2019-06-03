@@ -88,10 +88,9 @@ class Masif_search_score:
             y_test_pred = self.model.predict(features_trimmed)
             y_test_pred = y_test_pred[:,1].reshape((-1,1))
 
-
             point_importance = np.zeros(len(distance))
 # 
-            if y_test_pred[0,0] > self.nn_score_cutoff:
+            if len(distance) < max_npoints and y_test_pred[0,0] > self.nn_score_cutoff:
                 # Evaluate point by point. 
                 for i in range(len(distance)):
                     feat_copy = np.copy(features_trimmed)

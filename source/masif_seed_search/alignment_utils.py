@@ -93,7 +93,7 @@ def get_patch_geo(
         center,
         descriptors,
         iface, 
-        outward_shift=0.0,
+        outward_shift=0.25,
         flip_normals=False):
     """
     Returns a patch from a point cloud pcd with center point center (int),
@@ -117,7 +117,7 @@ def get_patch_geo(
     return patch, patch_descs, patch_iface
 
 
-def get_patch_mesh_geo(triangle_mesh, patch_coords, center, descriptors, outward_shift=0.0, flip=False):
+def get_patch_mesh_geo(triangle_mesh, patch_coords, center, descriptors, outward_shift=0.25, flip=False):
     """
     Returns a patch, with the mesh, from a point cloud pcd with center point center (int),
     based on geodesic distances from patch coords and corresponding Feature descriptors.
@@ -252,7 +252,7 @@ def multidock(source_pcd, source_patch_coords, source_descs,
     all_source_scores = []
     for pt in cand_pts:
         source_patch, source_patch_descs, source_patch_iface = get_patch_geo(
-            source_pcd, source_patch_coords, pt, source_descs, source_iface)
+            source_pcd, source_patch_coords, pt, source_descs, source_iface, outward_shift=params['surface_outward_shift'])
         source_patch_geodists = source_geodists[pt]
         if params['ransac_type'] == 'shape_comp':
             result = o3d.registration_ransac_based_on_shape_complementarity(
@@ -263,6 +263,9 @@ def multidock(source_pcd, source_patch_coords, source_descs,
                  o3d.CorrespondenceCheckerBasedOnDistance(2.0),
                  o3d.CorrespondenceCheckerBasedOnNormal(np.pi/2)],
                 o3d.RANSACConvergenceCriteria(ransac_iter, 500), 0, 3)
+            result_icp = o3d.registration_icp(source_patch, target_pcd,
+                        1.0, result.transformation, o3d.TransformationEstimationPointToPlane())
+            
         else:
             result = o3d.registration_ransac_based_on_feature_matching(
                 source_patch, target_pcd, source_patch_descs[0], target_descs[0],
@@ -278,8 +281,8 @@ def multidock(source_pcd, source_patch_coords, source_descs,
         # result.transformation,
         # TransformationEstimationPointToPoint())
 
-        source_patch.transform(result.transformation)
-        all_results.append(result)
+        source_patch.transform(result_icp.transformation)
+        all_results.append(result_icp)
         all_source_patch.append(source_patch)
 
         source_scores = compute_desc_dist_score(target_pcd, source_patch, np.asarray(result.correspondence_set),

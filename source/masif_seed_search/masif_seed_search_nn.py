@@ -111,7 +111,7 @@ for site_ix, site_vix in enumerate(target_vertices):
     # Get the geodesic patch and descriptor patch for each target patch
     target_patch, target_patch_descs, target_patch_iface = \
                 get_patch_geo(target_pcd,target_coord,site_vix,\
-                        target_desc, target_iface, flip_normals=True)
+                        target_desc, target_iface, flip_normals=True, outward_shift=params['surface_outward_shift'])
 
     # Make a ckdtree with the target.
     target_ckdtree = cKDTree(target_patch.points)
@@ -120,7 +120,7 @@ for site_ix, site_vix in enumerate(target_vertices):
     target_patch_geodists = target_geodists[site_vix]
      
     # Get the geodesic patch for the target, including the face information. This one is not flipped.
-    target_patch_mesh = get_patch_mesh_geo(target_mesh,target_coord,site_vix,target_desc,flip=False)
+    target_patch_mesh = get_patch_mesh_geo(target_mesh,target_coord,site_vix,target_desc,flip=False, outward_shift=params['surface_outward_shift'])
 
     # Make a pointcloud where the centroids of the mesh have a point
     centroids = []
@@ -229,7 +229,7 @@ for site_ix, site_vix in enumerate(target_vertices):
                     
                     # Output the score for convenience. 
                     out_score = open(out_fn+'.score', 'w+')
-                    out_score.write('{} {} {:.2f} {} :{:.2f} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], num_clashing, pid))
+                    out_score.write('{} {} {:.2f} {} {:.2f} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], num_clashing, pid))
                     out_score.close()
 
                     source_pcd_copy = copy.deepcopy(source_pcd)
