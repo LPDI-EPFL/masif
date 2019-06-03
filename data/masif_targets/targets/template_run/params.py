@@ -45,24 +45,26 @@ params['num_sites'] = 1
 params['clashing_cutoff'] = float('inf')
 
 # Ransac parameters
-params['ransac_iter'] = 4000
+params['ransac_iter'] = 10000
 # Ransac type: normal or shape_comp
 params['ransac_type'] = 'shape_comp'
 #params['ransac_type'] = 'normal'
 params['ransac_radius'] = 1.5
+# How much to expand the surface for alignment.
+params['surface_outward_shift'] = 0.25
 
 ###
 # Score cutoffs -- these are empirical values, if they are too loose, then you get a lot of results. 
 # Descriptor distance cutoff for the patch. All scores below this value are accepted for further processing.
-params['desc_dist_cutoff'] = 1.7
+params['desc_dist_cutoff'] = 2.0
 # Interface cutoff value, all values below this cutoff are accepted.
 params['iface_cutoff'] = 0.75
 # Post alignment score cutoff
-params['post_alignment_score_cutoff'] = 0
-params['nn_score_cutoff'] = 0.9
+params['post_alignment_score_cutoff'] = 0.9
+params['nn_score_cutoff'] = 0.97
 
 # Output directory (target_name, target_site, target_
-params['out_dir_template'] = 'out_large_12A_1.5ransasc/{}/'
+params['out_dir_template'] = 'out/{}/'
 
 # Limit the seed search to these pdbs: 
-params['seed_pdb_list'] = ['4ZQK_A_B']
+#params['seed_pdb_list'] = ['4ZQK_A_B']

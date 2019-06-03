@@ -4,9 +4,9 @@ params = {}
 # Directory locations
 params['masif_db_root'] = os.environ['masif_db_root']
 # Seed locations
-params['top_seed_dir'] = os.path.join(params['masif_db_root'], 'data/masif_small_proteins/')
+params['top_seed_dir'] = os.path.join(params['masif_db_root'], 'data/masif_peptides/')
 params['seed_surf_dir'] = os.path.join(params['top_seed_dir'], masif_opts['ply_chain_dir'])
-params['seed_iface_dir'] = os.path.join(params['masif_db_root'],'data/masif_small_proteins/',masif_opts['site']['out_pred_dir'])
+params['seed_iface_dir'] = os.path.join(params['masif_db_root'],'data/masif_peptides/',masif_opts['site']['out_pred_dir'])
 params['seed_ply_iface_dir'] = os.path.join(params['masif_db_root'],'data/masif_site',masif_opts['site']['out_surf_dir'])
 params['seed_pdb_dir'] = os.path.join(params['top_seed_dir'],masif_opts['pdb_chain_dir'])
 params['seed_desc_dir'] = os.path.join(params['top_seed_dir'],masif_opts['ppi_search']['desc_dir'])
@@ -64,6 +64,4 @@ params['post_alignment_score_cutoff'] = 0
 params['nn_score_cutoff'] = 0.97
 
 # Output directory (target_name, target_site, target_
-params['out_dir_template'] = 'out/{}/'
-
-#params['seed_pdb_list'] = ['3K1X_A_', '3K1X_D_']
+params['out_dir_template'] = 'out_peptides/{}/'
