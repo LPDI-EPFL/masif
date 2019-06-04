@@ -1,4 +1,5 @@
 import open3d as o3d
+import copy 
 from IPython.core.debugger import set_trace
 import numpy as np
 from pathlib import Path
@@ -322,7 +323,7 @@ def multidock(source_pcd, source_patch_coords, source_descs,
 def align_and_save(out_filename_base, patch, transformation, source_structure, target_ca_pcd_tree,
                    target_pcd_tree, point_importance=None, clashing_cutoff=10.0,
                    clashing_radius=2.0):
-    source_structure = source_structure.copy()
+    source_structure = copy.deepcopy(source_structure)
     structure_atoms = [atom for atom in source_structure.get_atoms()]
     structure_coords = [x.get_coord() for x in structure_atoms]
     structure_ca_coords = [x.get_coord() for x in structure_atoms if x.get_name()=='CA']
