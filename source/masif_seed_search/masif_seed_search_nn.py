@@ -3,6 +3,7 @@ import sys
 from scipy.spatial import cKDTree
 from IPython.core.debugger import set_trace
 import time
+import dask
 import os 
 from default_config.masif_opts import masif_opts
 from open3d import *
@@ -94,6 +95,98 @@ outdir = params['out_dir_template'].format(target_name)
 if not os.path.exists(outdir):
     os.makedirs(outdir)
 
+@dask.delayed
+def align_protein(name):
+    ppi_pair_id = name[0]
+    pid = name[1]
+    pdb = ppi_pair_id.split('_')[0]
+
+    if pid == 'p1':
+        chain = ppi_pair_id.split('_')[1]
+        chain_number = 1
+    else: 
+        chain = ppi_pair_id.split('_')[2]
+        chain_number = 2
+        
+    # Load source ply file, coords, and descriptors.
+    tic = time.time()
+    
+    print('{}'.format(pdb+'_'+chain))
+    try:
+        source_pcd, source_desc, source_iface = load_protein_pcd(ppi_pair_id, chain_number, source_paths, flipped_features=False, read_mesh=False)
+        source_struct = parser.get_structure('{}_{}'.format(pdb,chain), os.path.join(params['seed_pdb_dir'],'{}_{}.pdb'.format(pdb,chain)))
+    except:
+        return
+#    print('Reading ply {}'.format(time.time()- tic))
+
+    tic = time.time()
+    source_vix = matched_dict[name]
+    try:
+        source_coord, source_geodists =  get_geodists_and_patch_coords(params['seed_precomp_dir'], ppi_pair_id, pid, cv=source_vix)
+    except:
+        print('Coordinates not found. continuing.')
+        return
+    
+    # Perform all alignments to target. 
+    tic = time.time()
+    all_results, all_source_patch, all_source_scores = multidock(
+            source_pcd, source_coord, source_desc,
+            source_vix, target_patch, target_patch_descs, 
+            target_patch_mesh, triangle_centroids, 
+            source_geodists, target_patch_geodists, target_ckdtree,
+            source_iface, target_patch_iface, nn_score, params,
+            source_struct, target_ca_pcd_tree,target_pcd_tree
+            ) 
+#    print('Multidock took {}'.format(time.time()- tic))
+    all_point_importance = [x[1] for x in all_source_scores]
+    all_source_scores = [x[0] for x in all_source_scores]
+    scores = np.asarray(all_source_scores)
+    
+    # Filter anything above cutoff
+    top_scorers = np.where(scores[:,4] > params['nn_score_cutoff'])[0]
+    
+    if len(top_scorers) > 0:
+        source_outdir = os.path.join(site_outdir, '{}'.format(ppi_pair_id))
+        if not os.path.exists(source_outdir):
+            os.makedirs(source_outdir)
+
+        # Load source structure 
+        # Perform the transformation on the atoms
+        for j in top_scorers:
+            res = all_results[j]
+                
+            out_fn = source_outdir+'/{}_{}_{}'.format(pdb, chain, j)
+
+            # Align and save the pdb + patch 
+            num_clashing = align_and_save(out_fn, all_source_patch[j], res.transformation, source_struct, target_ca_pcd_tree,target_pcd_tree,\
+                                            clashing_cutoff=params['clashing_cutoff'], point_importance=all_point_importance[j])
+            if num_clashing < params['clashing_cutoff']:
+                print('{} {} {:.2f} {} :{:.2f} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], num_clashing, pid))
+
+                # Align and save the ply file for convenience.     
+                mesh = Simple_mesh()
+                mesh.load_mesh(os.path.join(params['seed_surf_dir'],'{}.ply'.format(pdb+'_'+chain)))
+                
+                # Output the score for convenience. 
+                out_score = open(out_fn+'.score', 'w+')
+                out_score.write('{} {} {:.2f} {} {:.2f} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], num_clashing, pid))
+                out_score.close()
+
+                source_pcd_copy = copy.deepcopy(source_pcd)
+                source_pcd_copy.transform(res.transformation)
+                out_vertices = np.asarray(source_pcd_copy.points)
+                out_normals = np.asarray(source_pcd_copy.normals)
+                mesh.set_attribute('vertex_x', out_vertices[:,0])
+                mesh.set_attribute('vertex_y', out_vertices[:,1])
+                mesh.set_attribute('vertex_z', out_vertices[:,2])
+                mesh.set_attribute('vertex_nx', out_normals[:,0])
+                mesh.set_attribute('vertex_ny', out_normals[:,1])
+                mesh.set_attribute('vertex_nz', out_normals[:,2])
+                mesh.vertices = out_vertices
+                mesh.set_attribute('vertex_iface', source_iface) 
+                mesh.save_mesh(out_fn+'.ply')
+                #save_ply(out_fn+'.ply', out_vertices, mesh.faces, out_normals, charges=mesh.get_attribute('vertex_charge'))
+
 # Copy the pdb structure and the ply file of the target 
 shutil.copy(target_pdb_path, outdir)
 shutil.copy(target_ply_path, outdir)
@@ -157,97 +250,10 @@ for site_ix, site_vix in enumerate(target_vertices):
     inlier_scores = []
 
     parser = PDBParser()
+    results = []
     for name in matched_dict.keys():
-        ppi_pair_id = name[0]
-        pid = name[1]
-        pdb = ppi_pair_id.split('_')[0]
-
-        if pid == 'p1':
-            chain = ppi_pair_id.split('_')[1]
-            chain_number = 1
-        else: 
-            chain = ppi_pair_id.split('_')[2]
-            chain_number = 2
-            
-        # Load source ply file, coords, and descriptors.
-        tic = time.time()
-        
-        print('{}'.format(pdb+'_'+chain))
-        try:
-            source_pcd, source_desc, source_iface = load_protein_pcd(ppi_pair_id, chain_number, source_paths, flipped_features=False, read_mesh=False)
-            source_struct = parser.get_structure('{}_{}'.format(pdb,chain), os.path.join(params['seed_pdb_dir'],'{}_{}.pdb'.format(pdb,chain)))
-        except:
-            continue
-    #    print('Reading ply {}'.format(time.time()- tic))
-
-        tic = time.time()
-        source_vix = matched_dict[name]
-        try:
-            source_coord, source_geodists =  get_geodists_and_patch_coords(params['seed_precomp_dir'], ppi_pair_id, pid, cv=source_vix)
-        except:
-            print('Coordinates not found. continuing.')
-            continue
-        
-        # Perform all alignments to target. 
-        tic = time.time()
-        all_results, all_source_patch, all_source_scores = multidock(
-                source_pcd, source_coord, source_desc,
-                source_vix, target_patch, target_patch_descs, 
-                target_patch_mesh, triangle_centroids, 
-                source_geodists, target_patch_geodists, target_ckdtree,
-                source_iface, target_patch_iface, nn_score, params,
-                source_struct, target_ca_pcd_tree,target_pcd_tree
-                ) 
-    #    print('Multidock took {}'.format(time.time()- tic))
-        all_point_importance = [x[1] for x in all_source_scores]
-        all_source_scores = [x[0] for x in all_source_scores]
-        scores = np.asarray(all_source_scores)
-        
-        # Filter anything above cutoff
-        top_scorers = np.where(scores[:,4] > params['nn_score_cutoff'])[0]
-        
-        if len(top_scorers) > 0:
-            source_outdir = os.path.join(site_outdir, '{}'.format(ppi_pair_id))
-            if not os.path.exists(source_outdir):
-                os.makedirs(source_outdir)
-
-            # Load source structure 
-            # Perform the transformation on the atoms
-            for j in top_scorers:
-                res = all_results[j]
-                    
-                out_fn = source_outdir+'/{}_{}_{}'.format(pdb, chain, j)
-
-                # Align and save the pdb + patch 
-                num_clashing = align_and_save(out_fn, all_source_patch[j], res.transformation, source_struct, target_ca_pcd_tree,target_pcd_tree,\
-                                                clashing_cutoff=params['clashing_cutoff'], point_importance=all_point_importance[j])
-                if num_clashing < params['clashing_cutoff']:
-                    print('{} {} {:.2f} {} :{:.2f} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], num_clashing, pid))
-
-                    # Align and save the ply file for convenience.     
-                    mesh = Simple_mesh()
-                    mesh.load_mesh(os.path.join(params['seed_surf_dir'],'{}.ply'.format(pdb+'_'+chain)))
-                    
-                    # Output the score for convenience. 
-                    out_score = open(out_fn+'.score', 'w+')
-                    out_score.write('{} {} {:.2f} {} {:.2f} {} {}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], scores[j][4], num_clashing, pid))
-                    out_score.close()
-
-                    source_pcd_copy = copy.deepcopy(source_pcd)
-                    source_pcd_copy.transform(res.transformation)
-                    out_vertices = np.asarray(source_pcd_copy.points)
-                    out_normals = np.asarray(source_pcd_copy.normals)
-                    mesh.set_attribute('vertex_x', out_vertices[:,0])
-                    mesh.set_attribute('vertex_y', out_vertices[:,1])
-                    mesh.set_attribute('vertex_z', out_vertices[:,2])
-                    mesh.set_attribute('vertex_nx', out_normals[:,0])
-                    mesh.set_attribute('vertex_ny', out_normals[:,1])
-                    mesh.set_attribute('vertex_nz', out_normals[:,2])
-                    mesh.vertices = out_vertices
-                    mesh.set_attribute('vertex_iface', source_iface) 
-                    mesh.save_mesh(out_fn+'.ply')
-                    #save_ply(out_fn+'.ply', out_vertices, mesh.faces, out_normals, charges=mesh.get_attribute('vertex_charge'))
-        
+        results.append(align_protein(name))
+    results = dask.compute(*results)
 
 # In[ ]:
 

@@ -6,6 +6,8 @@ from pathlib import Path
 import scipy.sparse as spio
 from input_output.simple_mesh import Simple_mesh
 from Bio.PDB import PDBParser, PDBIO
+import tensorflow as tf
+from tensorflow import keras
 import os
 
 
@@ -428,7 +430,6 @@ def compute_desc_dist_score(target_pcd, source_pcd, corr,
     feat9[source_p] = 1.0
     feat10 = np.ones((len(d)))*n_clashes
 #    feat8 = np.diag(np.dot(np.asarray(source_pcd.normals), np.asarray(target_pcd.normals)[r].T))
-
     nn_score_pred, point_importance = nn_score.eval_model(feat0, feat1, feat2, feat3, feat4, feat5, feat6, feat7, feat8, feat9, feat10)
 
     return (np.array([scores_corr_0, inliers, scores_corr_1, scores_corr_2, nn_score_pred[0][0]]).T, point_importance)

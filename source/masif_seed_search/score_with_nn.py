@@ -45,14 +45,23 @@ class Masif_search_score:
         opt = keras.optimizers.Adam(lr=1e-4)
         model.compile(optimizer=opt,loss='sparse_categorical_crossentropy',metrics=['accuracy'])
         model.load_weights(weights_file)
-        self.model = model
+
+        input_layer = keras.layers.Input(shape=(300,11))
+        prev_layer = input_layer
+        for layer in model.layers:
+            prev_layer = layer(prev_layer)
+        funcmodel = keras.models.Model([input_layer], [prev_layer])
+        
+        funcmodel._make_predict_function()
+        self.model = funcmodel
 
     def __init__(self, weights_file, max_npoints=300, nn_score_cutoff=0.85):
         self.max_npoints = max_npoints
         self.nn_score_cutoff = nn_score_cutoff
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        session = tf.Session(config=config)
+        self.graph = tf.get_default_graph()
+        self.session = tf.Session(graph=self.graph,config=config)
 
         np.random.seed(42)
         tf.random.set_random_seed(42)
@@ -60,7 +69,7 @@ class Masif_search_score:
     
         # Model order: 
         # [Distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp]
-    def eval_model(self, distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dpi, inliers, clashes):
+    def eval_model(self, distance, desc_0, desc_1, desc_2, source_geo_dists, target_geo_dists, source_iface, target_iface, normal_dp, inliers, clashes):
 
             distance[distance < 0.5] = 0.5
             distance = 1.0/distance
