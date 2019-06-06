@@ -192,9 +192,15 @@ shutil.copy(target_pdb_path, outdir)
 shutil.copy(target_ply_path, outdir)
 
 # Go through every target site in the target
-out_log = open('log.txt', 'w+')
-for site_ix, site_vix in enumerate(target_vertices):
+if 'selected_site_ixs' in params:
+    site_ixs = params['selected_site_ixs']
+    site_vixs = [vix for ix,vix in enumerate(target_vertices) if ix in site_ixs]
+else:
+    site_ixs = [ix for ix,vix in enumerate(target_vertices)]
+    site_vixs = target_vertices
 
+out_log = open('log.txt', 'w+')
+for site_ix, site_vix in zip(site_ixs,site_vixs):
     out_log.write('Starting site {}\n'.format(site_vix))
     site_outdir = os.path.join(outdir, 'site_{}'.format(site_ix))
     if not os.path.exists(site_outdir):

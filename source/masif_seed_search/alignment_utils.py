@@ -325,8 +325,8 @@ def multidock(source_pcd, source_patch_coords, source_descs,
 def align_and_save(out_filename_base, patch, transformation, source_structure, target_ca_pcd_tree,
                    target_pcd_tree, point_importance=None, clashing_cutoff=10.0,
                    clashing_radius=2.0):
-    source_structure = copy.deepcopy(source_structure)
-    structure_atoms = [atom for atom in source_structure.get_atoms()]
+    source_structure_cp = copy.deepcopy(source_structure)
+    structure_atoms = [atom for atom in source_structure_cp.get_atoms()]
     structure_coords = [x.get_coord() for x in structure_atoms]
     structure_ca_coords = [x.get_coord() for x in structure_atoms if x.get_name()=='CA']
 
@@ -350,7 +350,7 @@ def align_and_save(out_filename_base, patch, transformation, source_structure, t
             structure_atoms[ix].set_coord(v)
 
         io = PDBIO()
-        io.set_structure(source_structure)
+        io.set_structure(source_structure_cp)
         io.save(out_filename_base+'.pdb')
         # Save patch
         mesh = Simple_mesh(vertices=patch.points)
