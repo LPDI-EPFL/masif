@@ -1,0 +1,40 @@
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 61 11.819672131147541 1.0 2.2065547821346954 2313.762029647827 76 sc05
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 60 12.75 2.0 2.265038860781374 2313.762029647827 76 points
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 56 8.928571428571429 2.5 2.210774226327043 2313.762029647827 76 chem_allp
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 64 16.796875 2.5 2.056686354741498 2313.762029647827 76 allp
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 72 7.125 1.0 2.1012953565233663 2313.762029647827 76 nn
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 59 11.05084745762712 1.0 1.9283533989525348 2369.4381403923035 71 sc05
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 58 10.224137931034482 3.5 1.9836056334867385 2369.4381403923035 71 points
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 57 12.298245614035087 4.0 2.301419235322836 2369.4381403923035 71 chem_allp
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 57 8.263157894736842 2.0 1.9761073807964642 2369.4381403923035 71 allp
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 100 67 5.447761194029851 1.0 1.9184539162626921 2369.4381403923035 71 nn
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 100 59 12.17 1.00 2.13 2344.27 75 sc05 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 100 57 13.88 2.00 2.13 2344.27 75 points 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 100 57 10.81 4.00 2.50 2344.27 75 chem_allp 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 100 57 13.02 2.00 2.01 2344.27 75 allp 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 100 71 7.99 1.00 2.14 2344.27 75 nn 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 100 59 13.53 1.00 2.20 4295.32 79 sc05 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 100 55 11.24 2.00 2.16 4295.32 79 points 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 100 57 14.02 5.00 2.31 4295.32 79 chem_allp 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 100 57 13.65 3.00 2.13 4295.32 79 allp 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 100 72 8.25 1.00 2.02 4295.32 79 nn 3
