@@ -218,7 +218,7 @@ for site_ix, site_vix in enumerate(target_vertices):
                     
                 out_fn = source_outdir+'/{}_{}_{}'.format(pdb, chain, j)
 
-                # Align and save the pdb + patch
+                # Align and save the pdb + patch 
                 num_clashing = align_and_save(out_fn, all_source_patch[j], res.transformation, source_struct, target_ca_pcd_tree,target_pcd_tree,\
                                                 clashing_cutoff=params['clashing_cutoff'], point_importance=all_point_importance[j])
                 if num_clashing < params['clashing_cutoff']:

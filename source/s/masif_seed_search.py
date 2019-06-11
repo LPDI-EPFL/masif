@@ -56,6 +56,7 @@ def get_patch_mesh_geo(triangle_mesh,patch_coords,center,descriptors,outward_shi
     patch.triangles = Vector3iVector(np.asarray(subf))
     return patch
 
+
 # Extract a geodesic patch. 
 def get_patch_geo(pcd,patch_coords,center,descriptors,outward_shift=0.0, flip=False):
     idx = patch_coords[center]
