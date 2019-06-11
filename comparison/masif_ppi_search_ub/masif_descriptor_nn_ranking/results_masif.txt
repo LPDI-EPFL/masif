@@ -1,0 +1,30 @@
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 40 4 26.75 25.0 3.050246608385586 780.0776827335358 12 sc05
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 40 4 61.25 63.0 3.050246608385586 780.0776827335358 12 points
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 40 2 2.0 2.0 3.5054112875475103 780.0776827335358 12 chem_allp
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 40 2 1.0 1.0 3.5054112875475103 780.0776827335358 12 allp
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type
+3000 40 4 21.0 13.0 3.235332051377233 780.0776827335358 12 nn
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 40 16 227.00 96.00 3.66 917.81 22 sc05 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 40 16 320.12 171.00 3.83 917.81 22 points 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 40 18 376.06 354.00 3.49 917.81 22 chem_allp 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 40 20 304.45 198.00 3.56 917.81 22 allp 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+3000 40 16 228.19 120.50 3.45 917.81 22 nn 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 40 16 253.25 139.00 3.31 1790.31 26 sc05 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 40 14 285.43 145.50 3.30 1790.31 26 points 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 40 17 308.88 210.00 3.42 1790.31 26 chem_allp 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 40 17 153.18 97.00 3.64 1790.31 26 allp 3
+K Total NumCorrect MeanRank MedianRank MeanRMSD Time NumSolvable score_type desc_ix
+6000 40 16 189.12 111.50 3.53 1790.31 26 nn 3
