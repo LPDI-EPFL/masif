@@ -6,6 +6,8 @@ from pathlib import Path
 import scipy.sparse as spio
 from input_output.simple_mesh import Simple_mesh
 from Bio.PDB import PDBParser, PDBIO
+import tensorflow as tf
+from tensorflow import keras
 import os
 
 
@@ -323,8 +325,8 @@ def multidock(source_pcd, source_patch_coords, source_descs,
 def align_and_save(out_filename_base, patch, transformation, source_structure, target_ca_pcd_tree,
                    target_pcd_tree, point_importance=None, clashing_cutoff=10.0,
                    clashing_radius=2.0):
-    source_structure = copy.deepcopy(source_structure)
-    structure_atoms = [atom for atom in source_structure.get_atoms()]
+    source_structure_cp = copy.deepcopy(source_structure)
+    structure_atoms = [atom for atom in source_structure_cp.get_atoms()]
     structure_coords = [x.get_coord() for x in structure_atoms]
     structure_ca_coords = [x.get_coord() for x in structure_atoms if x.get_name()=='CA']
 
@@ -348,7 +350,7 @@ def align_and_save(out_filename_base, patch, transformation, source_structure, t
             structure_atoms[ix].set_coord(v)
 
         io = PDBIO()
-        io.set_structure(source_structure)
+        io.set_structure(source_structure_cp)
         io.save(out_filename_base+'.pdb')
         # Save patch
         mesh = Simple_mesh(vertices=patch.points)
@@ -428,7 +430,6 @@ def compute_desc_dist_score(target_pcd, source_pcd, corr,
     feat9[source_p] = 1.0
     feat10 = np.ones((len(d)))*n_clashes
 #    feat8 = np.diag(np.dot(np.asarray(source_pcd.normals), np.asarray(target_pcd.normals)[r].T))
-
     nn_score_pred, point_importance = nn_score.eval_model(feat0, feat1, feat2, feat3, feat4, feat5, feat6, feat7, feat8, feat9, feat10)
 
     return (np.array([scores_corr_0, inliers, scores_corr_1, scores_corr_2, nn_score_pred[0][0]]).T, point_importance)
