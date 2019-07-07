@@ -1,0 +1,115 @@
+#
+# Prediction Result by PSIVER @ NIBIO
+# Date: Fri Jul  5 13:55:42 JST 2019
+# Title:  4JLR_S  
+#
+# Threshold(MCC) =  0.370
+# Total          =     91
+# Positives      =     37 MCC:( 0.407)
+# Negatives      =     54 MCC:( 0.593)
+# Average        =  0.330
+# Variance       =  0.037
+# Standerd deviation =  0.192
+#
+# num prediction aa score z-value
+#
+PRED      1 - S  0.200 -0.679
+PRED      2 - D  0.355  0.130
+PRED      3 - M  0.160 -0.887
+PRED      4 - R  0.088 -1.263
+PRED      5 - K  0.131 -1.040
+PRED      6 - D  0.315 -0.082
+PRED      7 - A  0.149 -0.945
+PRED      8 - E  0.151 -0.936
+PRED      9 - R  0.201 -0.672
+PRED     10 + R  0.505  0.906
+PRED     11 - F  0.225 -0.547
+PRED     12 - D  0.254 -0.399
+PRED     13 + K  0.518  0.975
+PRED     14 + F  0.574  1.265
+PRED     15 - V  0.206 -0.648
+PRED     16 + E  0.384  0.277
+PRED     17 + A  0.424  0.485
+PRED     18 - A  0.250 -0.417
+PRED     19 - K  0.249 -0.422
+PRED     20 - N  0.291 -0.206
+PRED     21 + K  0.554  1.162
+PRED     22 - F  0.183 -0.765
+PRED     23 - D  0.166 -0.856
+PRED     24 + K  0.418  0.456
+PRED     25 - F  0.191 -0.726
+PRED     26 + K  0.374  0.226
+PRED     27 - A  0.342  0.060
+PRED     28 + D  0.764  2.254
+PRED     29 - M  0.273 -0.301
+PRED     30 + K  0.390  0.309
+PRED     31 + K  0.512  0.945
+PRED     32 + L  0.527  1.021
+PRED     33 - A  0.157 -0.901
+PRED     34 + R  0.521  0.993
+PRED     35 + K  0.404  0.385
+PRED     36 + E  0.778  2.327
+PRED     37 - A  0.364  0.173
+PRED     38 + E  0.517  0.970
+PRED     39 + Q  0.528  1.030
+PRED     40 - A  0.332  0.007
+PRED     41 + R  0.651  1.670
+PRED     42 + R  0.415  0.441
+PRED     43 + A  0.547  1.129
+PRED     44 - V  0.243 -0.454
+PRED     45 + R  0.834  2.618
+PRED     46 + N  0.815  2.522
+PRED     47 + R  0.678  1.811
+PRED     48 + L  0.652  1.671
+PRED     49 + S  0.659  1.708
+PRED     50 + E  0.630  1.560
+PRED     51 + L  0.482  0.787
+PRED     52 + L  0.453  0.635
+PRED     53 - S  0.301 -0.151
+PRED     54 + K  0.483  0.796
+PRED     55 - I  0.109 -1.154
+PRED     56 - N  0.182 -0.772
+PRED     57 - D  0.095 -1.226
+PRED     58 - M  0.116 -1.116
+PRED     59 - P  0.338  0.040
+PRED     60 - I  0.058 -1.420
+PRED     61 - T  0.086 -1.273
+PRED     62 - N  0.187 -0.746
+PRED     63 - D  0.242 -0.458
+PRED     64 - Q  0.146 -0.957
+PRED     65 - K  0.090 -1.251
+PRED     66 - K  0.150 -0.938
+PRED     67 - L  0.169 -0.840
+PRED     68 - M  0.113 -1.131
+PRED     69 - S  0.138 -0.999
+PRED     70 - N  0.217 -0.592
+PRED     71 + D  0.551  1.146
+PRED     72 - V  0.060 -1.406
+PRED     73 - L  0.277 -0.281
+PRED     74 + K  0.426  0.497
+PRED     75 + F  0.374  0.226
+PRED     76 - A  0.176 -0.805
+PRED     77 - A  0.317 -0.072
+PRED     78 + E  0.386  0.289
+PRED     79 + A  0.410  0.416
+PRED     80 - E  0.051 -1.456
+PRED     81 - K  0.169 -0.838
+PRED     82 + K  0.423  0.480
+PRED     83 - I  0.098 -1.210
+PRED     84 - E  0.199 -0.684
+PRED     85 - A  0.221 -0.567
+PRED     86 + L  0.420  0.464
+PRED     87 - A  0.077 -1.319
+PRED     88 - A  0.282 -0.254
+PRED     89 - D  0.229 -0.526
+PRED     90 * A  0.383  0.273
+PRED     91 - E  0.341  0.052
+#
+#
+     0 :  SDMRKDAERR FDKFVEAAKN KFDKFKADMK KLARKEAEQA RRAVRNRLSE LLSKINDMPI
+  MCC: :  ---------+ --++-++--- +--+-+-+-+ ++-+++-++- +++-++++++ ++-+------
+
+    60 :  TNDQKKLMSN DVLKFAAEAE KKIEALAADA E
+  MCC: :  ---------- +--++--++- -+---+---* -
+
+# END
