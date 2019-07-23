@@ -81,6 +81,9 @@ for ppi_pair_id in ppi_pair_list:
         elif masif_app == 'masif_ppi_search':
             list_desc, list_coords, list_shape_idx, list_names, X, Y, Z, list_sc_labels, list_indices = \
                 read_data_from_matfile_full_protein(coord_file, shape_file, ppi_pair_id, params, pid, label_sc=True)
+        elif masif_app == 'masif_ligand':
+            list_desc, list_coords, list_shape_idx, list_names, X, Y, Z = \
+                read_data_from_matfile_full_protein(coord_file, shape_file, ppi_pair_id, params, pid, label_sc=False, label_iface=False)
 #        except Exception, e: 
 #            print('Error reading file'+str(e))
 #            continue
@@ -104,9 +107,10 @@ for ppi_pair_id in ppi_pair_list:
         np.save(my_precomp_dir+pid+'_names', list_names)
         if masif_app == 'masif_ppi_search':
             np.save(my_precomp_dir+pid+'_sc_labels', list_sc_labels)
+            np.save(my_precomp_dir+pid+'_list_indices', list_indices)
         elif masif_app == 'masif_site':
             np.save(my_precomp_dir+pid+'_iface_labels', list_iface_labels)
-        np.save(my_precomp_dir+pid+'_list_indices', list_indices)
+            np.save(my_precomp_dir+pid+'_list_indices', list_indices)
         np.save(my_precomp_dir+pid+'_X', X)
         np.save(my_precomp_dir+pid+'_Y', Y)
         np.save(my_precomp_dir+pid+'_Z', Z)
