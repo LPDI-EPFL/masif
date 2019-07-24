@@ -58,23 +58,6 @@ for idx_shape = 1:length(names)
         % Go through each vertex.
         vertex_indices = 1:n;
         % Compute all distances using fast marching method. 
-        %shape.f_dns = fastmarchmex('init', int32(shape.TRIV-1), double(shape.X(:)), double(shape.Y(:)), double(shape.Z(:)));
-        %fprintf('Starting fast marching computation.\n');
-        %all_pairs_fmm = zeros(n,n);
-        %tic
-        %for iii = 1:numel(vertex_indices)
-        %    if mod(iii, 500) == 0
-        %        fprintf('iii = %d\n',iii); 
-        %    end
-        %    vi = vertex_indices(iii);
-        %    [~,D1] = fast_marching(vi, shape, 'vertex', shape.f_dns); 
-        %    all_pairs_fmm(vi, :) = D1;
-        %end
-        %toc
-        %fprintf('Making sparse\n');
-        %tic
-        %all_pairs_fmm(all_pairs_fmm > params.radius*2) = 0;
-        %all_pairs_fmm = sparse(all_pairs_fmm);
 
         fprintf('Computing coords for shape %s \n', names{idx_shape});
         fprintf('subshape: %d \n', idx_shape2);
@@ -142,7 +125,6 @@ for idx_shape = 1:length(names)
             theta_row = [theta_row; row];
             theta_col = [theta_col; col];
             theta_val = [theta_val; val];
-            %patch_theta = patch_theta + theta_tmp_tmp;
             time_sparse1 = time_sparse1 + toc;
             tic;
             % Set nodes where distance is zero to epsilon
@@ -153,8 +135,6 @@ for idx_shape = 1:length(names)
             rho_row = [rho_row; row];
             rho_col = [rho_col; col];
             rho_val = [rho_val; val];
-            %patch_rho_tmp = sparse(row, col, val, n, n);
-            %patch_rho = patch_rho_tmp+patch_rho;
             time_sparse2 = time_sparse2+toc;
         end          
         patch_theta_tmp = sparse(theta_row, theta_col, theta_val, n, n);

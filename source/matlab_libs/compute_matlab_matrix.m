@@ -138,11 +138,7 @@ for cv1_iiix = 1:length(S)
             comp_rings1_25(ring) = prctile(comp1(members), 25);
             comp_rings1_50(ring) = prctile(comp1(members), 50);
         end
-        % If any elements are nan, a rare case, assign a 0
-        %nan_25 = find(isnan(comp_rings1_25));
-        %comp_rings1_25(nan_25) = 0;
-        %nan_50 = find(isnan(comp_rings1_50));
-        %comp_rings1_50(nan_50) = 0;
+
         comp1 = median(comp_rings1_25);
         
         % Now s2->s1
@@ -162,10 +158,7 @@ for cv1_iiix = 1:length(S)
                 members
             end
         end
-        %nan_25 = find(isnan(comp_rings2_25));
-        %comp_rings2_25(nan_25) = 0;
-        %nan_50 = find(isnan(comp_rings2_50));
-        %comp_rings2_50(nan_50) = 0;
+
         comp2 = median(comp_rings2_25);
         shape_comp = min([comp1,comp2]);
 
@@ -177,10 +170,6 @@ for cv1_iiix = 1:length(S)
             s2.sc_25(cv2_ix,:) = comp_rings2_25(:);
             s2.sc_50(cv2_ix,:) = comp_rings2_50(:);
 
-%            outfilename1 = sprintf('%s_%d_%d_1.ply', outply_base, cv1_ix, cv2_ix);
-%            outfilename2 = sprintf('%s_%d_%d_2.ply', outply_base, cv1_ix, cv2_ix);
-%            save_shape_as_ply(subshape1, outfilename1, subshape1.subkeypoint);
-%            save_shape_as_ply(subshape2, outfilename2, subshape2.subkeypoint);
         end
     end
 end
