@@ -46,62 +46,96 @@ all_idxs = []
 all_nsources = []
 n_samples = 0
 
-for i,d in enumerate(data_list):
-    
-    source_patches = np.load(os.path.join(d,'aligned_source_patches.npy'), allow_pickle=True)
-    target_patch = np.load(os.path.join(d,'target_patch.npy'))
-    source_descs = np.load(os.path.join(d,'aligned_source_patches_descs.npy'), allow_pickle=True)
-    target_desc = np.load(os.path.join(d,'target_patch_descs.npy'), allow_pickle=True)
-
-    # Find correspondences between source and target.
-    # Make a target_patch cKDTree
-    ckd = cKDTree(target_patch)
-    features = np.zeros((len(source_descs), max_npoints, n_features))
-    inlier_scores = []
-    for iii, source_patch in enumerate(source_patches): 
-        dist, corr = ckd.query(source_patch)
-        # Compute the descriptor distance. 
-        desc_dist = np.sqrt(np.sum(np.square(source_descs[iii] - target_desc[corr]), axis=1))
-        features[iii, 0:len(desc_dist), :] = np.vstack([dist, desc_dist]).T
-        # Quickly compute an inlier rate.
-        inliers = np.sum(dist < 1.5)/float(len(dist))
-        inlier_scores.append(inliers)
-
-    source_patch_rmsds = np.load(os.path.join(d,'source_patch_rmsds.npy'), allow_pickle=True)
-    assert(len(source_patch_rmsds)== len(source_patches))
-    positive_alignments = np.where(source_patch_rmsds<max_rmsd)[0]
-    if len(positive_alignments)==0:#<n_positives:
-        continue
-
-    if len(positive_alignments) > n_positives:
-        chosen_positives = np.random.choice(positive_alignments,n_positives,replace=False)
-    else:
-        factor = n_positives/len(positive_alignments)
-        positive_alignments = np.repeat(positive_alignments, factor+1)
-        chosen_positives = positive_alignments[0:n_positives]
-
-    negative_alignments = np.where(source_patch_rmsds>=max_rmsd)[0]
-    # Always include include half of the best inliers. 
-    negative_alignments_top = np.argsort(inlier_scores)[::-1][:n_negatives//2]
-    negative_alignments_top = np.intersect1d(negative_alignments_top, negative_alignments)
-
-    chosen_negatives = np.random.choice(negative_alignments,n_negatives-len(negative_alignments_top),replace=False)
-    chosen_alignments = np.concatenate([chosen_positives,negative_alignments_top, chosen_negatives])
-
-    n_sources = len(features)
-    features = features[chosen_alignments]
+if not os.path.exists('transformation_data/all_labels.npy'):
+    for i,d in enumerate(data_list):
         
-    labels = np.expand_dims(np.concatenate([np.ones_like(chosen_positives),np.zeros_like(negative_alignments_top),np.zeros_like(chosen_negatives)]),1)
+        if i > 1000:
+            break
+        source_patches = np.load(os.path.join(d,'aligned_source_patches.npy'), allow_pickle=True)
+        target_patch = np.load(os.path.join(d,'target_patch.npy'))
+        source_descs = np.load(os.path.join(d,'aligned_source_patches_descs.npy'), allow_pickle=True)
+        target_desc = np.load(os.path.join(d,'target_patch_descs.npy'), allow_pickle=True)
+
+        
+        # If target patch has more than 200 points, then trim it down.
+        if len(target_patch) > max_npoints: 
+            subsample = np.random.choice(np.arange(len(target_patch)), size=max_npoints)
+            target_patch= target_patch[subsample]
+            target_desc = target_desc[subsample]
+
+        # Find correspondences between source and target.
+        # Make a target_patch cKDTree
+        ckd = cKDTree(target_patch)
+        features = np.zeros((len(source_descs), max_npoints, n_features))
+        inlier_scores = []
+        for iii, source_patch in enumerate(source_patches): 
+            source_desc = source_descs[iii]
+            # If source_patch is larger than 200, trim it down. 
+            if len(source_patch) > max_npoints: 
+                subsample = np.random.choice(np.arange(len(source_patch)), max_npoints)
+                source_patch= source_patch[subsample]
+                source_desc = source_desc[subsample]
+
+            dist, corr = ckd.query(source_patch)
+            # Compute the descriptor distance. 
+            desc_dist = np.sqrt(np.sum(np.square(source_desc - target_desc[corr]), axis=1))
+            try:
+                features[iii, 0:len(desc_dist), :] = np.vstack([dist, desc_dist]).T
+            except: 
+                set_trace()
+            # Quickly compute an inlier rate.
+            inliers = np.sum(dist < 1.5)/float(len(dist))
+            inlier_scores.append(inliers)
+
+        source_patch_rmsds = np.load(os.path.join(d,'source_patch_rmsds.npy'), allow_pickle=True)
+        assert(len(source_patch_rmsds)== len(source_patches))
+        positive_alignments = np.where(source_patch_rmsds<max_rmsd)[0]
+        if len(positive_alignments)==0:#<n_positives:
+            continue
+
+        if len(positive_alignments) > n_positives:
+            chosen_positives = np.random.choice(positive_alignments,n_positives,replace=False)
+        else:
+            factor = n_positives/len(positive_alignments)
+            positive_alignments = np.repeat(positive_alignments, factor+1)
+            chosen_positives = positive_alignments[0:n_positives]
+
+        negative_alignments = np.where(source_patch_rmsds>=max_rmsd)[0]
+        if len(negative_alignments) < n_negatives:
+            continue
+
+        print(d)
+
+        # Always include include half of the best inliers. 
+        negative_alignments_top = np.argsort(inlier_scores)[::-1][:n_negatives//2]
+        negative_alignments_top = np.intersect1d(negative_alignments_top, negative_alignments)
+
+        chosen_negatives = np.random.choice(negative_alignments,n_negatives-len(negative_alignments_top),replace=False)
+        chosen_alignments = np.concatenate([chosen_positives,negative_alignments_top, chosen_negatives])
+
+        n_sources = len(features)
+        features = features[chosen_alignments]
+            
+        labels = np.expand_dims(np.concatenate([np.ones_like(chosen_positives),np.zeros_like(negative_alignments_top),np.zeros_like(chosen_negatives)]),1)
+        
+        all_features[n_samples:n_samples+len(chosen_alignments),:,:] = features
+        all_labels[n_samples:n_samples+len(chosen_alignments)] = labels
+        n_samples += len(chosen_alignments)
     
-    all_features[n_samples:n_samples+len(chosen_alignments),:,:] = features
-    all_labels[n_samples:n_samples+len(chosen_alignments)] = labels
-    n_samples += len(chosen_alignments)
+    all_features = all_features[:n_samples]
+    all_labels = all_labels[:n_samples]
 
+    all_idxs = np.concatenate([(n_positives+n_negatives)*[i] for i in range(int(all_features.shape[0]/(n_positives+n_negatives)))])
 
-all_features = all_features[:n_samples]
-all_labels = all_labels[:n_samples]
+    np.save('transformation_data/all_features.npy', all_features)
+    np.save('transformation_data/all_labels.npy', all_labels)
+    np.save('transformation_data/all_idxs.npy', all_idxs)
 
-all_idxs = np.concatenate([(n_positives+n_negatives)*[i] for i in range(int(all_features.shape[0]/(n_positives+n_negatives)))])
+else:
+    all_features = np.load('transformation_data/all_features.npy')
+    all_labels = np.load('transformation_data/all_labels.npy')
+    all_idxs = np.load('transformation_data/all_idxs.npy')
+
 
 reg = keras.regularizers.l2(l=0.0)
 model = keras.models.Sequential()
