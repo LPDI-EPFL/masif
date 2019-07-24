@@ -2,6 +2,9 @@
 % Compute patch coordinates in matlab.
 
 function success = coords_mds(paths, params)
+    % Computes radial and angular coordinates for 
+    % all points in a patch with respect to its center points
+    % and saves them to disk.
 
     % shape instances
     tmp = dir(fullfile(paths.input, '*.mat'));
@@ -76,9 +79,9 @@ function success = coords_mds(paths, params)
             theta_col = [];
             theta_row = [];
             theta_val = [];
-
+            % Iterate over all points in the shape
             for iii = 1:numel(vertex_indices)
-
+                % Print some stats regularly
                 if mod(iii, 500) == 0
                     fprintf('vertex: %d \n', iii);
                     fprintf('Dijkstra time 1: %.2f\n', time_dijkstra1);
@@ -120,10 +123,10 @@ function success = coords_mds(paths, params)
                 all_pairs_dist = distances(G2);
                 time_dijkstra2 = toc + time_dijkstra2;
                 tic;
-                [mds_map, e] = cmdscale(all_pairs_dist, 2);
+                [mds_map, e] = cmdscale(all_pairs_dist, 2); %Multidimensional scaling to flatten out the surface
                 time_mds = toc + time_mds;
                 tic;
-                theta_tmp_tmp = compute_theta(mds_map, vix, neigh, shape);
+                theta_tmp_tmp = compute_theta(mds_map, vix, neigh, shape); % Compute angular coordinates
                 time_theta = toc + time_theta;
                 tic;
                 [row, col, val] = find(theta_tmp_tmp);
@@ -182,10 +185,11 @@ function par_save(path, all_patch_coord)
     save(path, 'all_patch_coord', '-v7.3');
 end
 
-% Compute_theta: compute the angles of each vertex with respect to some
-% random direction. Ensure that theta runs clockwise with respect to the
-% normals.
+
 function thetas = compute_theta(plane, vix, neighbors, shape)
+    % Compute_theta: compute the angles of each vertex with respect to some
+    % random direction. Ensure that theta runs clockwise with respect to the
+    % normals.
 
     plane_center_ix = find(neighbors == vix);
     thetas = sparse(numel(shape.X), numel(shape.X));
