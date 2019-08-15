@@ -1,0 +1,54 @@
+3biw_A_E N/D
+1kxp_A_D 16022
+1ezu_C_AB N/D
+2oul_A_B 5
+1jtd_B_A 7482
+1hcf_AB_X 2080
+1yvb_A_I 1
+1ppe_E_I 57
+1ml0_AB_D 4945
+2b42_B_A 39
+1a2k_C_AB 8805
+1pvh_A_B 1871
+1dfj_E_I 17
+3sgq_E_I 169
+1udi_E_I N/D
+1eaw_A_B 125
+1ewy_A_C 4351
+2abz_B_E 1747
+1r0r_E_I 58
+2yvj_A_B 6
+2mta_HL_A 38
+2fju_B_A 301
+1kac_A_B 1659
+1t6b_X_Y 8161
+4cpa_A_I 27
+1s1q_A_B 43354
+1z5y_D_E 162
+2uuy_A_B 5402
+2hle_A_B 1129
+1d6r_A_I 22589
+1gl1_A_I 8653
+2btf_A_P 3
+1gxd_A_C 1535
+1xd3_A_B 1233
+1avx_A_B 44
+1fle_E_I 12305
+1ay7_A_B 10587
+2sni_E_I 65
+1ak4_A_D 1651
+2sic_E_I 5
+[1.0000e+00 3.0000e+00 5.0000e+00 5.0000e+00 6.0000e+00 1.7000e+01
+ 2.7000e+01 3.8000e+01 3.9000e+01 4.4000e+01 5.7000e+01 5.8000e+01
+ 6.5000e+01 1.2500e+02 1.6200e+02 1.6900e+02 3.0100e+02 1.1290e+03
+ 1.2330e+03 1.5350e+03 1.6510e+03 1.6590e+03 1.7470e+03 1.8710e+03
+ 2.0800e+03 4.3510e+03 4.9450e+03 5.4020e+03 7.4820e+03 8.1610e+03
+ 8.6530e+03 8.8050e+03 1.0587e+04 1.2305e+04 1.6022e+04 2.2589e+04
+ 4.3354e+04        inf        inf        inf]
+Total: 40
+Ranked within top 1000: 17
+Ranked within top 100: 13
+Ranked within top 10: 5
+Ranked #1: 1
+Not ranked at all: 3
+Total time: 13174.641833333333 minutes
