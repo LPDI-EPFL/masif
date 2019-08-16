@@ -79,7 +79,7 @@ The following is the list of required libraries and programs, as well as the ver
 * [matlab](https://ch.mathworks.com/products/matlab.html) (R2018a). Used to compute some geometric features and angular/radial coordinates.
 * [Python bindings for matlab](https://www.mathworks.com/help/matlab/matlab_external/get-started-with-matlab-engine-for-python.html) - To call matlab functions from within Python.
 * [Tensorflow](https://www.tensorflow.org/) (1.9). Use to model, train, and evaluate the actual neural networks. Models were trained and evaluated on a NVIDIA Tesla K40 GPU.
-* [Dask] (https://dask.org/) (2.2.0). Run function calls on multiple threads (Optional for reproducing some benchmarks).
+* [Dask](https://dask.org/) (2.2.0). Run function calls on multiple threads (Optional for reproducing some benchmarks).
 * [Pymol](https://pymol.org/2/). This optional plugin allows one to visualize surface files in PyMOL.
  
 We are working to reduce this list of requirements for future versions.
