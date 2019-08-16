@@ -1,12 +1,15 @@
 import os
-import dask
+# import dask
 import numpy as np
 from scipy.spatial import cKDTree
 import glob
 from default_config.masif_opts import masif_opts
 
-@dask.delayed
+
+# @dask.delayed
 def save_nn(d):
+    """ Computes nearest neighbours of points on aligned patches on target patch"""
+
     aligned_source_patches = np.load(
         d + "/aligned_source_patches.npy", encoding="latin1"
     )
@@ -27,8 +30,9 @@ def save_nn(d):
     return True
 
 
-@dask.delayed
+# @dask.delayed
 def preprocess_protein(d):
+    """ Precomputes features to train evaluate network on"""
     n_features = 3
 
     aligned_source_patches = np.load(
@@ -61,6 +65,7 @@ def preprocess_protein(d):
             )
         )
         protein_npoints.append(npoints)
+        # Features are 1/dist, 1/desc_dist and normal dot product
         features = np.zeros((npoints, n_features))
         nn_dists[nn_dists < 0.5] = 0.5
         features[:npoints, 0] = 1.0 / nn_dists
@@ -72,7 +77,7 @@ def preprocess_protein(d):
     return True
 
 
-data_dir = 'transformation_data/'
+data_dir = "transformation_data/"
 data_list = glob.glob(data_dir + "*")
 results = []
 results2 = []
@@ -81,10 +86,12 @@ for d in data_list:
         continue
     nn_path = d + "/all_nn_dists.npy"
     if not os.path.exists(nn_path):
-        results.append(save_nn(d))
+        _ = save_nn(d)
+        # results.append(save_nn(d))
     features_path = d + "/features.npy"
     if not os.path.exists(features_path):
-        results2.append(preprocess_protein(d))
-print(len(results), len(results2))
-results = dask.compute(*results)
-results2 = dask.compute(*results2)
+        _ = preprocess_protein(d)
+        # results2.append(preprocess_protein(d))
+# print(len(results), len(results2))
+# results = dask.compute(*results)
+# results2 = dask.compute(*results2)

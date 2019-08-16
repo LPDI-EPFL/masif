@@ -29,11 +29,10 @@ with open(
 ) as f:
     testing_list = f.read().splitlines()
 
-n_positives = 1
-n_negatives = 200
+n_positives = 1 # Number of correctly aligned to train on
+n_negatives = 200 # Number of incorrectly aligned
 max_rmsd = 5.0
 max_npoints = 200
-inlier_distance = 1.0
 n_features = 3
 data_list = glob.glob(data_dir+'*')
 data_list = [
@@ -50,6 +49,7 @@ all_npoints = []
 all_idxs = []
 all_nsources = []
 n_samples = 0
+# Loading data into memory
 for i, d in enumerate(data_list):
     if (i % 100 == 0) and (i == 0):
         print(i, "Feature array size (MB)", all_features.nbytes * 1e-6)
@@ -74,6 +74,7 @@ for i, d in enumerate(data_list):
         continue
     if len(negative_alignments) < n_negatives:
         continue
+    # Randomly choose positives and negatives
     chosen_positives = np.random.choice(positive_alignments, n_positives, replace=False)
     chosen_negatives = np.random.choice(negative_alignments, n_negatives, replace=False)
     chosen_alignments = np.concatenate([chosen_positives, chosen_negatives])
@@ -84,10 +85,12 @@ for i, d in enumerate(data_list):
     n_sources = len(features)
     features = features[chosen_alignments]
     features_trimmed = np.zeros((len(chosen_alignments), max_npoints, n_features))
+    # Limit number of points to max_npoints
     for j, f in enumerate(features):
         if f.shape[0] <= max_npoints:
             features_trimmed[j, : f.shape[0], : f.shape[1]] = f
         else:
+            # Randomly select points
             selected_rows = np.random.choice(f.shape[0], max_npoints, replace=False)
             features_trimmed[j, :, : f.shape[1]] = f[selected_rows]
 
@@ -111,6 +114,7 @@ all_idxs = np.concatenate(
     ]
 )
 
+# Model definition
 reg = keras.regularizers.l2(l=0.0)
 model = keras.models.Sequential()
 model.add(keras.layers.Conv1D(filters=8, kernel_size=1, strides=1))
@@ -146,6 +150,7 @@ model.compile(
 )
 
 callbacks = [
+    # Save best model
     keras.callbacks.ModelCheckpoint(
         filepath="models/nn_score/trained_model.hdf5",
         save_best_only=True,
@@ -156,6 +161,7 @@ callbacks = [
         log_dir="./logs/nn_score", write_graph=False, write_images=True
     ),
 ]
+# Train model
 history = model.fit(
     all_features,
     all_labels,
