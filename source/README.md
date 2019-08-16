@@ -1,2 +1,2 @@
 ### source/
-MaSIF source code implemente in Python and Matlab. 
+MaSIF source code implemented in Python and Matlab. 

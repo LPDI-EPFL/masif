@@ -1,2 +1,2 @@
-# source/masif_ligand
+### source/masif_ligand
 Contains functions to read and write masif ligand.

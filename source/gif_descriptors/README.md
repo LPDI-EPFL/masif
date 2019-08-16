@@ -1,4 +1,4 @@
-# source/gif_descriptors/
+### source/gif_descriptors/
 Contains code to compute geometric invariant fingerprint descriptors, as presented in: 
 
 Yin, S., Proctor, E. A., Lugovskoy, A. A., & Dokholyan, N. V. (2009). 
