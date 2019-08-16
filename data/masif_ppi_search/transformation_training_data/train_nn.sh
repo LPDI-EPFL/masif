@@ -8,4 +8,4 @@ slmodules -r deprecated
 module load gcc cuda cudnn mvapich2 openblas
 source /home/gainza/lpdi_fs/masif/tensorflow-1.12/bin/activate
 masif_root=$(git rev-parse --show-toplevel)
-python $masif_source/masif_ppi_search/transformation_training_data/train_score_nn.py
+python $masif_source/masif_ppi_search/transformation_training_data/train_evaluation_network.py
