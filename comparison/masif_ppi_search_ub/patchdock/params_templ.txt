@@ -9,7 +9,7 @@ receptorActiveSite site_p1.txt
 #ligandActiveSite site2.txt
 #receptorBlockingSite site1.txt
 #ligandBlockingSite site2.txt
-protLib /your/path/to/patchdock/PatchDock/chem.lib
+protLib /home/gainza/lpdi_fs/seeder/data/ppi_benchmark_complexes/10-patchdock//PatchDock/chem.lib
 log-file patch_dock.log
 log-level 2
 
