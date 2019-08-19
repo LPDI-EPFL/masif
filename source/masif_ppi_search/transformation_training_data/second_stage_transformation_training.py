@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from IPython.core.debugger import set_trace
+#from transformation_training_data.second_stage_transformation_training_helper import * 
 from second_stage_transformation_training_helper import * 
 # coding: utf-8
 import sys
@@ -141,6 +142,7 @@ for target_ix,target_pdb in enumerate(rand_list):
 
     # The aligned source patches themselves. 
     aligned_source_patches = []
+    aligned_source_normals = []
     aligned_source_patches_descs = []
 
     # The RMSDs, inf if not from same complex
@@ -176,13 +178,14 @@ for target_ix,target_pdb in enumerate(rand_list):
         random_transformation = get_center_and_random_rotate(source_pcd)
 
         source_pcd.transform(random_transformation)
-        all_results, all_source_patch, all_source_descs = \
+        all_results, all_source_patch, all_source_descs= \
                 multidock(source_pcd, source_coords, source_desc,source_vix, target_patch, target_patch_descs) 
 
         for j,res in enumerate(all_results):
             if res.fitness == 0:
                 continue
             aligned_source_patches.append(np.asarray(all_source_patch[j].points))
+            aligned_source_normals.append(np.asarray(all_source_patch[j].normals))
             aligned_source_patches_descs.append(np.asarray(all_source_descs[j].data).T)
             source_patch_names.append(source_pdb)
 
@@ -221,8 +224,10 @@ for target_ix,target_pdb in enumerate(rand_list):
     # Save training data for this source patch. 
     np.save(os.path.join(outdir,'source_patch_names'), source_patch_names)
     np.save(os.path.join(outdir,'aligned_source_patches'), np.asarray(aligned_source_patches))
+    np.save(os.path.join(outdir,'aligned_source_normals'), np.asarray(aligned_source_normals))
     np.save(os.path.join(outdir,'aligned_source_patches_descs'), np.asarray(aligned_source_patches_descs))
     np.save(os.path.join(outdir,'source_patch_rmsds'), source_patch_rmsds)
     np.save(os.path.join(outdir,'target_patch'), np.asarray(target_patch.points))
+    np.save(os.path.join(outdir,'target_patch_normals'), np.asarray(target_patch.normals))
     np.save(os.path.join(outdir,'target_patch_descs'), np.asarray(target_patch_descs.data).T)
 
