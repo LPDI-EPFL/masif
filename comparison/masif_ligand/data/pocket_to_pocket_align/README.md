@@ -1,4 +1,4 @@
-# Scripts to generate a pocket-to-pocket split for benchmarking MaSIF-ligand, ProBiS and KRIPO.
+### Scripts to generate a pocket-to-pocket split for benchmarking MaSIF-ligand, ProBiS and KRIPO.
 
 + *all_test_to_all_train.sh* - Script to align each pocket in the test set to all pockets in the training set. 
 + *get_split.py* - Once pockets have been aligned, call this script to get the split. 
