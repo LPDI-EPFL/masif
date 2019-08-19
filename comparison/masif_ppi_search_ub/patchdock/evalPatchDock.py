@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 from IPython.core.debugger import *
 import sys
 from Bio.PDB import *
-import pyflann
+from sklearn.neighbors import KDTree
 
 def test_alignment(target_pdb_fn, source_pdb_fn, aligned_pdb_fn, interface_dist = 10.0):
     parser = PDBParser()
@@ -19,17 +19,30 @@ def test_alignment(target_pdb_fn, source_pdb_fn, aligned_pdb_fn, interface_dist 
 
     aligned_struct = parser.get_structure(aligned_pdb_fn, aligned_pdb_fn)
 
-    # Find interface atoms in source. 
-    flann = pyflann.FLANN()
-    r, d = flann.nn(target_coord, source_coord)
-    d = np.sqrt(d) 
+    # The following code was replaced by the sklearn code above. I leave it here for comparison purposes
+    #    flann = pyflann.FLANN()
+    #    r, d = flann.nn(target_coord, source_coord)
+    #    d = np.sqrt(d
+    #flann = pyflann.FLANN()
+    #r, d = flann.nn(target_coord, source_coord)
+    #d = np.sqrt(d) 
+ 
+    # For each element in source_coord, find the closest CA atom in target_coord. If it is within interface_dist, then it is interface.
+    kdt = KDTree(target_coord)
+    d, r = kdt.query(source_coord)
+    # d is of size source_coord
+    # Those atoms in d with less than interface_dist, are interface.
     int_at_ix = np.where(d < interface_dist)[0]
 
     dists = []
     for at_ix in int_at_ix: 
         res_id = source_atom[at_ix].get_parent().get_id()
         chain_id = source_atom[at_ix].get_parent().get_parent().get_id()
-        d = aligned_struct[0][chain_id][res_id]['CA'] - source_atom[at_ix]
+        try:
+            d = aligned_struct[0][chain_id][res_id]['CA'] - source_atom[at_ix]
+        except:
+            print("Failed on {} {}".format(source_pdb_fn, aligned_pdb_fn))
+            sys.exit(1)
         dists.append(d)
 
     rmsd = np.sqrt(np.mean(np.square(dists)))
@@ -39,7 +52,7 @@ def test_alignment(target_pdb_fn, source_pdb_fn, aligned_pdb_fn, interface_dist 
 # Go to directory
 
 struct_dir = 'pdbs/'
-trans_output_bin = '/your/path/to/patchdock/transOutput.pl'
+trans_output_bin = '/home/gainza/lpdi_fs/seeder/data/ppi_benchmark_complexes/10-patchdock/PatchDock/transOutput.pl'
 
 pdbid = sys.argv[1]
 # Open all results file and get the top 1000 structures by geometric score. 
@@ -50,7 +63,7 @@ ground_truth_present = False
 count_files = 0
 count_file = open('count_files.txt', 'a')
 missing_file = []
-all_benchmark_files = [x.rstrip() for x in open('benchmark_list.txt').readlines()]
+all_benchmark_files = [x.rstrip() for x in open('../benchmark_list.txt').readlines()]
 missing_files = [x for x in all_benchmark_files if x not in os.listdir(run_dir)]
 
 for outputfile in os.listdir(run_dir):
@@ -96,7 +109,8 @@ if not ground_truth_present:
 else:
     found = 0
     if len(gt_ix) > 0: 
-        transo = Popen([trans_output_bin, pdbid, `1`, `len(gt_ix)`], cwd=run_dir, stdout=PIPE, stdin=PIPE)
+        transo = Popen([trans_output_bin, pdbid, '1', '{}'.format(len(gt_ix))], cwd=run_dir, stdout=PIPE, stdin=PIPE)
+        transo.communicate()
         for ix in range(len(gt_ix)):
             # Open the PDB. 
             rmsd = test_alignment(target_pdb_fn, source_pdb_fn, aligned_pdb_fn.format(ix+1))
