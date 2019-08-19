@@ -11,5 +11,5 @@ echo ${SLURM_ARRAY_TASK_ID}
 echo FINISHED at `date`
 
 # Run masif search second stage with 100 decoys and 2000 decoys. 
-./second_stage_masif.sh 100 ${SLURM_ARRAY_TASK_ID}
-./second_stage_masif.sh 2000 ${SLURM_ARRAY_TASK_ID}
+./second_stage_masif.sh 100 
+./second_stage_masif.sh 2000 
