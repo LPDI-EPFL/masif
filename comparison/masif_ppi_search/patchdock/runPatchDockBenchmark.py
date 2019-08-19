@@ -8,13 +8,13 @@ import pyflann
 from IPython.core.debugger import set_trace
 from Bio.PDB import *
 
-struct_dir = "pdbs/"
+struct_dir = "/home/gainza/lpdi_fs/masif_paper/masif/data/masif_ppi_search/data_preparation/01-benchmark_pdbs/"
 benchmark_list_fn = "../benchmark_list.txt"
 # Precomputation dir for masif. The location of the target vertex is extracted from here.
-precomp_dir = "../../../data/masif_ppi_search/data_preparation/04b-precomputation_12A/"
+precomp_dir = "../../../data/masif_ppi_search/data_preparation/04b-precomputation_12A/precomputation/"
 # Set location of your patchdock binarires here.
-pd_bin = "/your/path/to/PatchDock/patch_dock.Linux"
-trans_output_bin = "/your/path/to/PatchDock/transOutput.pl"
+pd_bin = "/home/gainza/lpdi_fs/seeder/data/ppi_benchmark_complexes/10-patchdock/PatchDock/patch_dock.Linux"
+trans_output_bin = "/home/gainza/lpdi_fs/seeder/data/ppi_benchmark_complexes/10-patchdock/PatchDock/transOutput.pl"
 
 # benchmark surfaces.
 benchmark_list = open(benchmark_list_fn).readlines()
@@ -106,18 +106,19 @@ for target_pdb in benchmark_pdbs_target:
         # Run patchdock. Time it (do not include the time to generate the PDBs)
         os.path.dirname(outdir)
         pd_out_fn = os.path.join(source_pdb)
-        tic = time.time()
-        print([pd_bin, "params.txt", pd_out_fn])
+        print(['/usr/bin/time', '-f', '\"user: %U\"', pd_bin, "params.txt", pd_out_fn])
         process = subprocess.Popen(
-            [pd_bin, "params.txt", pd_out_fn],
+            ['/usr/bin/time', '-f', '%U', pd_bin, "params.txt", pd_out_fn],
+#            ['/usr/bin/time', '-f ', '\"user: %U\"', pd_bin, "params.txt", pd_out_fn],
             cwd=outdir,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        toc = time.time()
-        print("PatchDock took {:.3f}s".format(toc - tic))
-        total_time += toc - tic
+        stderr_lines = stderr.splitlines()
+        cpu_time = float(stderr_lines[-1])
+        print("PatchDock took {:.3f}s in cpu time".format(cpu_time))
+        total_time += cpu_time
     # Save all runing times to a file called total_times.txt
     total_time_file = open("total_times.txt", "a+")
     total_time_file.write("{} {:.2f}\n".format(target_pdb, total_time))

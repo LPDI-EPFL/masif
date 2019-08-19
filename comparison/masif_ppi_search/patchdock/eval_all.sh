@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 rm count_files.txt
 rm data.txt
 python evalPatchDock.py 3F74_A_B
