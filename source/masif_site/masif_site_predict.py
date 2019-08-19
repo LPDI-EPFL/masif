@@ -1,4 +1,5 @@
 # Header variables and parameters.
+import time
 import os
 import numpy as np
 from IPython.core.debugger import set_trace
@@ -86,7 +87,7 @@ for ppi_pair_id in ppi_pair_ids:
         try:
             rho_wrt_center = np.load(in_dir + pid + "_rho_wrt_center.npy")
         except:
-            print("File not found")
+            print("File not found: {}".format(in_dir + pid + "_rho_wrt_center.npy"))
             continue
         theta_wrt_center = np.load(in_dir + pid + "_theta_wrt_center.npy")
         input_feat = np.load(in_dir + pid + "_input_feat.npy")
@@ -97,6 +98,7 @@ for ppi_pair_id in ppi_pair_ids:
 
         print("Total number of patches:{} \n".format(len(mask)))
 
+        tic = time.time()
         scores = run_masif_site(
             params,
             learning_obj,
@@ -106,11 +108,13 @@ for ppi_pair_id in ppi_pair_ids:
             mask,
             indices,
         )
+        toc = time.time()
         print(
             "Total number of patches for which scores were computed: {}\n".format(
                 len(scores[0])
             )
         )
+        print("GPU time (real time, not actual GPU time): {:.3f}s".format(toc-tic))
         np.save(
             params["out_pred_dir"] + "/pred_" + pdbid + "_" + chains[ix] + ".npy",
             scores,
