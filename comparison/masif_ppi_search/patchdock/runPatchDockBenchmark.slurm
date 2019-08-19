@@ -16,5 +16,4 @@ while read p; do
         python ./runPatchDockBenchmark.py $p
     fi
     i=$((i+1))
-done < benchmark_list.txt
-#done < 00-lists/zdock_and_high_affinity.txt
+done < ../benchmark_list.txt

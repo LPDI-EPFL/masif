@@ -4,4 +4,4 @@ for line in lines:
     val = float(line.split(" ")[1])
     total += val
     print(val)
-print(total / 60) / 60
+print('Total time (cpu minutes): {}'.format(total / 60))
