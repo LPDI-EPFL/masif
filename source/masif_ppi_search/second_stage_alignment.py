@@ -2,7 +2,6 @@
 # coding: utf-8
 import sys
 from open3d import *
-import ipdb
 import numpy as np
 import os
 from sklearn.manifold import TSNE
@@ -13,7 +12,7 @@ from default_config.masif_opts import masif_opts
 import sys
 
 print(sys.argv)
-if len(sys.argv) != 6 or (sys.argv[5] != "masif" and sys.argv[5] != "gif"):
+if len(sys.argv) != 7 or (sys.argv[5] != "masif" and sys.argv[5] != "gif"):
     print("Usage: {} data_dir K ransac_iter num_success gif|masif".format(sys.argv[0]))
     print("data_dir: Location of data directory.")
     print("K: Number of descriptors to run")
@@ -26,6 +25,7 @@ K = int(sys.argv[2])
 ransac_iter = int(sys.argv[3])
 num_success = int(sys.argv[4])
 method = sys.argv[5]
+random_seed = int(sys.argv[6])
 
 surf_dir = os.path.join(data_dir, masif_opts["ply_chain_dir"])
 
@@ -100,7 +100,7 @@ def get_center_and_random_rotate(pcd):
 
 
 def get_patch_geo(
-    pcd, patch_coords, center, descriptors, outward_shift=0.0, flip=False
+    pcd, patch_coords, center, descriptors, outward_shift=0.25, flip=False
 ):
     idx = patch_coords[center]
     pts = np.asarray(pcd.points)[idx, :]
@@ -154,8 +154,10 @@ def multidock(
                 CorrespondenceCheckerBasedOnDistance(2.0),
                 CorrespondenceCheckerBasedOnNormal(np.pi / 2),
             ],
-            RANSACConvergenceCriteria(ransac_iter, 500),
+            RANSACConvergenceCriteria(ransac_iter, 500), random_seed
         )
+        result = registration_icp(source_patch, target_pcd, 
+            1.0, result.transformation, TransformationEstimationPointToPlane())
         ransac_time = ransac_time + (time.time() - tic)
 
         tic = time.time()
@@ -437,7 +439,7 @@ for target_ix, target_pdb in enumerate(rand_list):
     neg_scores = []
     time_global = time.time() - tic
 
-    # Go thorugh every source pdb.
+    # Go through every source pdb.
     for source_ix, source_pdb in enumerate(rand_list):
         tic = time.time()
         viii = chosen_top[np.where(all_pdb_id[chosen_top] == source_pdb)[0]]
@@ -551,6 +553,16 @@ for pdb_ix in range(len(all_positive_scores)):
             )
             ranks.append(number_better_than_best_pos)
 
+ranks = np.array(ranks)
+print(
+    "Number in top 100 {} out of {}".format(np.sum(ranks <= 100), len(all_positive_scores))
+)
+print(
+    "Number in top 10 {} out of {}".format(np.sum(ranks <= 10), len(all_positive_scores))
+)
+print(
+    "Number in top 1 {} out of {}".format(np.sum(ranks <= 1), len(all_positive_scores))
+)
 print("Median rank for correctly ranked ones: {}".format(np.median(ranks)))
 print("Mean rank for correctly ranked ones: {}".format(np.mean(ranks)))
 print(
@@ -558,19 +570,23 @@ print(
 )
 
 outfile = open("results_{}.txt".format(method), "a+")
-outfile.write("K Total NumCorrect MeanRank MedianRank MeanRMSD Time\n")
-numcorrect = len(all_positive_scores) - unranked
-meanrank = np.mean(ranks)
-medianrank = np.median(ranks)
+outfile.write("K,Total,Top2000,Top1000,Top100,Top10,Top5,Top1,MeanRMSD,Time\n")
+top2000= np.sum(ranks<=2000)
+top1000= np.sum(ranks<=1000)
+top100= np.sum(ranks<=100)
+top10= np.sum(ranks<=10)
+top5= np.sum(ranks<=5)
+top1= np.sum(ranks<=1)
 meanrmsd = np.mean(rmsds)
 runtime = np.sum(all_time_global)
 
 
-outline = "{} {} {} {} {} {} {}\n".format(
-    K, len(all_positive_scores), numcorrect, meanrank, medianrank, meanrmsd, runtime
+outline = "{},{},{},{},{},{},{},{},{},{}\n".format(
+    K, len(all_positive_scores), top2000, top1000, top100, top10, top5, top1, meanrmsd, runtime
 )
 outfile.write(outline)
 
 outfile.close()
 
 sys.exit(0)
+
