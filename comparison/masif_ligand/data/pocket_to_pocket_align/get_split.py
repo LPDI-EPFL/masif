@@ -1,3 +1,10 @@
+"""
+get_split.py: Once a pocket has been align, print the pockets that do not align at 0.5 or more 
+                to at least one pocket in the training set. 
+Pablo Gainza - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
+
 import os 
 from IPython.core.debugger import set_trace
 import numpy as np

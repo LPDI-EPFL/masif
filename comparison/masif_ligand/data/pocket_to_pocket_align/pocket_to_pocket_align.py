@@ -1,6 +1,9 @@
-""" Usage:
-    Align a list of cofactor pockets in the training set to a list in the testing set. 
+""" 
+pocket_to_pocket_align.py: Align a list of cofactor pockets in the training set to a list in the testing set. 
+Pablo Gainza - LPDI STI EPFL 2019
+Released under an Apache License 2.0
 """
+
 import sys
 from Bio.PDB import * 
 from subprocess import Popen, PIPE
@@ -10,7 +13,14 @@ import os
 
 
 def align_pocket_pair(pdbfns, cofids, resids, chainids, out_fn_base, cofactor_distance_cutoff = 3.0):
-
+"""
+    align_pocket_pair: align each pair of pockets using the program TMalign. Pockets are first 
+    extracted from the PDB using biopython; then they are saved in a new pdb and finally they are
+    saved. 
+    
+    The program TMalign must be in the current directory. 
+"""
+    
     # Make sure the cofactor is the same one. 
     assert(cofids[0] == cofids[1]) 
 
@@ -82,16 +92,19 @@ def align_pocket_pair(pdbfns, cofids, resids, chainids, out_fn_base, cofactor_di
     return np.mean(tm_score) 
 
 
-# Open the testing list
+# Open the testing list with all pockets.
 testing_list_lines = open('lists/testing_pockets.txt').readlines()
+# Directory with all testing pdb files in the format ({PDBID}_{CHAIN}.pdb)
 testing_pdb_dir = '../testing_pdbs/'
 
 # Open the training list 
 training_list_lines = open('lists/training_pockets.txt').readlines()
+# Directory with all training pdb files. 
 training_pdb_dir = '../training_pdbs/'
 
 output_dir = 'test_to_train'
 
+# my_ix is the index to the testing id in the testing_pockets.txt file.
 my_ix = int(sys.argv[1])-1
 
 # The testing line corresponds to that of my_ix
@@ -125,7 +138,7 @@ for training_full_id in training_list_lines:
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
     tmpfn_base = os.path.join(tmpdir, testing_full_id.rstrip()+'_'+training_full_id.rstrip())
-    # Perform an alignment
+    # Perform an alignment using tm alignment. 
     tm_score = align_pocket_pair([test_pdbfn, train_pdbfn], \
             [test_cofid, train_cofid], \
             [test_resid, train_resid], 
