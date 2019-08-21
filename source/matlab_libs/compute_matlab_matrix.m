@@ -1,5 +1,8 @@
-function [ result ] = comptue_matlab_matrix(outmat_base, v1, f1, c1, hb1, hph1, v2, f2, c2, hb2, hph2, masif_opts)
-    % Compute matlab matrices for ply files and shape complementarity values.
+% Compute matlab matrices from ply files; computes the shape index geometric feature and  shape complementarity values (in cases where two proteins are input).
+% 
+% Pablo Gainza - LPDI STI EPFL 2019
+% Released under an Apache License 2.0
+function [ result ] = compute_matlab_matrix(outmat_base, v1, f1, c1, hb1, hph1, v2, f2, c2, hb2, hph2, masif_opts)
 
     outfilename = sprintf('%s.mat', outmat_base);
 
@@ -39,6 +42,7 @@ function [ result ] = comptue_matlab_matrix(outmat_base, v1, f1, c1, hb1, hph1, 
         s2.TRIV = f2;
         [n2, nf2] = compute_normal(v2, f2, 0);
 
+        % Compute the area of each vertex.
         s2 = computeVertexAreas(s2);
 
         s2.shape_index = computeShapeIndex(s2);
@@ -64,7 +68,7 @@ function [ result ] = comptue_matlab_matrix(outmat_base, v1, f1, c1, hb1, hph1, 
         return;
     end
 
-    % Compute the geodesic distances between all vertices.
+    % Compute the geodesic distances between all vertices using the fast marching methods.
     fprintf('Computing fast marching method.\n');
     s1.f_dns = fastmarchmex('init', int32(s1.TRIV - 1), double(s1.X(:)), double(s1.Y(:)), double(s1.Z(:)));
     s2.f_dns = fastmarchmex('init', int32(s2.TRIV - 1), double(s2.X(:)), double(s2.Y(:)), double(s2.Z(:)));
@@ -163,6 +167,7 @@ function [ result ] = comptue_matlab_matrix(outmat_base, v1, f1, c1, hb1, hph1, 
 
             end
 
+            % Use the median.
             comp2 = median(comp_rings2_25);
             shape_comp = min([comp1, comp2]);
 
@@ -194,6 +199,7 @@ function [ result ] = comptue_matlab_matrix(outmat_base, v1, f1, c1, hb1, hph1, 
 end
 
 function [ ] = save_full_mat_file(filename, shape1, shape2, sc_pairs)
+    % Save the full matlab matrix. 
     p1.X = shape1.X;
     p1.Y = shape1.Y;
     p1.Z = shape1.Z;

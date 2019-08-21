@@ -1,4 +1,4 @@
-function [G, graph_weights] = geodesic_dists_graph(shape, radius)
+function [G, graph_weights] = geodesic_dists_graph(shape)
     % Takes in a mesh and returns its underlying graph
     % and the lengths of the edges
 

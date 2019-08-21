@@ -1,5 +1,7 @@
 % Pablo Gainza LPDI STI EPFL 2018-2019
-% Compute patch coordinates in matlab.
+% Compute patch coordinates for MaSIF. 
+% This code reads a matlab matrix with a protein shape, decomposes it into radial patches, 
+%                       and computes radial coordinates and angular coordinates
 
 function success = coords_mds(paths, params)
     % Computes radial and angular coordinates for 
@@ -38,6 +40,7 @@ function success = coords_mds(paths, params)
         % load current shape
         tmp = load(fullfile(paths_.input, [name, '.mat']));
 
+        % Check if there are two proteins ('p1' and 'p2) or just one. 
         if isfield(tmp, 'p2')
             list_shapes = [tmp.p1, tmp.p2];
         else
@@ -47,22 +50,24 @@ function success = coords_mds(paths, params)
         all_patch_coord = [];
         list_patch_coord_names = {'p1', 'p2'};
 
-        % Go through each of the two proteins.
+        % Go through each of the two proteins (p1 and p2), or just one.
         for idx_shape2 = 1:length(list_shapes)
             shape = list_shapes(idx_shape2);
+            % Compute faces adjacent to each vertex. 
             shape.idxs = compute_vertex_face_ring(shape.TRIV');
             verts = [shape.X, shape.Y, shape.Z];
             face = shape.TRIV;
+            % Compute the normals of the shape.
             [~, shape.normalf] = compute_normal(verts, face, 0);
 
             n = size(shape.X, 1);
+            % theta: angular coordinates; rho: radial coordinates.
             patch_theta = sparse(n, n);
             patch_rho = sparse(n, n);
-            % Precompute graph structure for nearest neighbors.
-            [G, A] = geodesic_dists_graph(shape, radius);
+            % Precompute graph structure for Dijkstra. A: the graph weights.
+            [G, A] = geodesic_dists_graph(shape);
             % Go through each vertex.
             vertex_indices = 1:n;
-            % Compute all distances using fast marching method.
 
             fprintf('Computing coords for shape %s \n', names{idx_shape});
             fprintf('subshape: %d \n', idx_shape2);
@@ -79,7 +84,7 @@ function success = coords_mds(paths, params)
             theta_col = [];
             theta_row = [];
             theta_val = [];
-            % Iterate over all points in the shape
+            % Iterate over all points in the shape, extracting a radial patch around each one. 
             for iii = 1:numel(vertex_indices)
                 % Print some stats regularly
                 if mod(iii, 500) == 0
@@ -97,6 +102,7 @@ function success = coords_mds(paths, params)
                     time_mds = 0.0;
                     time_dijkstra2 = 0.0;
                     tic;
+                    % For memory/speed reasons, merge coordinates here.
                     patch_theta_tmp = sparse(theta_row, theta_col, theta_val, n, n);
                     patch_rho_tmp = sparse(rho_row, rho_col, rho_val, n, n);
                     patch_theta = patch_theta + patch_theta_tmp;
@@ -114,19 +120,25 @@ function success = coords_mds(paths, params)
                 vix = vertex_indices(iii);
                 % Compute the distance between vix and all neighbors.
                 tic;
+                % Call weighted Dijkstra from vertex vix to all other nodes in the graph
                 dists = distances(G, vix);
                 time_dijkstra1 = time_dijkstra1 + toc;
                 tic;
+                % Neigh: all vertices within radius. 
                 neigh = find(dists <= radius);
+                % gw2: graph weights between neighbors.
                 gw2 = A(neigh, neigh);
                 G2 = graph(gw2);
+                % Compute the pairwise geodesic (Dijkstra) distances between all vertices in the patch.
                 all_pairs_dist = distances(G2);
                 time_dijkstra2 = toc + time_dijkstra2;
                 tic;
+                % use the pairwise distance between all vertices in the patch to scale the patch from 2D manifold space to a plane. 
                 [mds_map, e] = cmdscale(all_pairs_dist, 2); %Multidimensional scaling to flatten out the surface
                 time_mds = toc + time_mds;
                 tic;
-                theta_tmp_tmp = compute_theta(mds_map, vix, neigh, shape); % Compute angular coordinates
+                % Compute angular coordinates (theta) with respect to a random direction 
+                theta_tmp_tmp = compute_theta(mds_map, vix, neigh, shape); 
                 time_theta = toc + time_theta;
                 tic;
                 [row, col, val] = find(theta_tmp_tmp);
@@ -154,6 +166,7 @@ function success = coords_mds(paths, params)
 
             % compute the patches
             fprintf('Finished computing patch coordinates\n');
+            % First come the radial (rho) coordinates and then the angular (theta) coordinates.
             patch_coord = [sparse(patch_rho), sparse(patch_theta)];
             all_patch_coord.(list_patch_coord_names{idx_shape2}) = patch_coord;
         end
@@ -182,6 +195,7 @@ function success = coords_mds(paths, params)
 end
 
 function par_save(path, all_patch_coord)
+    % Save the polar coordinates.
     save(path, 'all_patch_coord', '-v7.3');
 end
 
