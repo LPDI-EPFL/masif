@@ -3,7 +3,7 @@ MaSIF source code implemented in Python and Matlab.
 
 Navigating this code: 
 
-Quick jump: if you are looking for the actual neural network code it is all under 'masif_modules/'
+Quick jump: if you are looking for the MaSIF geometric deep learning neural network code it is all under 'masif_modules/'
 
 + *core/*: Simple function to initialize matlab (to be removed in the future) 
 
