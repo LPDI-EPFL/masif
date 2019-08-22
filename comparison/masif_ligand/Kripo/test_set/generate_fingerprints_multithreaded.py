@@ -2,6 +2,8 @@ import multiprocessing
 import dask
 import subprocess
 
+# Generates fingerprints for testing set
+
 n_cores = multiprocessing.cpu_count()
 print("Number of cpus:", n_cores)
 with open("all_test_pdbs.list") as f:

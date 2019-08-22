@@ -4,7 +4,7 @@ import multiprocessing
 n_test_files = multiprocessing.cpu_count()
 n_training_files = multiprocessing.cpu_count()
 
-
+# Compares fingerprints between training and testing sets
 for i in range(n_test_files):
     print(i)
     for j in range(n_training_files):

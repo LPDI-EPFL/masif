@@ -68,7 +68,7 @@ train or evaluate the trained models as it can be up to 100 times faster than a 
 MaSIF relies on external software/libraries to handle protein databank files and surface files, 
 to compute chemical/geometric features and coordinates, and to perform neural network calculations. 
 The following is the list of required libraries and programs, as well as the version on which it was tested (in parenthesis).
-* Python (2.7)
+* [Python](https://www.python.org/) (2.7)
 * [reduce](http://kinemage.biochem.duke.edu/software/reduce.php) (3.23). To add protons to proteins. 
 * [MSMS](http://mgltools.scripps.edu/packages/MSMS/) (2.6.1). To compute the surface of proteins. 
 * [BioPython](https://github.com/biopython/biopython) (1.66) . To parse PDB files. 
