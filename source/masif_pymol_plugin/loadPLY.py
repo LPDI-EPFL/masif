@@ -1,12 +1,15 @@
-# Pablo Gainza Cirauqui 2016
-# This pymol function loads ply files into pymol.
 from pymol import cmd, stored
 import sys
 import os, math, re
 from pymol.cgo import *
 import os.path
 import numpy as np
-
+"""
+   loadPLY.py: This pymol function loads ply files into pymol.
+    Pablo Gainza - LPDI STI EPFL 2016-2019
+    This file is part of MaSIF.
+    Released under an Apache License 2.0
+"""
 colorDict = {
     "sky": [COLOR, 0.0, 0.76, 1.0],
     "sea": [COLOR, 0.0, 0.90, 0.5],

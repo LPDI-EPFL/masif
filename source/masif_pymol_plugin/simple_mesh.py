@@ -1,7 +1,11 @@
-# Simple ply loading class.
-# I created this class to avoid the need to install pymesh if the only goal is to load ply files.
-# Use this only for the pymol plugin. Currently only supports ascii ply files.
-# Pablo Gainza LPDI EPFL 2019
+"""
+simple_mesh.py: Simple ply loading class.
+I created this class to avoid the need to install pymesh if the only goal is to load ply files.
+Use this only for the pymol plugin. Currently only supports ascii ply files.
+Pablo Gainza - LPDI STI EPFL 2019
+This file is part of MaSIF.
+Released under an Apache License 2.0
+"""
 import numpy as np
 
 
