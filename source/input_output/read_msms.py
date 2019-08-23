@@ -6,6 +6,8 @@ Released under an Apache License 2.0
 """
 
 def read_msms(file_root):
+    # read the surface from the msms output. MSMS outputs two files: {file_root}.vert and {file_root}.face
+    
     vertfile = open(file_root + ".vert")
     meshdata = (vertfile.read().rstrip()).split("\n")
     vertfile.close()
