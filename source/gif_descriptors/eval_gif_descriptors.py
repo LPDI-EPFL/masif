@@ -1,3 +1,8 @@
+# all_test_to_all_train.sh: Evaluate Geometric Invariant Fingerprint descriptors 
+#  (descriptors by Yin. et al. PNAS 2019) for comparison to MaSIF. The input used is the training data.
+# Pablo Gainza - LPDI STI EPFL 2019
+# Released under an Apache License 2.0
+
 import os
 import numpy as np
 import sys
@@ -81,7 +86,7 @@ np.random.shuffle(test_idx2)
 for ix, idx in enumerate(test_idx):
     idx2 = test_idx2[ix]
     desc1 = compute_dfss_histogram(neg_rho[idx], neg_feat[idx], neg_mask[idx])
-    #    desc2 = compute_dfss_histogram(neg_rho[idx2], -neg_feat[idx2], neg_mask[idx2])
+    # For second escriptor is the binder with a negated input, as described in the paper. 
     desc2 = compute_dfss_histogram(binder_rho[idx], -binder_feat[idx], binder_mask[idx])
     dist = np.linalg.norm(desc1 - desc2)
     neg_dists.append(dist)
