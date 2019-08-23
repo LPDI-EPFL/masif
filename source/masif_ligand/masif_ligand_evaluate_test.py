@@ -9,6 +9,12 @@ from masif_modules.read_ligand_tfrecords import _parse_function
 from sklearn.metrics import confusion_matrix
 import tensorflow as tf
 
+"""
+masif_ligand_evaluate_test: Evaluate and test MaSIF-ligand.
+Freyr Sverrisson - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
+
 params = masif_opts["ligand"]
 testing_data = tf.contrib.data.TFRecordDataset(
     os.path.join(params["tfrecords_dir"], "testing_data_sequenceSplit_30.tfrecord")
