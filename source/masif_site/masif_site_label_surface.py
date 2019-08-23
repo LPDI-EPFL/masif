@@ -8,6 +8,14 @@ from default_config.masif_opts import masif_opts
 
 from masif_modules.read_data_from_matfile import load_matlab_file
 
+"""
+masif_site_label_surface.py: Color a protein ply surface file by the MaSIF-site interface score.
+Pablo Gainza - LPDI STI EPFL 2019
+This file is part of MaSIF.
+Released under an Apache License 2.0
+"""
+
+
 params = masif_opts["site"]
 custom_params_file = sys.argv[1]
 custom_params = importlib.import_module(custom_params_file, package=None)

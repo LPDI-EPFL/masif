@@ -8,6 +8,13 @@ import importlib
 from masif_modules.train_masif_site import run_masif_site
 from default_config.masif_opts import masif_opts
 
+"""
+masif_site_predict.py: Evaluate one or multiple proteins on MaSIF-site. 
+Pablo Gainza - LPDI STI EPFL 2019
+This file is part of MaSIF.
+Released under an Apache License 2.0
+"""
+
 # Apply mask to input_feat
 def mask_input_feat(input_feat, mask):
     mymask = np.where(np.array(mask) == 0.0)[0]

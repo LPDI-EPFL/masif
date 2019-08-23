@@ -6,6 +6,13 @@ import importlib
 import sys
 from default_config.masif_opts import masif_opts
 
+"""
+masif_site_train.py: Entry function to train MaSIF-site.
+Pablo Gainza - LPDI STI EPFL 2019
+This file is part of MaSIF.
+Released under an Apache License 2.0
+"""
+
 params = masif_opts["site"]
 
 if sys.argv[1] > 0:
