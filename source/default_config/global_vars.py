@@ -1,3 +1,7 @@
+# global_vars.py: Global variables used by MaSIF -- mainly pointing to environment variables of programs used by MaSIF.
+# Pablo Gainza - LPDI STI EPFL 2018-2019
+# Released under an Apache License 2.0
+
 import os 
 epsilon = 1.0e-6
 
