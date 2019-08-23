@@ -1,3 +1,6 @@
+% Pablo Gainza LPDI STI EPFL 2018-2019
+% Input a mesh and return its underlying graph for use by Dijkstra. 
+
 function [G, graph_weights] = geodesic_dists_graph(shape)
     % Takes in a mesh and returns its underlying graph
     % and the lengths of the edges
