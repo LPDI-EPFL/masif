@@ -1,4 +1,5 @@
-% Compute matlab matrices from ply files; computes the shape index geometric feature and  shape complementarity values (in cases where two proteins are input).
+% Compute matlab matrices from ply files; computes the shape index 
+% geometric feature and  shape complementarity values (in cases where two proteins are input).
 % 
 % Pablo Gainza - LPDI STI EPFL 2019
 % Released under an Apache License 2.0
