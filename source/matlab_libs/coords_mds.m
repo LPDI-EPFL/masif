@@ -7,6 +7,8 @@ function success = coords_mds(paths, params)
     % Computes radial and angular coordinates for 
     % all points in a patch with respect to its center points
     % and saves them to disk.
+    % Due to issues with matlab's sparse functions poorly handling updates, this implementation computes 
+    % coordinates in batches and then incorporates these batches into a sparse matrix
 
     % shape instances
     tmp = dir(fullfile(paths.input, '*.mat'));
@@ -64,9 +66,9 @@ function success = coords_mds(paths, params)
             % theta: angular coordinates; rho: radial coordinates.
             patch_theta = sparse(n, n);
             patch_rho = sparse(n, n);
-            % Precompute graph structure for Dijkstra. A: the graph weights.
+            % Precompute graph structure for Dijkstra. A: the edge weights.
             [G, A] = geodesic_dists_graph(shape);
-            % Go through each vertex.
+            % Go through each vertex, from 1 to n.
             vertex_indices = 1:n;
 
             fprintf('Computing coords for shape %s \n', names{idx_shape});
@@ -147,7 +149,7 @@ function success = coords_mds(paths, params)
                 theta_val = [theta_val; val];
                 time_sparse1 = time_sparse1 + toc;
                 tic;
-                % Set nodes where distance is zero to epsilon
+                % Set nodes where distance is zero to Matlab's epsilon value.
                 dists(dists == 0.0) = eps;
                 col = find(dists < radius)';
                 row = repmat(vix, numel(col), 1);
@@ -158,14 +160,15 @@ function success = coords_mds(paths, params)
                 time_sparse2 = time_sparse2 + toc;
             end
 
+            % These tmp variables store the current batch.
             patch_theta_tmp = sparse(theta_row, theta_col, theta_val, n, n);
             patch_rho_tmp = sparse(rho_row, rho_col, rho_val, n, n);
             patch_theta = patch_theta + patch_theta_tmp;
             patch_rho = patch_rho + patch_rho_tmp;
             fprintf('Total time Dijkstra = %f\n', sum_all_dijkstra);
 
-            % compute the patches
             fprintf('Finished computing patch coordinates\n');
+            % Store the 
             % First come the radial (rho) coordinates and then the angular (theta) coordinates.
             patch_coord = [sparse(patch_rho), sparse(patch_theta)];
             all_patch_coord.(list_patch_coord_names{idx_shape2}) = patch_coord;
@@ -210,7 +213,7 @@ function thetas = compute_theta(plane, vix, neighbors, shape)
     % Center the plane so that the origin is at (0,0).
     plane = plane - repmat(plane(plane_center_ix, :), numel(neighbors), 1);
 
-    % Choose one of the neighboring triangles.
+    % Choose one of the neighboring triangles arbitrarily
     tt = shape.idxs{vix}(1);
     normal_tt = shape.normalf(:, tt)';
     tt = shape.TRIV(tt, :);
