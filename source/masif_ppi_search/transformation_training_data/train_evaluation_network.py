@@ -10,6 +10,13 @@ import time
 import pickle
 import sys
 
+"""
+train_evaluation_network.py: Train a neural network to score protein complex alignments (based on MaSIF)
+Freyr Sverrisson - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
+
+
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 session = tf.Session(config=config)

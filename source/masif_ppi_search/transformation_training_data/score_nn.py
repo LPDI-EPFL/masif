@@ -11,6 +11,12 @@ import time
 import pickle
 import sys
 
+"""
+score_nn.py: Class to score protein complex alignments based on a pre-trained neural network (used for MaSIF-search's second stage protocol).
+Freyr Sverrisson and Pablo Gainza - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
+
 class ScoreNN:
 
     def __init__(self):

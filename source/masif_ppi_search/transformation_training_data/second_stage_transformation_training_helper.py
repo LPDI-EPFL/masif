@@ -14,6 +14,12 @@ from default_config.masif_opts import masif_opts
 import sys
 from scipy.spatial import cKDTree
 
+"""
+second_stage_transformation_training_helper.py: Helper functions for the second strage transformation data generation.
+    Pablo Gainza - LPDI STI EPFL 2019
+    Released under an Apache License 2.0
+"""
+
 def rand_rotation_matrix(deflection=1.0, randnums=None):
     """
     Creates a random rotation matrix.

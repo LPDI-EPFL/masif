@@ -15,6 +15,12 @@ from default_config.masif_opts import masif_opts
 import sys
 from scipy.spatial import cKDTree
 
+"""
+second_stage_transformation_training.py: Generate real and 'decoy' alignments to train a neural network to discriminate real docking poses vs. false ones.
+    Pablo Gainza - LPDI STI EPFL 2019
+    Released under an Apache License 2.0
+"""
+
 print(sys.argv)
 if len(sys.argv) != 7:
     print('Usage: {} data_dir K ransac_iter patch_radius output_dir pdb_list_index'.format(sys.argv[0]))
@@ -168,11 +174,7 @@ for target_ix,target_pdb in enumerate(rand_list):
         source_pcd = read_point_cloud(os.path.join(surf_dir,'{}.ply'.format(pdb_id+'_'+chain)))
 
         source_desc = np.load(os.path.join(desc_dir,source_pdb,'p2_desc_straight.npy'))
-#        try:
         source_coords= subsample_patch_coords(source_pdb, 'p2', cv=source_vix, radius=PATCH_RADIUS, coord_dir=coord_dir)
-#        except:
-#            print('Error reading coordinates of {} p2'.format(source_pdb))
-#            continue
         
         # Randomly rotate and translate.  
         random_transformation = get_center_and_random_rotate(source_pcd)

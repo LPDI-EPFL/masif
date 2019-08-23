@@ -10,6 +10,13 @@ import pyflann
 from masif_modules.compute_input_feat import compute_input_feat
 from default_config.masif_opts import masif_opts
 
+"""
+masif_ppi_search_cache_training_data.py: Function to cache all the training data for MaSIF-search. 
+                This function extract all the positive pairs and a random number of negative surfaces.
+                In the future, the number of negative surfaces should be increased.
+Pablo Gainza - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
 
 params = masif_opts['ppi_search']
 
