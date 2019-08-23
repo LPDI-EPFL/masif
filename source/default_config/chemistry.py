@@ -1,3 +1,7 @@
+# chemistry.py: Chemical parameters for MaSIF.
+# Pablo Gainza - LPDI STI EPFL 2018-2019
+# Released under an Apache License 2.0
+
 import numpy as np
 
 # radii for atoms in explicit case.
@@ -11,6 +15,7 @@ radii["S"] = "1.800000"
 radii["P"] = "1.800000"
 radii["Z"] = "1.39"
 radii["X"] = "0.770000"  ## Radii of CB or CA in disembodied case.
+# This  polar hydrogen's names correspond to that of the program Reduce. 
 polarHydrogens = {}
 polarHydrogens["ALA"] = ["H"]
 polarHydrogens["GLY"] = ["H"]
