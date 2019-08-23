@@ -2,7 +2,10 @@ import numpy as np
 from numpy.linalg import norm
 import pymesh
 
-# Fix mesh - based on code from PyMESH. 
+"""
+fixmesh.py: Regularize a protein surface mesh. 
+- based on code from the PyMESH documentation. 
+"""
 
 
 def fix_mesh(mesh, resolution, detail="normal"):

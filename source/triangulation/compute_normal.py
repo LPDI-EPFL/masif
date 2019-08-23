@@ -1,6 +1,11 @@
 import numpy as np
 from numpy.matlib import repmat
 import ipdb
+"""
+compute_normal.py: Compute the normals of a closed shape.
+Pablo Gainza - LPDI STI EPFL 2019
+This file is part of MaSIF, based on previous matlab code by Gabriel Peyre, converted to Python by Pablo Gainza
+"""
 
 ###
 from default_config.global_vars import epsilon as eps

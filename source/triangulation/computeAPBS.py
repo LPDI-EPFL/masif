@@ -7,8 +7,17 @@ import pymesh
 from default_config.global_vars import apbs_bin, pdb2pqr_bin, multivalue_bin
 import random
 
-# Calls APBS, pdb2pqr, and multivalue and returns the charges per vertex
+"""
+computeAPBS.py: Wrapper function to compute the Poisson Boltzmann electrostatics for a surface using APBS.
+Pablo Gainza - LPDI STI EPFL 2019
+This file is part of MaSIF.
+Released under an Apache License 2.0
+"""
+
 def computeAPBS(vertices, pdb_file, tmp_file_base):
+    """
+        Calls APBS, pdb2pqr, and multivalue and returns the charges per vertex
+    """
     fields = tmp_file_base.split("/")[0:-1]
     directory = "/".join(fields) + "/"
     filename_base = tmp_file_base.split("/")[-1]

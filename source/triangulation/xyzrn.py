@@ -2,9 +2,18 @@ from Bio.PDB import *
 import ipdb
 from default_config.chemistry import radii, polarHydrogens
 
-# Special atoms are atoms that will have the radii size X. This I use so
-# that CBs in disembodied sidechains can match with CA.
+"""
+xyzrn.py: Read a pdb file and output it is in xyzrn for use in MSMS
+Pablo Gainza - LPDI STI EPFL 2019
+This file is part of MaSIF.
+Released under an Apache License 2.0
+"""
+
 def output_pdb_as_xyzrn(pdbfilename, xyzrnfilename):
+    """
+        pdbfilename: input pdb filename
+        xyzrnfilename: output in xyzrn format.
+    """
     parser = PDBParser()
     struct = parser.get_structure(pdbfilename, pdbfilename)
     outfile = open(xyzrnfilename, "w")

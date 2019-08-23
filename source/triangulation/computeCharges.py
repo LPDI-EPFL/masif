@@ -1,6 +1,14 @@
 from Bio.PDB import *
 import numpy as np
 import pyflann
+
+"""
+computeCharges.py: Wrapper function to compute hydrogen bond potential (free electrons/protons) in the surface
+Pablo Gainza - LPDI STI EPFL 2019
+This file is part of MaSIF.
+Released under an Apache License 2.0
+"""
+
 from default_config.chemistry import (
     polarHydrogens,
     radii,
