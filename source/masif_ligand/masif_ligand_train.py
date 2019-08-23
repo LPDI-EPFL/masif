@@ -10,6 +10,12 @@ from masif_modules.read_ligand_tfrecords import _parse_function
 from sklearn.metrics import confusion_matrix
 import tensorflow as tf
 
+"""
+masif_ligand_train.py: Train MaSIF-ligand. 
+Freyr Sverrisson - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
+
 params = masif_opts["ligand"]
 
 # Load dataset
