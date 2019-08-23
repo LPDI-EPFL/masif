@@ -1,3 +1,8 @@
+"""
+extractPDB.py: Extract selected chains from a PDB and save the extracted chains to an output file. 
+Pablo Gainza - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
 from Bio.PDB import *
 import ipdb
 
@@ -6,10 +11,12 @@ class NotDisordered(Select):
     def accept_atom(self, atom):
         return not atom.is_disordered() or atom.get_altloc() == "A"
 
-
 def extractPDB(
     infilename, outfilename, chain_ids=None, includeWaters=False, invert=False
 ):
+    # extract the chain_ids from infilename and save in outfilename. 
+    # includeWaters: deprecated parameter, include the crystallographic waters (should not be used). 
+    # invert: Select all chains EXCEPT those in chain_ids.
     parser = PDBParser(QUIET=True)
     struct = parser.get_structure(infilename, infilename)
     model = Selection.unfold_entities(struct, "M")[0]
