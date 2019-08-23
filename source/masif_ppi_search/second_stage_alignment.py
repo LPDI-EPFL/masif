@@ -23,7 +23,7 @@ second_stage_alignment.py: Second stage alignment code for benchmarking MaSIF-se
                                 (2a) Use the RANSAC algorithm + the iterative closest point algorithm to align each patch
                                 (2b) Use a simple function based on the fingerprints of all aligned points to score the alignment
                             
-Pablo Gainza - LPDI STI EPFL 2019
+Pablo Gainza  and Freyr Sverrisson- LPDI STI EPFL 2019
 Released under an Apache License 2.0
 """
 

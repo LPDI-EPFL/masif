@@ -19,7 +19,7 @@ start_time = time.time()
 
 """
 pdl1_benchmark.py: Scan a large database of proteins for binders of PD-L1. The ground truth is PD-L1 in the bound state (chain A of PDB id: 4ZQK)
-Pablo Gainza - LPDI STI EPFL 2019
+Pablo Gainza and Freyr Sverrisson - LPDI STI EPFL 2019
 Released under an Apache License 2.0
 """
 
