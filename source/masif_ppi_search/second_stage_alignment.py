@@ -11,6 +11,22 @@ import scipy.sparse as spio
 from default_config.masif_opts import masif_opts
 import sys
 
+"""
+second_stage_alignment.py: Second stage alignment code for benchmarking MaSIF-search WITHOUT neural network scoring. 
+                            It is recommended to use masif_second_stage_nn.py instead.
+                            This code benchmarks MaSIF-search by generating 3D alignments
+                            of the protein.
+                            The method consists of two stages: 
+                            (1) Read a database of MaSIF-search fingerprint descriptors for each overlapping patch, and find the top K decoys that are the most similar to the 
+                            target 
+                            (2) Align and score these patches:
+                                (2a) Use the RANSAC algorithm + the iterative closest point algorithm to align each patch
+                                (2b) Use a simple function based on the fingerprints of all aligned points to score the alignment
+                            
+Pablo Gainza - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
+
 print(sys.argv)
 if len(sys.argv) != 7 or (sys.argv[5] != "masif" and sys.argv[5] != "gif"):
     print("Usage: {} data_dir K ransac_iter num_success gif|masif".format(sys.argv[0]))
@@ -88,6 +104,10 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
 
 
 def get_center_and_random_rotate(pcd):
+    """
+        Get the center of a point cloud and randomly rotate it.
+        pcd: the point cloud.
+    """
     pts = pcd.points
     mean_pt = np.mean(pts, axis=0)
     # pts = pts - mean_pt
@@ -102,6 +122,15 @@ def get_center_and_random_rotate(pcd):
 def get_patch_geo(
     pcd, patch_coords, center, descriptors, outward_shift=0.25, flip=False
 ):
+    """
+        Get a patch based on geodesic distances. 
+        pcd: the point cloud.
+        patch_coords: the geodesic distances.
+        center: the index of the center of the patch
+        descriptors: the descriptors for every point in the original surface.
+        outward_shift: expand the surface by a float value (for better alignment)
+        flip: invert the surface?
+    """
     idx = patch_coords[center]
     pts = np.asarray(pcd.points)[idx, :]
     nrmls = np.asarray(pcd.normals)[idx, :]
@@ -126,6 +155,11 @@ def multidock(
     target_descs,
     ransac_radius=1.0,
 ):
+    """
+    Multi-docking protocol: Here is where the alignment is actually made. 
+    This method aligns each of the K prematched decoy patches to the target using tehe
+    RANSAC algorithm followed by icp
+    """
     all_results = []
     all_source_patch = []
     all_source_scores = []
@@ -189,6 +223,9 @@ def test_alignments(
     radius=2.0,
     interface_dist=10.0,
 ):
+    """
+    Verify the alignment against the ground truth. 
+    """
     structure_coords = np.array(
         [
             atom.get_coord()
@@ -237,6 +274,9 @@ def test_alignments(
 def compute_desc_dist_score(
     target_pcd, source_pcd, corr, target_desc, source_desc, cutoff=2.0
 ):
+    """
+        compute_desc_dist_score: a simple scoring based on fingerprints 
+    """
 
     # Compute scores based on correspondences.
     if len(corr) < 1:
@@ -263,6 +303,14 @@ from IPython.core.debugger import set_trace
 
 
 def subsample_patch_coords(pdb, pid, cv=None, frac=1.0, radius=9.0):
+    """
+        subsample_patch_coords: Read the geodesic coordinates in an easy to access format.
+        pdb: the id of the protein pair in PDBID_CHAIN1_CHAIN2 format.
+        pid: 'p1' if you want to read CHAIN1, 'p2' if you want to read CHAIN2
+        cv: central vertex 
+        frac: subsample the patch for speed. Not recommended.
+        radius: the radius of the patch used for alignment.
+    """
     patch_coords = spio.load_npz(os.path.join(coord_dir, pdb, pid + ".npz"))
 
     if cv is None:
