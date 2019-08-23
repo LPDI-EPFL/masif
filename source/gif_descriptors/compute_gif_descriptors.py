@@ -4,10 +4,10 @@ from IPython.core.debugger import set_trace
 from default_config.masif_opts import masif_opts
 import sys
 
-# This code computes Geometric Invariant Fingerprint descriptors as originally proposed in:
+# This code computes Geometric Invariant Fingerprint descriptors for full proteins as originally proposed in:
 # S. Yin, et al. PNAS September 29, 2009 106 (39) 16622-16626
 # Implemented by Pablo Gainza LPDI - EPFL 2016-2019
-
+# Released under an Apache License 2.0
 
 # Compute the histogram of distance-dependent curvature.
 def compute_dfss_histogram(rho, ddc, mask):
