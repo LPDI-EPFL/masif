@@ -1,5 +1,9 @@
 import numpy as np
-
+"""
+read_msms.py: Read an msms output file that was output by MSMS (MSMS is the program we use to build a surface) 
+Pablo Gainza - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
 
 def read_msms(file_root):
     vertfile = open(file_root + ".vert")
