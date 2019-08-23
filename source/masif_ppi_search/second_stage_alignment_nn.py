@@ -14,18 +14,36 @@ import scipy.sparse as spio
 from default_config.masif_opts import masif_opts
 import sys
 
+"""
+second_stage_alignment_nn.py: Second stage alignment code for benchmarking MaSIF-search.
+                            This code benchmarks MaSIF-search by generating 3D alignments
+                            of the protein.
+                            The method consists of two stages: 
+                            (1) Read a database of MaSIF-search fingerprint descriptors for each overlapping patch, and find the top K decoys that are the most similar to the 
+                            target 
+                            (2) Align and score these patches:
+                                (2a) Use the RANSAC algorithm + the iterative closest point algorithm to align each patch
+                                (2b) Use a pre trained neural network to score the alignment.
+                            
+Pablo Gainza - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
+
+
 # Start measuring the cpu clock time here. 
 # We will not count the time required to align the structures and verify the ground truth. 
 #               This time will be subtracted at the end.
 global_start_time = time.clock()
 global_ground_truth_time = 0.0
 
+# Read the pre-trained neural network.
 nn_model = ScoreNN()
 print(sys.argv)
+
 if len(sys.argv) != 6 or (sys.argv[5] != "masif" and sys.argv[5] != "gif"):
     print("Usage: {} data_dir K ransac_iter num_success gif|masif".format(sys.argv[0]))
     print("data_dir: Location of data directory.")
-    print("K: Number of descriptors to run")
+    print("K: Number of decoy descriptors per target")
     print("ransac_iter: number of ransac iterations.")
     print("num_success: true alignment within short list of size num_success")
     sys.exit(1)
@@ -36,6 +54,7 @@ ransac_iter = int(sys.argv[3])
 num_success = int(sys.argv[4])
 method = sys.argv[5]
 
+# Location of surface (ply) files. 
 surf_dir = os.path.join(data_dir, masif_opts["ply_chain_dir"])
 
 if method == "gif":
@@ -43,13 +62,16 @@ if method == "gif":
 else:  # MaSIF
     desc_dir = os.path.join(data_dir, masif_opts["ppi_search"]["desc_dir"])
 
+# Patch coordinates directory 
 coord_dir = os.path.join(data_dir, masif_opts["coord_dir_npy"])
 
+# Directory of pdb files (used to compute the ground truth).
 pdb_dir = os.path.join(data_dir, masif_opts["pdb_chain_dir"])
 precomp_dir = os.path.join(
     data_dir, masif_opts["ppi_search"]["masif_precomputation_dir"]
 )
 
+# List of PDBID_CHAIN1_CHAIN2 ids that will be used in this benchmark. 
 benchmark_list = "../benchmark_list.txt"
 
 
@@ -62,6 +84,13 @@ def compute_nn_score(
     source_patch,
     target_descs,
     source_patch_descs):
+    # Compute the score of the neural network. 
+    # target_ckdtree: KD-tree of the target patch point cloud. 
+    # target_patch: Patch of the target. 
+    # source_patch: Patch of the source.
+    # target_descs: Fingerprint descriptors of the target
+    # source_patch_descs:  Fingerprint descriptors of the source.
+    # Returns: the score of the alignment. 
 
     # Neural network max size is 200. Those bigger must be trimmed.
     npoints = np.asarray(source_patch.points).shape[0]
@@ -85,12 +114,13 @@ def compute_nn_score(
     else:
         features_trimmed[0,:features.shape[0],:] = features
 
+    # Evaluate patch with neural network. 
     pred = nn_model.eval(features_trimmed)
     return pred[0][1]
 
 def rand_rotation_matrix(deflection=1.0, randnums=None):
     """
-    Creates a random rotation matrix.
+    Creates a random rotation matrix. used to randomize initial pose. 
 
     deflection: the magnitude of the rotation. For 0, no rotation; for 1, competely random
     rotation. Small deflection => small perturbation.
