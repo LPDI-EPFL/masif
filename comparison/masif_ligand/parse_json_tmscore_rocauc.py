@@ -8,6 +8,11 @@ import sklearn.metrics
 import os
 from IPython.core.debugger import set_trace
 
+"""
+parse_json_tmscore_rocauc.py: Compute the ROC AUC values for MaSIF-ligand and ProBiS
+Pablo Gainza - LPDI STI EPFL 2019
+Released under an Apache License 2.0
+"""
 
 # Compute the ROC AUC for cases where the testset pocket does not align to any of the pockets in the training set at at a tmscore greater than X
 
