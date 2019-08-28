@@ -52,6 +52,7 @@ with tf.python_io.TFRecordWriter(
     for i, pdb in enumerate(train_pdbs):
         print("Working on", pdb)
         try:
+            # Load precomputed data
             input_feat = np.load(
                 os.path.join(precom_dir, pdb + "_", "p1_input_feat.npy")
             )

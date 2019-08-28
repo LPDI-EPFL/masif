@@ -16,6 +16,7 @@ Released under an Apache License 2.0
 """
 
 params = masif_opts["ligand"]
+# Load testing data
 testing_data = tf.contrib.data.TFRecordDataset(
     os.path.join(params["tfrecords_dir"], "testing_data_sequenceSplit_30.tfrecord")
 )
@@ -30,7 +31,7 @@ if not os.path.exists(test_set_out_dir):
 
 
 with tf.Session() as sess:
-    # Build trained network
+    # Build network
     learning_obj = MaSIF_ligand(
         sess,
         params["max_distance"],
@@ -39,6 +40,7 @@ with tf.Session() as sess:
         feat_mask=params["feat_mask"],
         costfun=params["costfun"],
     )
+    # Load pretrained network
     learning_obj.saver.restore(learning_obj.session, output_model)
 
     num_test_samples = 290
@@ -62,6 +64,7 @@ with tf.Session() as sess:
         pdb_logits_softmax = []
         pdb_labels = []
         for ligand in range(n_ligands):
+            # Rows indicate point number and columns ligand type
             pocket_points = np.where(labels[:, ligand] != 0.0)[0]
             label = np.max(labels[:, ligand]) - 1
             pocket_labels = np.zeros(7, dtype=np.float32)
@@ -77,7 +80,7 @@ with tf.Session() as sess:
             samples_data_loss = []
             # Make 100 predictions
             for i in range(100):
-                # sample = samples[int(i*32):int((i+1)*32)]
+                # Sample pocket randomly
                 sample = np.random.choice(pocket_points, 32, replace=False)
                 feed_dict = {
                     learning_obj.input_feat: data_element[0][sample, :, :],

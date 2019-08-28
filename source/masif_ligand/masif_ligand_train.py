@@ -84,7 +84,6 @@ with tf.Session() as sess:
             npoints = pocket_points.shape[0]
             if npoints < 32:
                 continue
-            sample = np.random.choice(pocket_points, 32, replace=False)
             # For evaluating take the first 32 points of the pocket
             feed_dict = {
                 learning_obj.input_feat: data_element[0][pocket_points[:32], :, :],
@@ -112,7 +111,9 @@ with tf.Session() as sess:
                 num_epoch, np.mean(training_losses), np.median(training_losses)
             )
         )
+        # Generate confusion matrix
         training_conf_mat = confusion_matrix(training_ytrue, training_ypred)
+        # Compute accuracy
         training_accuracy = float(np.sum(np.diag(training_conf_mat))) / np.sum(
             training_conf_mat
         )
@@ -123,6 +124,7 @@ with tf.Session() as sess:
         validation_ytrue = []
         validation_ypred = []
         print("Calulating validation loss")
+        # Compute accuracy on the validation set
         for num_val_sample in range(num_validation_samples):
             try:
                 data_element = sess.run(validation_next_element)
@@ -138,7 +140,6 @@ with tf.Session() as sess:
             npoints = pocket_points.shape[0]
             if npoints < 32:
                 continue
-            sample = np.random.choice(pocket_points, 32, replace=False)
             feed_dict = {
                 learning_obj.input_feat: data_element[0][pocket_points[:32], :, :],
                 learning_obj.rho_coords: np.expand_dims(data_element[1], -1)[
@@ -195,7 +196,6 @@ with tf.Session() as sess:
             npoints = pocket_points.shape[0]
             if npoints < 32:
                 continue
-            sample = np.random.choice(pocket_points, 32, replace=False)
             feed_dict = {
                 learning_obj.input_feat: data_element[0][pocket_points[:32], :, :],
                 learning_obj.rho_coords: np.expand_dims(data_element[1], -1)[
@@ -228,9 +228,11 @@ with tf.Session() as sess:
         )
         print(testing_conf_mat)
         print("Testing accuracy:", testing_accuracy)
+        # Stop training if number of iterations has reached 40000
         if total_iterations == 40000:
             break
 
+        # Train the network
         training_losses = []
         training_ytrue = []
         training_ypred = []
@@ -251,6 +253,7 @@ with tf.Session() as sess:
             npoints = pocket_points.shape[0]
             if npoints < 32:
                 continue
+            # Sample 32 points randomly
             sample = np.random.choice(pocket_points, 32, replace=False)
             feed_dict = {
                 learning_obj.input_feat: data_element[0][sample, :, :],
