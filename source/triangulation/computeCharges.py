@@ -1,6 +1,6 @@
 from Bio.PDB import *
 import numpy as np
-import pyflann
+from sklearn.neighbors import KDTree
 
 """
 computeCharges.py: Wrapper function to compute hydrogen bond potential (free electrons/protons) in the surface
@@ -181,11 +181,14 @@ def computeSatisfied_CO_HN(atoms):
 def assignChargesToNewMesh(new_vertices, old_vertices, old_charges, seeder_opts):
     dataset = old_vertices
     testset = new_vertices
-    flann = pyflann.FLANN()
     new_charges = np.zeros(len(new_vertices))
     if seeder_opts["feature_interpolation"]:
         num_inter = 4  # Number of interpolation features
-        result, dists = flann.nn(dataset, testset, num_inter, algorithm="kdtree")
+        # Assign k old vertices to each new vertex.
+        kdt = KDTree(dataset)
+        dists, result = kdt.query(testset, k=num_inter)
+        # Square the distances (as in the original pyflann)
+        dists = np.square(dists)
         # The size of result is the same as new_vertices
         for vi_new in range(len(result)):
             vi_old = result[vi_new]
@@ -201,7 +204,9 @@ def assignChargesToNewMesh(new_vertices, old_vertices, old_charges, seeder_opts)
                     old_charges[vi_old[i]] * (1 / dist_old[i]) / total_dist
                 )
     else:
-        result, dists = flann.nn(dataset, testset, 1, algorithm="kdtree")
+        # Assign k old vertices to each new vertex.
+        kdt = KDTree(dataset)
+        dists, result = kdt.query(testset)
         new_charges = old_charges[result]
     return new_charges
 
