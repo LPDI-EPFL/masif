@@ -1,6 +1,5 @@
 import numpy as np
 from numpy.matlib import repmat
-import ipdb
 """
 compute_normal.py: Compute the normals of a closed shape.
 Pablo Gainza - LPDI STI EPFL 2019

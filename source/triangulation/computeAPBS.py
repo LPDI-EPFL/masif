@@ -1,4 +1,3 @@
-import ipdb
 import os
 import numpy
 from subprocess import Popen, PIPE

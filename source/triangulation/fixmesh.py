@@ -25,7 +25,7 @@ def fix_mesh(mesh, resolution, detail="normal"):
 
 
     count = 0;
-    print "Removing degenerated triangles" 
+    print("Removing degenerated triangles")
     mesh, __ = pymesh.remove_degenerated_triangles(mesh, 100);
     mesh, __ = pymesh.split_long_edges(mesh, target_len);
     num_vertices = mesh.num_vertices;

@@ -1,4 +1,3 @@
-import ipdb
 import os
 from subprocess import Popen, PIPE
 
@@ -13,7 +12,7 @@ import random
 # Special atoms are atoms with a reduced radius.
 def computeMSMS(pdb_file,  protonate=True):
     randnum = random.randint(1,10000000)
-    file_base = masif_opts['tmp_dir']+"/msms_"+`randnum`
+    file_base = masif_opts['tmp_dir']+"/msms_"+str(randnum)
     out_xyzrn = file_base+".xyzrn"
 
     if protonate:        
