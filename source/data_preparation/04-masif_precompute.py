@@ -12,14 +12,13 @@ from default_config.masif_opts import masif_opts
 np.random.seed(0)
 
 # Load training data (From many files)
-from masif_modules.read_data_from_matfile import read_data_from_matfile_full_protein
-from masif_modules.compute_input_feat import compute_input_feat
+from masif_modules.read_data_from_surface import read_data_from_surface
 
 print(sys.argv[2])
 
 if len(sys.argv) <= 1:
-    print "Usage: {config} "+sys.argv[0]+" {masif_ppi_search | masif_site} PDBID_A"
-    print "A or AB are the chains to include in this surface."
+    print("Usage: {config} "+sys.argv[0]+" {masif_ppi_search | masif_site} PDBID_A")
+    print("A or AB are the chains to include in this surface.")
     sys.exit(1)
 
 masif_app = sys.argv[1]
@@ -37,7 +36,7 @@ ppi_pair_list = [sys.argv[2]]
 total_shapes = 0
 total_ppi_pairs = 0
 np.random.seed(0)
-print('Reading data from matfiles.')
+print('Reading data from input ply surface files.')
 for ppi_pair_id in ppi_pair_list:
 
     all_list_desc = []
@@ -50,52 +49,25 @@ for ppi_pair_id in ppi_pair_list:
     if not os.path.exists(my_precomp_dir):
         os.makedirs(my_precomp_dir)
     
-    coord_file = masif_opts['coord_file_template'].format(ppi_pair_id, ppi_pair_id)
-    shape_file = masif_opts['mat_file_template'].format(ppi_pair_id, ppi_pair_id)
-
+    # Read directly from the ply file.
     fields = ppi_pair_id.split('_')
+    ply_file = {}
+    ply_file['p1'] = masif_opts['ply_file_template'].format(fields[0], fields[1])
+
     if fields[2] == '':
         pids = ['p1']
     else:
+        ply_file['p2']  = masif_opts['ply_file_template'].format(fields[0], fields[1])
         pids = ['p1', 'p2']
         
     for pid in pids:
         
-        if masif_app == 'masif_site':
-            list_desc, list_coords, list_shape_idx, list_names, X, Y, Z, list_iface_labels, list_indices = \
-                read_data_from_matfile_full_protein(coord_file, shape_file, ppi_pair_id, params, pid, label_iface=True)
-        elif masif_app == 'masif_ppi_search':
-            list_desc, list_coords, list_shape_idx, list_names, X, Y, Z, list_sc_labels, list_indices = \
-                read_data_from_matfile_full_protein(coord_file, shape_file, ppi_pair_id, params, pid, label_sc=True)
-        elif masif_app == 'masif_ligand':
-            list_desc, list_coords, list_shape_idx, list_names, X, Y, Z = \
-                read_data_from_matfile_full_protein(coord_file, shape_file, ppi_pair_id, params, pid, label_sc=False, label_iface=False)
+        input_feat, rho, theta, mask, neigh_indices, iface_labels = read_data_from_surface(ply_file[pid], params)
 
-        if list_desc is []:
-            print('List desc is empty')
-            continue
-
-        # Extract features and patches from loaded data. 
-        from masif_modules.extract_features import extract_features
-        print('Extract features')
-
-        list_rho_wrt_center, list_theta_wrt_center, list_isc, list_normals_proj, norm_list_electrostatics, list_hbond, list_hphob = extract_features(list_desc, list_coords)
-
-        rho_wrt_center, theta_wrt_center, input_feat, mask = compute_input_feat(list_rho_wrt_center, list_theta_wrt_center,\
-                    list_isc, list_normals_proj, list_hbond, norm_list_electrostatics, params['max_shape_size'], list_hphob=list_hphob, feat_mask=params['feat_mask'])
-
-        np.save(my_precomp_dir+pid+'_rho_wrt_center', rho_wrt_center)
-        np.save(my_precomp_dir+pid+'_theta_wrt_center', theta_wrt_center)
+        np.save(my_precomp_dir+pid+'_rho_wrt_center', rho)
+        np.save(my_precomp_dir+pid+'_theta_wrt_center', theta)
         np.save(my_precomp_dir+pid+'_input_feat', input_feat)
         np.save(my_precomp_dir+pid+'_mask', mask)
-        np.save(my_precomp_dir+pid+'_names', list_names)
-        if masif_app == 'masif_ppi_search':
-            np.save(my_precomp_dir+pid+'_sc_labels', list_sc_labels)
-            np.save(my_precomp_dir+pid+'_list_indices', list_indices)
-        elif masif_app == 'masif_site':
-            np.save(my_precomp_dir+pid+'_iface_labels', list_iface_labels)
-            np.save(my_precomp_dir+pid+'_list_indices', list_indices)
-        np.save(my_precomp_dir+pid+'_X', X)
-        np.save(my_precomp_dir+pid+'_Y', Y)
-        np.save(my_precomp_dir+pid+'_Z', Z)
+        np.save(my_precomp_dir+pid+'_list_indices', neigh_indices)
+        np.save(my_precomp_dir+pid+'_iface_labels', iface_labels)
 
