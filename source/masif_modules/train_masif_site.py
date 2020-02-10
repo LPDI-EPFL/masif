@@ -20,11 +20,12 @@ def pad_indices(indices, max_verts):
     return padded_ix
 
 
-# Run masif site on a protein, on a previously trained protein.
+# Run masif site on a protein, on a previously trained network.
 def run_masif_site(
     params, learning_obj, rho_wrt_center, theta_wrt_center, input_feat, mask, indices
 ):
     indices = pad_indices(indices, mask.shape[1])
+    mask = np.expand_dims(mask, 2)
     feed_dict = {
         learning_obj.rho_coords: rho_wrt_center,
         learning_obj.theta_coords: theta_wrt_center,
