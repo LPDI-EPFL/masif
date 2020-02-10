@@ -1,12 +1,10 @@
 import pymesh
 import os
 import sys
+from IPython.core.debugger import set_trace
 import importlib
 import numpy as np
-import ipdb
 from default_config.masif_opts import masif_opts
-
-from masif_modules.read_data_from_matfile import load_matlab_file
 
 """
 masif_site_label_surface.py: Color a protein ply surface file by the MaSIF-site interface score.
@@ -45,11 +43,11 @@ else:
     sys.exit(1)
 
 for ppi_pair_id in ppi_pair_ids:
-    shape_file = masif_opts["mat_dir"] + ppi_pair_id + "/" + ppi_pair_id + ".mat"
     pdbid = ppi_pair_id.split("_")[0]
     chains = [ppi_pair_id.split("_")[1], ppi_pair_id.split("_")[2]]
 
     for ix, pid in enumerate(["p1", "p2"]):
+        ply_file = masif_opts["ply_file_template"].format(pdbid, chains[ix])
         pdb_chain_id = pdbid + "_" + chains[ix]
 
         if (
@@ -60,7 +58,7 @@ for ppi_pair_id in ppi_pair_ids:
             continue
 
         try:
-            p1 = load_matlab_file(shape_file, pid, True)
+            p1 = pymesh.load_mesh(ply_file)
         except:
             print("File does not exist: {}".format(shape_file))
             continue
@@ -81,34 +79,14 @@ for ppi_pair_id in ppi_pair_ids:
             )
             continue
 
-        vertices = np.stack([p1["X"][0], p1["Y"][0], p1["Z"][0]], axis=1)
-        faces = p1["TRIV"].T
-        # Matlab indexing starts at 1.
-        faces = faces - 1
 
-        mymesh = pymesh.form_mesh(vertices, faces)
-        mymesh.add_attribute("charge")
-        mymesh.set_attribute("charge", p1["charge"][0])
-
-        normals = p1["normal"]
-        n1 = normals[0, :]
-        n2 = normals[1, :]
-        n3 = normals[2, :]
-        mymesh.add_attribute("vertex_nx")
-        mymesh.set_attribute("vertex_nx", n1)
-        mymesh.add_attribute("vertex_ny")
-        mymesh.set_attribute("vertex_ny", n2)
-        mymesh.add_attribute("vertex_nz")
-        mymesh.set_attribute("vertex_nz", n3)
-
-        mymesh.add_attribute("hphob")
-        mymesh.set_attribute("hphob", p1["hphob"][0])
-
-        mymesh.add_attribute("hbond")
-        mymesh.set_attribute("hbond", p1["hbond"][0])
+        mymesh = p1
 
         mymesh.add_attribute("iface")
         mymesh.set_attribute("iface", scores[0])
+        mymesh.remove_attribute("vertex_x")
+        mymesh.remove_attribute("vertex_y")
+        mymesh.remove_attribute("vertex_z")
 
         if not os.path.exists(params["out_surf_dir"]):
             os.makedirs(params["out_surf_dir"])
