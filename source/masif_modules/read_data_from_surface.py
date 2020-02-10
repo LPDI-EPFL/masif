@@ -55,7 +55,8 @@ def read_data_from_surface(ply_fn, params):
     hbond = mesh.get_attribute("vertex_hbond")
 
     # Hydropathy features
-    hphob = mesh.get_attribute("vertex_hphob")
+    # Normalize hydropathy by dividing by 4.5
+    hphob = mesh.get_attribute("vertex_hphob")/4.5
 
     # Iface labels (for ground truth only)     
     iface_labels = mesh.get_attribute("vertex_iface") 
