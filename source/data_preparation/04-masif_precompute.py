@@ -65,17 +65,12 @@ for ppi_pair_id in ppi_pair_list:
     rho = {}
     neigh_indices = {}
     mask = {}
+    input_feat = {}
+    theta = {}
+    iface_labels = {}
 
     for pid in pids:
-        
-        input_feat, rho[pid], theta, mask[pid], neigh_indices[pid], iface_labels = read_data_from_surface(ply_file[pid], params)
-
-        np.save(my_precomp_dir+pid+'_rho_wrt_center', rho[pid])
-        np.save(my_precomp_dir+pid+'_theta_wrt_center', theta)
-        np.save(my_precomp_dir+pid+'_input_feat', input_feat)
-        np.save(my_precomp_dir+pid+'_mask', mask[pid])
-        np.save(my_precomp_dir+pid+'_list_indices', neigh_indices[pid])
-        np.save(my_precomp_dir+pid+'_iface_labels', iface_labels)
+        input_feat[pid], rho[pid], theta[pid], mask[pid], neigh_indices[pid], iface_labels[pid] = read_data_from_surface(ply_file[pid], params)
 
     if len(pids) > 1 and masif_app == 'masif_ppi_search':
         start_time = time.time()
@@ -85,3 +80,11 @@ for ppi_pair_id in ppi_pair_list:
         end_time = time.time()
         print("Computing shape complementarity took {:.2f}".format(end_time-start_time))
 
+    # Save data only if everything went well. 
+    for pid in pids: 
+        np.save(my_precomp_dir+pid+'_rho_wrt_center', rho[pid])
+        np.save(my_precomp_dir+pid+'_theta_wrt_center', theta[pid])
+        np.save(my_precomp_dir+pid+'_input_feat', input_feat[pid])
+        np.save(my_precomp_dir+pid+'_mask', mask[pid])
+        np.save(my_precomp_dir+pid+'_list_indices', neigh_indices[pid])
+        np.save(my_precomp_dir+pid+'_iface_labels', iface_labels[pid])
