@@ -210,8 +210,8 @@ def compute_shape_complementarity(ply_fn1, ply_fn2, neigh1, neigh2, rho1, rho2, 
             scale = scales[ring]
             members = np.where((patch_rho1 >= scales[ring]) & (patch_rho1 < scales[ring + 1]))
             if len(members[0]) == 0:
-                comp_rings2_25[ring] = 0.0
-                comp_rings2_50[ring] = 0.0
+                comp_rings1_25[ring] = 0.0
+                comp_rings1_50[ring] = 0.0
             else:
                 comp_rings1_25[ring] = np.percentile(comp1[members], 25)
                 comp_rings1_50[ring] = np.percentile(comp1[members], 50)
