@@ -1,4 +1,5 @@
 import sys
+import time
 import os
 import numpy as np
 from IPython.core.debugger import set_trace
@@ -12,7 +13,7 @@ from default_config.masif_opts import masif_opts
 np.random.seed(0)
 
 # Load training data (From many files)
-from masif_modules.read_data_from_surface import read_data_from_surface
+from masif_modules.read_data_from_surface import read_data_from_surface, compute_shape_complementarity
 
 print(sys.argv[2])
 
@@ -57,17 +58,30 @@ for ppi_pair_id in ppi_pair_list:
     if fields[2] == '':
         pids = ['p1']
     else:
-        ply_file['p2']  = masif_opts['ply_file_template'].format(fields[0], fields[1])
+        ply_file['p2']  = masif_opts['ply_file_template'].format(fields[0], fields[2])
         pids = ['p1', 'p2']
         
+    # Compute shape complementarity between the two proteins. 
+    rho = {}
+    neigh_indices = {}
+    mask = {}
+
     for pid in pids:
         
-        input_feat, rho, theta, mask, neigh_indices, iface_labels = read_data_from_surface(ply_file[pid], params)
+        input_feat, rho[pid], theta, mask[pid], neigh_indices[pid], iface_labels = read_data_from_surface(ply_file[pid], params)
 
-        np.save(my_precomp_dir+pid+'_rho_wrt_center', rho)
+        np.save(my_precomp_dir+pid+'_rho_wrt_center', rho[pid])
         np.save(my_precomp_dir+pid+'_theta_wrt_center', theta)
         np.save(my_precomp_dir+pid+'_input_feat', input_feat)
-        np.save(my_precomp_dir+pid+'_mask', mask)
-        np.save(my_precomp_dir+pid+'_list_indices', neigh_indices)
+        np.save(my_precomp_dir+pid+'_mask', mask[pid])
+        np.save(my_precomp_dir+pid+'_list_indices', neigh_indices[pid])
         np.save(my_precomp_dir+pid+'_iface_labels', iface_labels)
+
+    if len(pids) > 1 and masif_app == 'masif_ppi_search':
+        start_time = time.time()
+        p1_sc_labels, p2_sc_labels = compute_shape_complementarity(ply_file['p1'], ply_file['p2'], neigh_indices['p1'],neigh_indices['p2'], rho['p1'], rho['p2'], mask['p1'], mask['p2'], params)
+        np.save(my_precomp_dir+'p1_sc_labels', p1_sc_labels)
+        np.save(my_precomp_dir+'p2_sc_labels', p2_sc_labels)
+        end_time = time.time()
+        print("Computing shape complementarity took {:.2f}".format(end_time-start_time))
 
