@@ -15,7 +15,7 @@ Released under an Apache License 2.0
 
 params = masif_opts["site"]
 
-if sys.argv[1] > 0:
+if len(sys.argv) > 0:
     custom_params_file = sys.argv[1]
     custom_params = importlib.import_module(custom_params_file, package=None)
     custom_params = custom_params.custom_params

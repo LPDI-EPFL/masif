@@ -55,8 +55,6 @@ def train_masif_site(
 
     # Open training list.
 
-    # Open
-
     list_training_loss = []
     list_training_auc = []
     list_validation_auc = []
@@ -64,7 +62,7 @@ def train_masif_site(
     best_val_auc = 0
 
     out_dir = params["model_dir"]
-    logfile = open(out_dir + "log.txt", "w", 0)
+    logfile = open(out_dir + "log.txt", "w")
     for key in params:
         logfile.write("{}: {}\n".format(key, params[key]))
 
@@ -137,6 +135,7 @@ def train_masif_site(
                 if np.sum(params["feat_mask"]) < 5:
                     input_feat = mask_input_feat(input_feat, params["feat_mask"])
                 mask = np.load(mydir + pid + "_mask.npy")
+                mask = np.expand_dims(mask, 2)
                 indices = np.load(mydir + pid + "_list_indices.npy", encoding="latin1")
                 # indices is (n_verts x <30), it should be
                 indices = pad_indices(indices, mask.shape[1])
@@ -254,6 +253,7 @@ def train_masif_site(
                 if np.sum(params["feat_mask"]) < 5:
                     input_feat = mask_input_feat(input_feat, params["feat_mask"])
                 mask = np.load(mydir + pid + "_mask.npy")
+                mask = np.expand_dims(mask, 2)
                 indices = np.load(mydir + pid + "_list_indices.npy", encoding="latin1")
                 # indices is (n_verts x <30), it should be
                 indices = pad_indices(indices, mask.shape[1])
