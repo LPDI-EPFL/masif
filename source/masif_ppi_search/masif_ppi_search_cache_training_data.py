@@ -1,13 +1,13 @@
 # Header variables and parameters.
 import sys
+import pymesh
 import os
 import numpy as np
 from IPython.core.debugger import set_trace
 import importlib
 
-import pyflann
+from scipy.spatial import cKDTree
 
-from masif_modules.compute_input_feat import compute_input_feat
 from default_config.masif_opts import masif_opts
 
 """
@@ -77,42 +77,43 @@ for count, ppi_pair_id in enumerate(os.listdir(parent_in_dir)):
         mylabels = labels[0]
         labels = np.median(mylabels, axis=1)
             
-    except Exception, e:
+    except Exception as e:
         print('Could not open '+in_dir+'p1'+'_sc_labels.npy: '+str(e))
         continue
+
+    # Read the corresponding ply files. 
+    fields = ppi_pair_id.split('_')
+    ply_fn1 = masif_opts['ply_file_template'].format(fields[0], fields[1])
+    ply_fn2 = masif_opts['ply_file_template'].format(fields[0], fields[2])
 
     # pos_labels: points > max_sc_filt and >  min_sc_filt.
     pos_labels = np.where((labels < params['max_sc_filt']) & (labels > params['min_sc_filt'])) [0]
     K = int(params['pos_surf_accept_probability']*len(pos_labels))
     if K < 1: 
         continue
-    l = range(len(pos_labels))
+    l = np.arange(len(pos_labels))
     np.random.shuffle(l)
     l = l[:K] 
     l = pos_labels[l]
 
-    X1 = np.load(in_dir+'p1'+'_X.npy')
-    Y1 = np.load(in_dir+'p1'+'_Y.npy')
-    Z1 = np.load(in_dir+'p1'+'_Z.npy')
-    v1 = np.stack([X1[l],Y1[l],Z1[l]], axis=1)
-
-    X2 = np.load(in_dir+'p2'+'_X.npy')
-    Y2 = np.load(in_dir+'p2'+'_Y.npy')
-    Z2 = np.load(in_dir+'p2'+'_Z.npy')
-    v2 = np.stack([X2,Y2,Z2], axis=1)
+    v1 = pymesh.load_mesh(ply_fn1).vertices[l]
+    v2 = pymesh.load_mesh(ply_fn2).vertices
 
     # For each point in v1, find the closest point in v2.
-    flann = pyflann.FLANN()
-    r,d = flann.nn(v2, v1)
-    d = np.sqrt(d)
+    kdt = cKDTree(v2)
+    d,r= kdt.query(v1)
     # Contact points: those within a cutoff distance.
     contact_points = np.where(d < params['pos_interface_cutoff'])[0]
-    k1 = l[contact_points]
+    try:
+        k1 = l[contact_points]
+    except:
+        set_trace()
     k2 = r[contact_points]
 
     # For negatives, get points in v2 far from p1.
     try:
-        rneg,dneg = flann.nn(v1, v2)
+        kdt = cKDTree(v1)
+        dneg, rneg = kdt.query(v2)
     except:
         set_trace()
     k_neg2 = np.where(dneg > params['pos_interface_cutoff'])[0]
@@ -164,11 +165,12 @@ for count, ppi_pair_id in enumerate(os.listdir(parent_in_dir)):
     # Training, validation or test?
     if ppi_pair_id in training_list:
         if train_val <= params['range_val_samples']:
-            training_idx = training_idx + range(idx_count, idx_count+n_pos)
+            training_idx = np.append(training_idx, np.arange(idx_count, idx_count+n_pos))
         elif train_val > params['range_val_samples']: 
-            val_idx = val_idx + range(idx_count, idx_count+n_pos)
+            val_idx = np.append(val_idx, np.arange(idx_count, idx_count+n_pos))
     else: 
-        test_idx = test_idx + range(idx_count, idx_count+n_pos)
+        test_idx = np.append(test_idx, np.arange(idx_count, idx_count+n_pos))
+
     idx_count += n_pos
 
 if not os.path.exists(params['cache_dir']):
