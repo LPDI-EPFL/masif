@@ -64,10 +64,10 @@ from masif_modules.train_masif_site import train_masif_site
 print(params["feat_mask"])
 if not os.path.exists(params["model_dir"]):
     os.makedirs(params["model_dir"])
-# else:
-#    # Load existing network.
-#    print ('Reading pre-trained network')
-#    learning_obj.saver.restore(learning_obj.session, params['out_dir']+'model')
+else:
+    # Load existing network.
+    print ('Reading pre-trained network')
+    learning_obj.saver.restore(learning_obj.session, params['model_dir']+'model')
 
 train_masif_site(learning_obj, params)
 
