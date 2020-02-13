@@ -14,13 +14,6 @@ else:
   print("ERROR: MSMS_BIN not set. Variable should point to MSMS program.")
   sys.exit(1)
 
-xyzrn_bin=""
-if 'PDB2XYZRN' in os.environ:
-   xyzrn_bin = os.environ['PDB2XYZRN']
-else:
-  print("ERROR: PDB2XYZRN not set. Variable should point to XYZRN program.")
-  sys.exit(1)
-
 pdb2pqr_bin=""
 if 'PDB2PQR_BIN' in os.environ:
    pdb2pqr_bin = os.environ['PDB2PQR_BIN']
