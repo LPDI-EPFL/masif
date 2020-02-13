@@ -90,6 +90,8 @@ def construct_batch(
     batch_mask = np.concatenate(
         [batch_mask_pos, batch_mask_binder, batch_mask_neg, batch_mask_neg_2], axis=0
     )
+    # expand the last dimension of the mask (batch_size, max_points_patch, 1)
+    batch_mask = np.expand_dims(batch_mask, 2)
 
     return batch_rho_coords, batch_theta_coords, batch_input_feat, batch_mask
 
@@ -106,6 +108,7 @@ def construct_batch_val_test(
     batch_theta_coords = np.expand_dims(theta_wrt_center[c_idx], 2)
     batch_input_feat = input_feat[c_idx]
     batch_mask = mask[c_idx]
+    batch_mask = np.expand_dims(batch_mask,2)
     # Flip features and theta (except hydrophobicity)
     if flip:
         batch_input_feat = -batch_input_feat
@@ -194,7 +197,7 @@ def train_ppi_search(
 ):
 
     out_dir = params["model_dir"]
-    logfile = open(out_dir + "log.txt", "w", 0)
+    logfile = open(out_dir + "log.txt", "w")
     logfile.write(
         "Number of training positive shapes: {}\n".format(len(pos_training_idx))
     )
