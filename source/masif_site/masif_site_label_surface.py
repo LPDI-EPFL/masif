@@ -85,7 +85,6 @@ for ppi_pair_id in ppi_pair_ids:
         mymesh.remove_attribute("vertex_iface")
         mymesh.add_attribute("iface")
         mymesh.set_attribute("iface", scores[0])
-        set_trace()
         mymesh.remove_attribute("vertex_x")
         mymesh.remove_attribute("vertex_y")
         mymesh.remove_attribute("vertex_z")

@@ -100,7 +100,7 @@ for ppi_pair_id in ppi_pair_ids:
         input_feat = np.load(in_dir + pid + "_input_feat.npy")
         input_feat = mask_input_feat(input_feat, params["feat_mask"])
         mask = np.load(in_dir + pid + "_mask.npy")
-        indices = np.load(in_dir + pid + "_list_indices.npy", encoding="latin1")
+        indices = np.load(in_dir + pid + "_list_indices.npy", encoding="latin1", allow_pickle=True)
         labels = np.zeros((len(mask)))
 
         print("Total number of patches:{} \n".format(len(mask)))
