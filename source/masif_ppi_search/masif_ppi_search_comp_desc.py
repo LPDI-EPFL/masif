@@ -5,6 +5,7 @@ import time
 import numpy as np
 from IPython.core.debugger import set_trace
 from sklearn import metrics
+import pymesh
 import importlib
 from default_config.masif_opts import masif_opts
 
@@ -107,18 +108,15 @@ for count, ppi_pair_id in enumerate(ppi_list):
     chain1 = ppi_pair_id.split("_")[1]
     chain2 = ppi_pair_id.split("_")[2]
 
-    X1 = np.load(in_dir + "p1" + "_X.npy")
-    Y1 = np.load(in_dir + "p1" + "_Y.npy")
-    Z1 = np.load(in_dir + "p1" + "_Z.npy")
-    v1 = np.stack([X1[l], Y1[l], Z1[l]], axis=1)
+    ply_fn1 = masif_opts['ply_file_template'].format(pdbid, chain1)
+    v1 = pymesh.load_mesh(ply_fn1).vertices[l]
 
     if len(l) > 0 and chain2 != "":
         from sklearn.neighbors import NearestNeighbors
 
-        X2 = np.load(in_dir + "p2" + "_X.npy")
-        Y2 = np.load(in_dir + "p2" + "_Y.npy")
-        Z2 = np.load(in_dir + "p2" + "_Z.npy")
-        v2 = np.stack([X2, Y2, Z2], axis=1)
+        ply_fn2 = masif_opts['ply_file_template'].format(pdbid, chain2 )
+        v2 = pymesh.load_mesh(ply_fn2).vertices
+
         # For each point in v1, find the closest point in v2.
         nbrs = NearestNeighbors(n_neighbors=1, algorithm="ball_tree").fit(v2)
         d, r = nbrs.kneighbors(v1)
