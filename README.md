@@ -20,6 +20,7 @@
      * [MaSIF-site](#MaSIF-site)
      * [MaSIF-search](#MaSIF-search)
 - [PyMOL plugin](#PyMOL-plugin)
+- [Docker container](#Docker-container)
 - [License](#License)
 - [Reference](#Reference)
 ## Description
@@ -45,11 +46,13 @@ a) ligand prediction for protein binding pockets (MaSIF-ligand); b) protein-prot
 likely to interact with other proteins (MaSIF-site); c) ultrafast scanning of surfaces, where we use 
 surface fingerprints from binding partners to predict the structural configuration of protein-protein complexes (MaSIF-search). 
 
-This repository reproduces the experiments of: 
+This repository should closely reproduce the experiments of: 
 
-Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Bronstein, M. M., & Correia, B. E. (2019).
-Deciphering interaction fingerprints from protein molecular surfaces.
-[bioRxiv, 606202.](https://www.biorxiv.org/content/10.1101/606202v1)
+Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Boscaini, D Bronstein, M. M., & Correia, B. E. (2019).
+Deciphering interaction fingerprints from protein molecular surfaces using geometric deep learning.
+Nat Methods 17, 184–192 (2020). https://doi.org/10.1038/s41592-019-0666-6
+
+<span style="color:red">Note: Since Feb 2020, we have greatly simplified the installation of MaSIF by no longer requiriring Matlab (all the code is now 100% python. However, this slightly changes the results from the paper. To reproduce the results for the paper exactly as published (with the pretrained neural networks) you can obtain it at: https://github.com/pablogainza/masif_paper </span>.
 
 MaSIF is distributed under an [Apache License](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/LICENSE). This 
 code is meant to serve as a tutorial, and the basis for researchers to exploit MaSIF in protein-surface learning tasks. 
@@ -354,6 +357,11 @@ loadply ABCD_E.ply
 Example:
 ![MaSIF PyMOL plugin example](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/PyMOL-01.png)
 
+## Docker container
+
+The easiest way to test MaSIF is through a Docker container. Please see our tutorial on reproducing the paper results here:
+
+![Docker tutorial](docker_tutorial.md)
 
 ## License
 
