@@ -52,7 +52,7 @@ Gainza, P., Sverrisson, F., Monti, F., Rodola, E., Boscaini, D Bronstein, M. M.,
 Deciphering interaction fingerprints from protein molecular surfaces using geometric deep learning.
 Nat Methods 17, 184–192 (2020). https://doi.org/10.1038/s41592-019-0666-6
 
-<span style="color:red">Note: Since Feb 2020, we have greatly simplified the installation of MaSIF by no longer requiriring Matlab (all the code is now 100% python. However, this slightly changes the results from the paper. To reproduce the results for the paper exactly as published (with the pretrained neural networks) you can obtain it at: https://github.com/pablogainza/masif_paper </span>.
+<span style="color:red">Note: Since Feb 2020, we have greatly simplified the installation of MaSIF by replacing all Matlab code with Python code. However, this slightly changes the results from the paper. To reproduce the results for the paper exactly as published (with the pretrained neural networks) you can obtain it at: https://github.com/pablogainza/masif_paper </span>.
 
 MaSIF is distributed under an [Apache License](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/LICENSE). This 
 code is meant to serve as a tutorial, and the basis for researchers to exploit MaSIF in protein-surface learning tasks. 
@@ -105,7 +105,7 @@ git clone https://github.com/lpdi-epfl/masif
 cd masif/
 ```
 
-Since MaSIF is written in Python and Matlab, no compilation is required.
+Since MaSIF is written in Python, no compilation is required.
 
 ## Method overview 
 
@@ -135,9 +135,9 @@ which performs the following steps:
 
 1. Download the PDB. 
 2. Protonate the PDB, extract the desired chains, triangulate the surface (using MSMS), and compute chemical features. 
-3. Translate the surface to a matlab file and compute the shape index on each vertex. 
-4. Compute the angular and radial geodesic coordinates for each patch. 
-5. Extract all patches, with features and coordinates, for each protein.
+3. Extract all patches, with features and coordinates, for each protein.
+
+MaSIF's main speed bottleneck lie in these three steps. The main performance bottlenecks are computing the angular coordinates using MDS, computing the Poisson-Boltzmann electrostatics and regularizing the mesh after computing the MSMS surface.
 
 Each application data directory (under masif/data/masif\*) contains a script to precompute the data.
 
@@ -357,7 +357,7 @@ Example:
 
 The easiest way to test MaSIF is through a Docker container. Please see our tutorial on reproducing the paper results here:
 
-![Docker tutorial](docker_tutorial.md)
+[Docker tutorial](docker_tutorial.md)
 
 ## License
 
