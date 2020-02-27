@@ -71,23 +71,19 @@ train or evaluate the trained models as it can be up to 100 times faster than a 
 MaSIF relies on external software/libraries to handle protein databank files and surface files, 
 to compute chemical/geometric features and coordinates, and to perform neural network calculations. 
 The following is the list of required libraries and programs, as well as the version on which it was tested (in parenthesis).
-* [Python](https://www.python.org/) (2.7)
+* [Python](https://www.python.org/) (3.6)
 * [reduce](http://kinemage.biochem.duke.edu/software/reduce.php) (3.23). To add protons to proteins. 
 * [MSMS](http://mgltools.scripps.edu/packages/MSMS/) (2.6.1). To compute the surface of proteins. 
 * [BioPython](https://github.com/biopython/biopython) (1.66) . To parse PDB files. 
 * [PyMesh](https://github.com/PyMesh/PyMesh) (0.1.14). To handle ply surface files, attributes, and to regularize meshes.
-* [pyflann](https://github.com/primetang/pyflann) (1.6.14). To perform nearest neighbor searches of vertices.
 * PDB2PQR (2.1.1), multivalue, and [APBS](http://www.poissonboltzmann.org/) (1.5). These programs are necessary to compute electrostatics charges.
 * [open3D](https://github.com/IntelVCL/Open3D) (0.5.0.0). Mainly used for RANSAC alignment.
-* [matlab](https://ch.mathworks.com/products/matlab.html) (R2018a). Used to compute some geometric features and angular/radial coordinates.
-* [Python bindings for matlab](https://www.mathworks.com/help/matlab/matlab_external/get-started-with-matlab-engine-for-python.html) - To call matlab functions from within Python.
 * [Tensorflow](https://www.tensorflow.org/) (1.9). Use to model, train, and evaluate the actual neural networks. Models were trained and evaluated on a NVIDIA Tesla K40 GPU.
-* [SBI](https://pypi.org/project/StrBioInfo/). Used for parsing PDB files and generate biological assembly for MaSIF-ligand.
+* [StrBioInfo](https://pypi.org/project/StrBioInfo/). Used for parsing PDB files and generate biological assembly for MaSIF-ligand.
 * [Dask](https://dask.org/) (2.2.0). Run function calls on multiple threads (Optional for reproducing some benchmarks).
 * [Pymol](https://pymol.org/2/). This optional plugin allows one to visualize surface files in PyMOL.
  
-We are working to reduce this list of requirements for future versions.
-
+Alternatively you can use the Docker version, which is the easiest to install (See [Docker container](#Docker-container))
 ## Installation 
 After preinstalling dependencies, add the following environment variables to your path, changing the appropriate directories:
 
