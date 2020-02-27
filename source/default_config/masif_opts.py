@@ -5,15 +5,8 @@ masif_opts = {}
 masif_opts["raw_pdb_dir"] = "data_preparation/00-raw_pdbs/"
 masif_opts["pdb_chain_dir"] = "data_preparation/01-benchmark_pdbs/"
 masif_opts["ply_chain_dir"] = "data_preparation/01-benchmark_surfaces/"
-masif_opts["mat_dir"] = "data_preparation/02-matfile/"
-masif_opts["coord_dir"] = "data_preparation/03-coords/"
-masif_opts["coord_dir_npy"] = "data_preparation/03-coords_npy/"
 masif_opts["tmp_dir"] = tempfile.gettempdir()
 masif_opts["ply_file_template"] = masif_opts["ply_chain_dir"] + "/{}_{}.ply"
-masif_opts["mat_dir_template"] = masif_opts["mat_dir"] + "/{}"
-masif_opts["coord_dir_template"] = masif_opts["coord_dir"] + "/{}"
-masif_opts["mat_file_template"] = masif_opts["mat_dir"] + "/{}/{}.mat"
-masif_opts["coord_file_template"] = masif_opts["coord_dir"] + "/{}/{}.mat"
 
 # Surface features
 masif_opts["use_hbond"] = True
