@@ -4,7 +4,6 @@ Pablo Gainza - LPDI STI EPFL 2019
 Released under an Apache License 2.0
 """
 from Bio.PDB import *
-import ipdb
 
 # Exclude disordered atoms.
 class NotDisordered(Select):

@@ -24,10 +24,6 @@ masif_opts["compute_iface"] = True
 masif_opts["mesh_res"] = 1.0
 masif_opts["feature_interpolation"] = True
 
-# Parameters for shape complementarity calculations.
-masif_opts["sc_radius"] = 12.0
-masif_opts["sc_interaction_cutoff"] = 1.5
-masif_opts["sc_w"] = 0.25
 
 # Coords params
 masif_opts["radius"] = 12.0
@@ -51,6 +47,10 @@ masif_opts["ppi_search"]["cache_dir"] = "nn_models/sc05/cache/"
 masif_opts["ppi_search"]["model_dir"] = "nn_models/sc05/all_feat/model_data/"
 masif_opts["ppi_search"]["desc_dir"] = "descriptors/sc05/all_feat/"
 masif_opts["ppi_search"]["gif_descriptors_out"] = "gif_descriptors/"
+# Parameters for shape complementarity calculations.
+masif_opts["ppi_search"]["sc_radius"] = 12.0
+masif_opts["ppi_search"]["sc_interaction_cutoff"] = 1.5
+masif_opts["ppi_search"]["sc_w"] = 0.25
 
 # Neural network patch application specific parameters.
 masif_opts["site"] = {}

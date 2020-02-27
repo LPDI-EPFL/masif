@@ -5,9 +5,9 @@
 #SBATCH --cpus-per-task 1
 #SBATCH --mem 16384
 #SBATCH --time 03:00:00
-#SBATCH --array=1-4
-#SBATCH --output=exelogs/out/data_prepare.%A_%a.out
-#SBATCH --error=exelogs/err/data_prepare.%A_%a.err
+#SBATCH --array=1-1000
+#SBATCH --output=exelogs/data_prepare.%A_%a.out
+#SBATCH --error=exelogs/data_prepare.%A_%a.err
 
 i=1
 while read p; do

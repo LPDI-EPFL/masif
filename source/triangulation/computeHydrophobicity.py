@@ -1,4 +1,3 @@
-import ipdb
 import numpy as np
 
 # Kyte Doolittle scale

@@ -1,5 +1,4 @@
 from Bio.PDB import *
-import ipdb
 from default_config.chemistry import radii, polarHydrogens
 
 """

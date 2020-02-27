@@ -1,10 +1,9 @@
-import ipdb
 import os
 from subprocess import Popen, PIPE
 
 from input_output.read_msms import read_msms
 from triangulation.xyzrn import output_pdb_as_xyzrn
-from default_config.global_vars import msms_bin, xyzrn_bin
+from default_config.global_vars import msms_bin 
 from default_config.masif_opts import masif_opts
 import random
 
@@ -13,20 +12,14 @@ import random
 # Special atoms are atoms with a reduced radius.
 def computeMSMS(pdb_file,  protonate=True):
     randnum = random.randint(1,10000000)
-    file_base = masif_opts['tmp_dir']+"/msms_"+`randnum`
+    file_base = masif_opts['tmp_dir']+"/msms_"+str(randnum)
     out_xyzrn = file_base+".xyzrn"
 
     if protonate:        
         output_pdb_as_xyzrn(pdb_file, out_xyzrn)
-    # If we are not using explicit hydrogens, then I invoke the script provided
-    # by MSMS, as this script has many atom definitions that are a pain to
-    # translate to python.
     else:
-        args = [xyzrn_bin, pdb_file]
-        f_out_xyzrn = open(out_xyzrn, 'w')
-        p2 = Popen(args, stdout=f_out_xyzrn)
-        p2.communicate()
-        f_out_xyzrn.close()
+        print("Error - pdb2xyzrn is deprecated.")
+        sys.exit(1)
     # Now run MSMS on xyzrn file
     FNULL = open(os.devnull, 'w')
     args = [msms_bin, "-density", "3.0", "-hdensity", "3.0", "-probe",\
