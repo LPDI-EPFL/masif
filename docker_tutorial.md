@@ -1,3 +1,5 @@
+![MaSIF banner and concept](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/Concept-01.png)
+
 # Docker tutorial for MaSIF.
 
 ## Table of Contents: 
