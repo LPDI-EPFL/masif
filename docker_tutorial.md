@@ -128,6 +128,27 @@ cd data/masif_site
 ./reproduce_transient_benchmark.sh
 ```
 
+This process takes about 2 hours, since there are ~60 proteins and they take about 2 minutes to run per protein.
+
+### Retraining the neural network from zero. 
+
+In order to retrain the neural network from zero, I strongly recommend using a cluster to precompute the data and a GPU to train. It will take about 5 days in a single CPU to preprocess all the data. Ideally, one would instead use a cluster. However, if a cluster is not available you can precompute all data by running the commands: 
+
+```
+cd data/masif_site
+./data_prepare_all.sh
+```
+Then, one can train the neural network: 
+
+```
+./train_nn.sh
+```
+
+Please make sure to use a Docker version that supports GPU access. You may have to install tensorflow with support for GPU within the Docker image. 
+
+
+
+
 ## MaSIF-ligand
 
 ## MaSIF-search
