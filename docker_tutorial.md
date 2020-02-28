@@ -9,7 +9,7 @@
     * [Reproducing the transient benchmark from the paper](#Reproducing-the-transient-benchmark-from-the-paper)
 - [Building MaSIF from a Dockerfile](Dockerfile)
 - [MaSIF-ligand](#MaSIF-ligand)
-- [MaSIF-ligand](#MaSIF-ligand)
+- [MaSIF-search](#MaSIF-search)
 
 
 ## Installation
@@ -120,6 +120,10 @@ Then deactivate all objects except the one with 'iface' as part of its name. You
 ### Reproducing the transient benchmark from the paper
 
 Here it is.
+
+## MaSIF-ligand
+
+## MaSIF-search
 
 ## Dockerfile
 
