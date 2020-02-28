@@ -1,4 +1,4 @@
-# Docker tutorial for MaSIF (Molecular Surface Interaction Fingerprints: Geometric deep learning to decipher patterns in protein molecular surfaces.).
+# Docker tutorial for MaSIF.
 
 ## Table of Contents: 
 
