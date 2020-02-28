@@ -2,6 +2,7 @@ import pymesh
 import os
 import sys
 from IPython.core.debugger import set_trace
+from sklearn.metrics import roc_auc_score
 import importlib
 import numpy as np
 from default_config.masif_opts import masif_opts
@@ -27,6 +28,8 @@ for key in custom_params:
 parent_in_dir = params["masif_precomputation_dir"]
 eval_list = []
 
+all_roc_auc_scores = []
+
 if len(sys.argv) == 3:
     # eval_list = [sys.argv[2].rstrip('_')]
     ppi_pair_ids = [sys.argv[2]]
@@ -43,10 +46,19 @@ else:
     sys.exit(1)
 
 for ppi_pair_id in ppi_pair_ids:
-    pdbid = ppi_pair_id.split("_")[0]
-    chains = [ppi_pair_id.split("_")[1], ppi_pair_id.split("_")[2]]
+    fields = ppi_pair_id.split("_")
+    pdbid = fields[0]
+    if len(fields) == 2 or fields[2] == '':
+        chains = [ppi_pair_id.split("_")[1]]
+    else:
+        chains = [ppi_pair_id.split("_")[1], ppi_pair_id.split("_")[2]]
 
-    for ix, pid in enumerate(["p1", "p2"]):
+    if len(chains) == 1:
+        pids = ['p1']
+    else: 
+        pids = ['p1', 'p2']
+
+    for ix, pid in enumerate(pids):
         ply_file = masif_opts["ply_file_template"].format(pdbid, chains[ix])
         pdb_chain_id = pdbid + "_" + chains[ix]
 
@@ -60,7 +72,7 @@ for ppi_pair_id in ppi_pair_ids:
         try:
             p1 = pymesh.load_mesh(ply_file)
         except:
-            print("File does not exist: {}".format(shape_file))
+            print("File does not exist: {}".format(ply_file))
             continue
         try:
             scores = np.load(
@@ -82,6 +94,12 @@ for ppi_pair_id in ppi_pair_ids:
 
         mymesh = p1
 
+        ground_truth = mymesh.get_attribute('vertex_iface')
+        # Compute ROC AUC for this protein. 
+        roc_auc = roc_auc_score(ground_truth, scores[0])
+        all_roc_auc_scores.append(roc_auc)
+        print("ROC AUC score for protein {} : {:.2f} ".format(pdbid+'_'+chains[ix], roc_auc))
+
         mymesh.remove_attribute("vertex_iface")
         mymesh.add_attribute("iface")
         mymesh.set_attribute("iface", scores[0])
@@ -101,3 +119,7 @@ for ppi_pair_id in ppi_pair_ids:
             ascii=True
         )
 
+med_roc = np.median(all_roc_auc_scores)
+
+print("Computed {} proteins".format(len(all_roc_auc_scores)))
+print("Median ROC AUC score: {}".format(med_roc))
