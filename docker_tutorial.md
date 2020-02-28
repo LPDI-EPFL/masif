@@ -107,7 +107,7 @@ Then deactivate all objects except the one with 'iface' as part of its name. You
 
 ![MaSIF PyMOL plugin example](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/masif_plugin_example_2.png)
 
-### Running on a single protein from a PDB file.
+### Running MaSIF-site on a single protein from a PDB file.
 
 ### Reproducing the transient benchmark from the paper. 
 
