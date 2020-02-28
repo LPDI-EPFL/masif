@@ -105,7 +105,7 @@ loadply 4ZQK_A.ply
 
 Then deactivate all objects except the one with 'iface' as part of its name. You should see something like this: 
 
-![MaSIF PyMOL plugin example](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/PyMOL-02.png)
+![MaSIF PyMOL plugin example](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/masif_plugin_example_2.png)
 
 ### Running on a single protein from a PDB file.
 
