@@ -5,7 +5,7 @@
 - [Installation](#Installation)
 - [MaSIF-site](#MaSIF-site)
     * [Running MaSIF-site on a single protein from a PDB id](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-id)
-    * [Running MaSIF-site on a single protein from a PDB file](#Running on a single protein from a PDB file)
+    * [Running MaSIF-site on a single protein from a PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-file)
     * [Reproducing the transient benchmark from the paper](#Reproducing the transient benchmark from the paper)
 - [Building MaSIF from a Dockerfile](Dockerfile)
 
@@ -32,7 +32,7 @@ root@b30c52bcb86f:/masif# cd data/masif_site/
 root@b30c52bcb86f:/masif/data/masif_site# 
 ```
 
-We will now run MaSIF site on chain A of PDB id 4ZQK. It is important to always input a chain and a PDB id. The first step consists of preparing the data and it is the slowest part of the process. It consists of downloading the pdb, extracting the chain, protonating it, computing the molecular surface and PB electrostatics, and decomposing the protein into patches. 
+We will now run MaSIF site on chain A of PDB id 4ZQK. It is important to always input a chain and a PDB id. The first step consists of preparing the data and it is the slowest part of the process. It consists of downloading the pdb, extracting the chain, protonating it, computing the molecular surface and PB electrostatics, and decomposing the protein into patches (about 1 minute on a 120 residue protein): 
 
 ```
 root@b30c52bcb86f:/masif/data/masif_site# ./data_prepare_one.sh 4ZQK_A
