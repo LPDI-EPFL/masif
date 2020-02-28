@@ -121,7 +121,12 @@ Then deactivate all objects except the one with 'iface' as part of its name. You
 
 ### Reproducing the transient benchmark from the paper
 
-Here it is.
+All the MaSIF-site experiments from the paper should be reproducible using the Docker container. For convenience, I have provided a script to reproduce the transient PPI interaction prediction benchmark, which is the one that is compared to state-of-the-art tools (SPPIDER, PSIVER).
+
+```
+cd data/masif_site
+./reproduce_transient_benchmark.sh
+```
 
 ## MaSIF-ligand
 
