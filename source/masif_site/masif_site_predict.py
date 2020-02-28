@@ -71,12 +71,13 @@ for ppi_pair_id in ppi_pair_ids:
     print(ppi_pair_id)
     in_dir = parent_in_dir + ppi_pair_id + "/"
 
+    fields = ppi_pair_id.split('_')
     pdbid = ppi_pair_id.split("_")[0]
     chain1 = ppi_pair_id.split("_")[1]
-    chain2 = ppi_pair_id.split("_")[2]
     pids = ["p1"]
     chains = [chain1]
-    if chain2 != "":
+    if len(fields) == 3 and fields[2] != "":
+        chain2 = fields[2]
         pids = ["p1", "p2"]
         chains = [chain1, chain2]
 

@@ -55,7 +55,7 @@ for ppi_pair_id in ppi_pair_list:
     ply_file = {}
     ply_file['p1'] = masif_opts['ply_file_template'].format(fields[0], fields[1])
 
-    if fields[2] == '':
+    if len (fields) == 2 or fields[2] == '':
         pids = ['p1']
     else:
         ply_file['p2']  = masif_opts['ply_file_template'].format(fields[0], fields[2])
