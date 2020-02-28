@@ -4,7 +4,7 @@
 
 - [Installation](#Installation)
 - [MaSIF-site](#MaSIF-site)
-    * [Running MaSIF-site on a single protein from a PDB id](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-id)
+    * [Running MaSIF-site on a single protein from a PDB id or PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-id)
     * [Running MaSIF-site on a single protein from a PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-file)
     * [Reproducing the transient benchmark from the paper](#Reproducing the transient benchmark from the paper)
 - [Building MaSIF from a Dockerfile](Dockerfile)
@@ -47,7 +47,13 @@ Full loop time: 28.54s
 MDS took 28.54s
 ```
 
-If you want to run a prediction on multiple chains (e.g. a multidomain protein) you can do so by concatenting all chains (e.g., 4ZQK_AB). The next step consists of actually running the protein through the neural network to predict interaction sites: 
+If you want to run a prediction on multiple chains (e.g. a multidomain protein) you can do so by concatenting all chains (e.g., 4ZQK_AB). You can also run this command on a specific file (i.e. not on a downloaded file) using the --file flag: 
+
+```
+root@b30c52bcb86f:/masif/data/masif_site# ./data_prepare_one.sh --file /path/to/myfile/4ZQK.pdb 4ZQK_A
+```
+
+The next step consists of actually running the protein through the neural network to predict interaction sites: 
 
 ```
 root@b30c52bcb86f:/masif/data/masif_site# ./predict_site.sh 4ZQK_A
@@ -107,7 +113,7 @@ Then deactivate all objects except the one with 'iface' as part of its name. You
 
 ![MaSIF PyMOL plugin example](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/masif_plugin_example_2.png)
 
-### Running MaSIF-site on a single protein from a PDB file.
+
 
 ### Reproducing the transient benchmark from the paper. 
 
