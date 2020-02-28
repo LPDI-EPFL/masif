@@ -1,13 +1,17 @@
-# Docker tutorial for MaSIF (Molecular Surface Interaction Fingerprints: Geometric deep learning to decipher patterns in protein molecular surfaces.).
+![MaSIF banner and concept](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/Concept-01.png)
+
+# Docker tutorial for MaSIF.
 
 ## Table of Contents: 
 
 - [Installation](#Installation)
 - [MaSIF-site](#MaSIF-site)
-    * [Running MaSIF-site on a single protein from a PDB id](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-id)
+    * [Running MaSIF-site on a single protein from a PDB id or PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-id)
     * [Running MaSIF-site on a single protein from a PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-file)
-    * [Reproducing the transient benchmark from the paper](#Reproducing the transient benchmark from the paper)
+    * [Reproducing the transient benchmark from the paper](#Reproducing-the-transient-benchmark-from-the-paper)
 - [Building MaSIF from a Dockerfile](Dockerfile)
+- [MaSIF-ligand](#MaSIF-ligand)
+- [MaSIF-search](#MaSIF-search)
 
 
 ## Installation
@@ -47,7 +51,13 @@ Full loop time: 28.54s
 MDS took 28.54s
 ```
 
-If you want to run a prediction on multiple chains (e.g. a multidomain protein) you can do so by concatenting all chains (e.g., 4ZQK_AB). The next step consists of actually running the protein through the neural network to predict interaction sites: 
+If you want to run a prediction on multiple chains (e.g. a multidomain protein) you can do so by concatenting all chains (e.g., 4ZQK_AB). You can also run this command on a specific file (i.e. not on a downloaded file) using the --file flag: 
+
+```
+root@b30c52bcb86f:/masif/data/masif_site# ./data_prepare_one.sh --file /path/to/myfile/4ZQK.pdb 4ZQK_A
+```
+
+The next step consists of actually running the protein through the neural network to predict interaction sites: 
 
 ```
 root@b30c52bcb86f:/masif/data/masif_site# ./predict_site.sh 4ZQK_A
@@ -107,9 +117,41 @@ Then deactivate all objects except the one with 'iface' as part of its name. You
 
 ![MaSIF PyMOL plugin example](https://raw.githubusercontent.com/LPDI-EPFL/masif/master/img/masif_plugin_example_2.png)
 
-### Running MaSIF-site on a single protein from a PDB file.
 
-### Reproducing the transient benchmark from the paper. 
+
+### Reproducing the transient benchmark from the paper
+
+All the MaSIF-site experiments from the paper should be reproducible using the Docker container. For convenience, I have provided a script to reproduce the transient PPI interaction prediction benchmark, which is the one that is compared to state-of-the-art tools (SPPIDER, PSIVER).
+
+```
+cd data/masif_site
+./reproduce_transient_benchmark.sh
+```
+
+This process takes about 2 hours, since there are ~60 proteins and they take about 2 minutes to run per protein.
+
+### Retraining the neural network from zero. 
+
+In order to retrain the neural network from zero, I strongly recommend using a cluster to precompute the data and a GPU to train. It will take about 5 days in a single CPU to preprocess all the data. Ideally, one would instead use a cluster. However, if a cluster is not available you can precompute all data by running the commands: 
+
+```
+cd data/masif_site
+./data_prepare_all.sh
+```
+Then, one can train the neural network: 
+
+```
+./train_nn.sh
+```
+
+Please make sure to use a Docker version that supports GPU access. You may have to install tensorflow with support for GPU within the Docker image. 
+
+
+
+
+## MaSIF-ligand
+
+## MaSIF-search
 
 ## Dockerfile
 
