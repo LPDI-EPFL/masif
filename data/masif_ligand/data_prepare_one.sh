@@ -10,7 +10,4 @@ python $masif_source/data_preparation/00-pdb_download.py $1
 python2.7 $masif_source/data_preparation/00b-generate_assembly.py $1
 python2.7 $masif_source/data_preparation/00c-save_ligand_coords.py $1
 python $masif_source/data_preparation/01-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1 masif_ligand
-python $masif_source/data_preparation/02-compute_matlab_matrix.py $1
-python $masif_source/data_preparation/03-compute_coords.py $1
-python $masif_source/data_preparation/03b-convert_mat2npy.py $1
 python $masif_source/data_preparation/04-masif_precompute.py masif_ligand $1
