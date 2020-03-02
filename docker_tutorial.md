@@ -8,9 +8,10 @@
 - [MaSIF-site](#MaSIF-site)
     * [Running MaSIF-site on a single protein from a PDB id or PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-id)
     * [Reproducing the transient benchmark from the paper](#Reproducing-the-transient-benchmark-from-the-paper)
-- [Building MaSIF from a Dockerfile](Dockerfile)
-- [MaSIF-ligand](#MaSIF-ligand)
 - [MaSIF-search](#MaSIF-search)
+- [MaSIF-ligand](#MaSIF-ligand)
+- [Building MaSIF from a Dockerfile](Dockerfile)
+
 
 
 ## Installation
@@ -147,10 +148,15 @@ Please make sure to use a Docker version that supports GPU access. You may have 
 
 
 
+## MaSIF-search
+
+**This tutorial will be soon available**
 
 ## MaSIF-ligand
 
-## MaSIF-search
+**This tutorial will be soon available**
+
+
 
 ## Dockerfile
 
