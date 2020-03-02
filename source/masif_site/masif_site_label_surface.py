@@ -96,9 +96,12 @@ for ppi_pair_id in ppi_pair_ids:
 
         ground_truth = mymesh.get_attribute('vertex_iface')
         # Compute ROC AUC for this protein. 
-        roc_auc = roc_auc_score(ground_truth, scores[0])
-        all_roc_auc_scores.append(roc_auc)
-        print("ROC AUC score for protein {} : {:.2f} ".format(pdbid+'_'+chains[ix], roc_auc))
+        try:
+            roc_auc = roc_auc_score(ground_truth, scores[0])
+            all_roc_auc_scores.append(roc_auc)
+            print("ROC AUC score for protein {} : {:.2f} ".format(pdbid+'_'+chains[ix], roc_auc))
+        except: 
+            print("No ROC AUC computed for protein (possibly, no ground truth defined in input)") 
 
         mymesh.remove_attribute("vertex_iface")
         mymesh.add_attribute("iface")
@@ -110,7 +113,6 @@ for ppi_pair_id in ppi_pair_ids:
         if not os.path.exists(params["out_surf_dir"]):
             os.makedirs(params["out_surf_dir"])
 
-        print("Saving " + params["out_surf_dir"] + pdb_chain_id + ".ply")
         pymesh.save_mesh(
             params["out_surf_dir"] + pdb_chain_id + ".ply",
             mymesh,
@@ -118,8 +120,10 @@ for ppi_pair_id in ppi_pair_ids:
             use_float=True,
             ascii=True
         )
+        print("Successfully saved file " + params["out_surf_dir"] + pdb_chain_id + ".ply")
 
 med_roc = np.median(all_roc_auc_scores)
 
-print("Computed {} proteins".format(len(all_roc_auc_scores)))
-print("Median ROC AUC score: {}".format(med_roc))
+if len(all_roc_auc_scores) > 0:
+    print("Computed the ROC AUC for {} proteins".format(len(all_roc_auc_scores)))
+    print("Median ROC AUC score: {}".format(med_roc))
