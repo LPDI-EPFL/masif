@@ -11,7 +11,7 @@ then
 	CHAIN1=$(echo $PPI_PAIR_ID| cut -d"_" -f2)
 	FILENAME=$2
 	mkdir -p data_preparation/00-raw_pdbs/
-	cp $FILENAME data_preparation/00-raw_pdbs/
+	cp $FILENAME data_preparation/00-raw_pdbs/$PDB_ID\.pdb
 else
 	PPI_PAIR_ID=$1
 	PDB_ID=$(echo $PPI_PAIR_ID| cut -d"_" -f1)
