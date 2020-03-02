@@ -7,7 +7,6 @@
 - [Installation](#Installation)
 - [MaSIF-site](#MaSIF-site)
     * [Running MaSIF-site on a single protein from a PDB id or PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-id)
-    * [Running MaSIF-site on a single protein from a PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-file)
     * [Reproducing the transient benchmark from the paper](#Reproducing-the-transient-benchmark-from-the-paper)
 - [Building MaSIF from a Dockerfile](Dockerfile)
 - [MaSIF-ligand](#MaSIF-ligand)
