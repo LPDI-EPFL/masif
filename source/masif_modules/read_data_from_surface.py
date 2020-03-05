@@ -84,7 +84,7 @@ def read_data_from_surface(ply_fn, params):
         input_feat[vix, :len(neigh_vix), 3] = charge[neigh_vix]
         input_feat[vix, :len(neigh_vix), 4] = hphob[neigh_vix]
         
-    return input_feat, rho, theta, mask, neigh_indices, iface_labels
+    return input_feat, rho, theta, mask, neigh_indices, iface_labels, np.copy(mesh.vertices)
 
 # From a full shape in a full protein, extract a patch around a vertex.
 # If patch_indices = True, then store the indices of all neighbors.

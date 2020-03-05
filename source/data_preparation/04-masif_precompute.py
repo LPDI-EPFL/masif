@@ -68,9 +68,10 @@ for ppi_pair_id in ppi_pair_list:
     input_feat = {}
     theta = {}
     iface_labels = {}
+    verts = {}
 
     for pid in pids:
-        input_feat[pid], rho[pid], theta[pid], mask[pid], neigh_indices[pid], iface_labels[pid] = read_data_from_surface(ply_file[pid], params)
+        input_feat[pid], rho[pid], theta[pid], mask[pid], neigh_indices[pid], iface_labels[pid], verts[pid] = read_data_from_surface(ply_file[pid], params)
 
     if len(pids) > 1 and masif_app == 'masif_ppi_search':
         start_time = time.time()
@@ -88,3 +89,7 @@ for ppi_pair_id in ppi_pair_list:
         np.save(my_precomp_dir+pid+'_mask', mask[pid])
         np.save(my_precomp_dir+pid+'_list_indices', neigh_indices[pid])
         np.save(my_precomp_dir+pid+'_iface_labels', iface_labels[pid])
+        # Save x, y, z
+        np.save(my_precomp_dir+pid+'_X.npy', verts[pid][:,0])
+        np.save(my_precomp_dir+pid+'_Y.npy', verts[pid][:,1])
+        np.save(my_precomp_dir+pid+'_Z.npy', verts[pid][:,2])

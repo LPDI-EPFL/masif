@@ -100,7 +100,7 @@ root@b30c52bcb86f:/masif/data/masif_site#
 If you have installed the pymol plugin for MaSIF, you can now visualize the predictions. From your local computer run: 
 
 ``` 
-docker cp b30c52bcb86f:/masif/data/masif_site/output/all_feat_3l/pred_surfaces/4ZQK_A.ply 
+docker cp b30c52bcb86f:/masif/data/masif_site/output/all_feat_3l/pred_surfaces/4ZQK_A.ply .
 ```
 
 ```
