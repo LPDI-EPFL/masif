@@ -49,9 +49,9 @@ masif_opts["ppi_search"]["sc_w"] = 0.25
 masif_opts["site"] = {}
 masif_opts["site"]["training_list"] = "lists/training.txt"
 masif_opts["site"]["testing_list"] = "lists/testing.txt"
-masif_opts["site"]["max_shape_size"] = 100
+masif_opts["site"]["max_shape_size"] = 30
 masif_opts["site"]["n_conv_layers"] = 3
-masif_opts["site"]["max_distance"] = 9.0  # Radius for the neural network.
+masif_opts["site"]["max_distance"] = 7.0  # Radius for the neural network.
 masif_opts["site"][
     "masif_precomputation_dir"
 ] = "data_preparation/04a-precomputation_9A/precomputation/"

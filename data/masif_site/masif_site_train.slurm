@@ -13,5 +13,6 @@
 module purge
 module load gcc cuda cudnn mvapich2 openblas
 deactivate
-source ~/lpdi_fs/masif/tensorflow-1.12/bin/activate
+source /work/upcorreia/bin/load_masif_environment_gpu.sh
+
 ./train_nn.sh nn_models.all_feat_3l.custom_params
