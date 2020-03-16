@@ -50,11 +50,12 @@ if method == "gif":
 else:  # MaSIF
     desc_dir = os.path.join(data_dir, masif_opts["ppi_search"]["desc_dir"])
 
-coord_dir = os.path.join(data_dir, masif_opts["coord_dir_npy"])
-
 pdb_dir = os.path.join(data_dir, masif_opts["pdb_chain_dir"])
 precomp_dir = os.path.join(
     data_dir, masif_opts["ppi_search"]["masif_precomputation_dir"]
+)
+precomp_dir_9A = os.path.join(
+    data_dir, masif_opts["site"]["masif_precomputation_dir"]
 )
 
 benchmark_list = "../benchmark_list.txt"
@@ -302,43 +303,20 @@ def compute_desc_dist_score(
 from IPython.core.debugger import set_trace
 
 
-def subsample_patch_coords(pdb, pid, cv=None, frac=1.0, radius=9.0):
+def subsample_patch_coords(pdb, pid, cv=None):
     """
         subsample_patch_coords: Read the geodesic coordinates in an easy to access format.
         pdb: the id of the protein pair in PDBID_CHAIN1_CHAIN2 format.
         pid: 'p1' if you want to read CHAIN1, 'p2' if you want to read CHAIN2
         cv: central vertex 
-        frac: subsample the patch for speed. Not recommended.
-        radius: the radius of the patch used for alignment.
     """
-    patch_coords = spio.load_npz(os.path.join(coord_dir, pdb, pid + ".npz"))
 
     if cv is None:
-        D = np.squeeze(
-            np.asarray(patch_coords[:, : patch_coords.shape[1] // 2].todense())
-        )
+        pc = np.load(os.path.join(precomp_dir_9A, pdb, pid+'_list_indices.npy'))
     else:
-        D = np.squeeze(
-            np.asarray(patch_coords[cv, : patch_coords.shape[1] // 2].todense())
-        )
-    # Get nonzero fields, points under radius.
-    idx = np.where(np.logical_and(D > 0.0, D < radius))
+        pc = {}
+        pc[cv] = np.load(os.path.join(precomp_dir_9A, pdb, pid+'_list_indices.npy'))[cv]
 
-    # Convert to dictionary;
-
-    pc = {}
-    for ii in range(len(idx[0])):
-        # With probability frac, ignore this entry point - always include the center poitn.
-        if cv is None:
-            cvix = idx[0][ii]
-            val = idx[1][ii]
-        else:
-            cvix = cv
-            val = idx[0][ii]
-        if np.random.random() < frac or cvix == val:
-            if cvix not in pc:
-                pc[cvix] = []
-            pc[cvix].append(val)
 
     return pc
 
@@ -375,7 +353,7 @@ for i, pdb in enumerate(rand_list):
 
     # Read patch coordinates. Subsample
 
-    pc = subsample_patch_coords(pdb, "p2", frac=1.0)
+    pc = subsample_patch_coords(pdb, "p2")
     p2_patch_coords.append(pc)
 
     p2_names.append(pdb)
@@ -448,7 +426,7 @@ for target_ix, target_pdb in enumerate(rand_list):
     ranking = np.argsort(all_desc_dists)
 
     # Load target geodesic distances.
-    target_coord = subsample_patch_coords(target_pdb, "p1", center_point, frac=1.0)
+    target_coord = subsample_patch_coords(target_pdb, "p1", center_point)
 
     # Get the geodesic patch and descriptor patch for the target.
     target_patch, target_patch_descs = get_patch_geo(

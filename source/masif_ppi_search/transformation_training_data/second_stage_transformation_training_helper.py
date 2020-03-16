@@ -91,8 +91,11 @@ def multidock(source_pcd,source_patch_coords,source_descs,cand_pts,target_pcd,ta
     all_source_patch = []
     all_source_patch_descs = []
     for pt in cand_pts:
-        source_patch, source_patch_descs= \
+        try:
+            source_patch, source_patch_descs= \
             get_patch_geo(source_pcd,source_patch_coords,pt,source_descs)
+        except:
+            set_trace()
         result = registration_ransac_based_on_feature_matching(
             source_patch, target_pcd, source_patch_descs, target_descs,
             ransac_radius,
@@ -138,21 +141,3 @@ def test_alignments(transformation, random_transformation,source_structure, targ
     rmsd = np.sqrt(np.mean(np.square(np.linalg.norm(structure_coords[interface_atoms,:]-np.asarray(structure_coord_pcd.points)[interface_atoms,:],axis=1))))
     return rmsd
 
-def subsample_patch_coords(pdb, pid, cv=None, radius=9.0, coord_dir=''):
-    patch_coords = spio.load_npz(os.path.join(coord_dir,pdb,pid+'.npz'))
-    
-    D = np.squeeze(np.asarray(patch_coords[:,:patch_coords.shape[1]//2].todense()))
-
-    # Convert to dictionary; 
-    pc= {}
-    if cv is None: 
-        for ii in range(len(D)): 
-            idx = np.where(np.logical_and(D[ii] <= radius, D[ii] > 0.0))[0]
-            pc[ii] = idx
-    else: 
-        for ii in cv:
-            idx = np.where(np.logical_and(D[ii] <= radius, D[ii] > 0.0))[0]
-            pc[ii] = idx
-    
-    return pc
-    

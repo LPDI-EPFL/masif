@@ -31,15 +31,15 @@ if len(sys.argv) != 7:
 data_dir = sys.argv[1]
 K=int(sys.argv[2])
 ransac_iter = int(sys.argv[3])
-PATCH_RADIUS = float(sys.argv[4])
+# set patch radius fixed at 9A
+#PATCH_RADIUS = float(sys.argv[4])
+PATCH_RADIUS = 9.0
 out_base = sys.argv[5]
 pdb_list_index = int(sys.argv[6])
 
 surf_dir = os.path.join(data_dir,masif_opts['ply_chain_dir'])
   
 desc_dir = os.path.join(data_dir,masif_opts['ppi_search']['desc_dir'])
-
-coord_dir = os.path.join(data_dir,masif_opts['coord_dir_npy'])
 
 pdb_dir = os.path.join(data_dir, masif_opts['pdb_chain_dir'])
 precomp_dir = os.path.join(data_dir, masif_opts['ppi_search']['masif_precomputation_dir'])
@@ -119,7 +119,8 @@ for target_ix,target_pdb in enumerate(rand_list):
     ranking = np.argsort(all_desc_dists)
 
     # Load target geodesic distances.
-    target_coord = subsample_patch_coords(target_pdb, 'p1',[center_point], coord_dir=coord_dir, radius=PATCH_RADIUS)
+    # Assume 9A patches. 
+    target_coord = np.load(os.path.join(precomp_dir_9A, target_pdb,'p1_list_indices.npy'))
 
     # Get the geodesic patch and descriptor patch for the target.
     target_patch, target_patch_descs, = \
@@ -168,13 +169,15 @@ for target_ix,target_pdb in enumerate(rand_list):
         if len(source_vix) == 0:
             continue
 
+        print('Source pdb: {}'.format(source_pdb))
+
         # Continue with this pdb.    
         pdb_id = source_pdb.split('_')[0]
         chain = source_pdb.split('_')[2]
         source_pcd = read_point_cloud(os.path.join(surf_dir,'{}.ply'.format(pdb_id+'_'+chain)))
 
         source_desc = np.load(os.path.join(desc_dir,source_pdb,'p2_desc_straight.npy'))
-        source_coords= subsample_patch_coords(source_pdb, 'p2', cv=source_vix, radius=PATCH_RADIUS, coord_dir=coord_dir)
+        source_coords = np.load(os.path.join(precomp_dir_9A, source_pdb,'p2_list_indices.npy'))
         
         # Randomly rotate and translate.  
         random_transformation = get_center_and_random_rotate(source_pcd)
