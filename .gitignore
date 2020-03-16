@@ -7,6 +7,7 @@ data/**/02-matfile/
 data/**/03-coords/
 data/**/04*precomputation*/
 data/**/data_preparation
+data/masif_site/exelogs
 *.out
 *.err
 *.mat

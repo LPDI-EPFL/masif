@@ -139,16 +139,28 @@ def compute_thetas(plane, vix, verts, faces, normal, neighbors, idx):
     # Center the plane so that the origin is at (0,0).
     plane = plane-plane[plane_center_ix]
 
-    # Choose one of the neighboring triangles, tt (the first triangle in idx for vix)
-    tt = idx[vix][0]
-    tt = faces[tt]
+    # Choose one of the neighboring triangles, one such that all neighbors are in neighbors. 
+    valid = False
+    for i in range(len(idx[vix])):
+        tt = idx[vix][i]
+        tt = faces[tt]
+        # Check that all of the members of the triangle are in neighbors.
+        check_valid = [x for x in tt if x in neighbors]
+        if len(check_valid) == 3:
+            valid = True
+            break
+    try:
+        assert(valid)
+    except:
+        set_trace()
+     
     # Compute the normal for tt by averagin over the vertex normals
     normal_tt = np.mean([normal[tt[0]], normal[tt[1]], normal[tt[2]]], axis=0)
 
     # Find the two vertices (v1ix and v2ix) in tt that are not vix
     neigh_tt = [x for x in tt if x != vix]
-    v1ix = neigh_tt[0];
-    v2ix = neigh_tt[1];
+    v1ix = neigh_tt[0]
+    v2ix = neigh_tt[1]
     # Find the index of the entry for v1ix and v2ix in neighbors
     v1ix_plane = np.where(neighbors == v1ix)[0][0]
     v2ix_plane = np.where(neighbors == v2ix)[0][0]

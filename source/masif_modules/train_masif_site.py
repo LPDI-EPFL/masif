@@ -109,7 +109,10 @@ def train_masif_site(
             mydir = params["masif_precomputation_dir"] + ppi_pair_id + "/"
             pdbid = ppi_pair_id.split("_")[0]
             chains1 = ppi_pair_id.split("_")[1]
-            chains2 = ppi_pair_id.split("_")[2]
+            if len(ppi_pair_id.split("_")) > 2:
+                chains2 = ppi_pair_id.split("_")[2]
+            else: 
+                chains2 = ''
             pids = []
             if pdbid + "_" + chains1 in training_list:
                 pids.append("p1")

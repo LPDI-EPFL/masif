@@ -109,6 +109,7 @@ for ppi_pair_id in ppi_pair_ids:
         mymesh.remove_attribute("vertex_x")
         mymesh.remove_attribute("vertex_y")
         mymesh.remove_attribute("vertex_z")
+        mymesh.remove_attribute("face_vertex_indices")
 
         if not os.path.exists(params["out_surf_dir"]):
             os.makedirs(params["out_surf_dir"])
