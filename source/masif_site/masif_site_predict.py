@@ -72,6 +72,8 @@ for ppi_pair_id in ppi_pair_ids:
     in_dir = parent_in_dir + ppi_pair_id + "/"
 
     fields = ppi_pair_id.split('_')
+    if len(fields) < 2:
+        continue
     pdbid = ppi_pair_id.split("_")[0]
     chain1 = ppi_pair_id.split("_")[1]
     pids = ["p1"]
