@@ -50,16 +50,24 @@ precomp_dir = os.path.join(
     top_dir, masif_opts["ppi_search"]["masif_precomputation_dir"]
 )
 
-coords_dir = os.path.join(top_dir, masif_opts["coord_dir_npy"])
-
-
 # Extract a geodesic patch.
 def get_patch_geo(
     pcd, patch_coords, center, descriptors, outward_shift=0.0, flip=False
 ):
+    """
+        Get a patch based on geodesic distances. 
+        pcd: the point cloud.
+        patch_coords: the geodesic distances.
+        center: the index of the center of the patch
+        descriptors: the descriptors for every point in the original surface.
+        outward_shift: expand the surface by a float value (for better alignment)
+        flip: invert the surface?
+    """
+
     idx = patch_coords[center]
     pts = np.asarray(pcd.points)[idx, :]
     nrmls = np.asarray(pcd.normals)[idx, :]
+    # Expand the surface in the direction of the normals. 
     pts = pts + outward_shift * nrmls
     if flip:
         nrmls = -np.asarray(pcd.normals)[idx, :]
@@ -71,44 +79,20 @@ def get_patch_geo(
     patch_descs.data = descriptors[idx, :].T
     return patch, patch_descs
 
-
-def subsample_patch_coords_fast(top_dir, pdb, pid, cv=None, frac=1.0, radius=12.0):
-    patch_coords = np.load(os.path.join(top_dir, pdb, pid + "_list_indices.npy"))[cv]
-    pc = {}
-    for ii, key in enumerate(cv):
-        pc[key] = patch_coords[ii]
-    return pc
-
-
 def subsample_patch_coords(top_dir, pdb, pid, cv=None, frac=1.0, radius=12.0):
-    patch_coords = spio.load_npz(os.path.join(top_dir, pdb, pid + ".npz"))
-
+    """
+        subsample_patch_coords: Read the geodesic coordinates in an easy to access format.
+        pdb: the id of the protein pair in PDBID_CHAIN1_CHAIN2 format.
+        pid: 'p1' if you want to read CHAIN1, 'p2' if you want to read CHAIN2
+        cv: central vertex (list of patches to select; if None, select all)
+    """
     if cv is None:
-        D = np.squeeze(
-            np.asarray(patch_coords[:, : patch_coords.shape[1] // 2].todense())
-        )
+        pc = np.load(os.path.join(top_dir, pdb, pid+'_list_indices.npy'))
     else:
-        D = np.squeeze(
-            np.asarray(patch_coords[cv, : patch_coords.shape[1] // 2].todense())
-        )
-    # Get nonzero fields, points under radius.
-    idx = np.where(np.logical_and(D > 0.0, D < radius))
-
-    # Convert to dictionary;
-
-    pc = {}
-    for ii in range(len(idx[0])):
-        # With probability frac, ignore this entry point - always include the center point.
-        if cv is None:
-            cvix = idx[0][ii]
-            val = idx[1][ii]
-        else:
-            cvix = cv[ii]
-            val = idx[0][ii]
-        if np.random.random() < frac or cvix == val:
-            if cvix not in pc:
-                pc[cvix] = []
-            pc[cvix].append(val)
+        temp = np.load(os.path.join(top_dir, pdb, pid+'_list_indices.npy'))[cv]
+        pc = {}
+        for ix, key in enumerate(cv):
+            pc[key] = temp[ix]
 
     return pc
 
@@ -116,7 +100,7 @@ def subsample_patch_coords(top_dir, pdb, pid, cv=None, frac=1.0, radius=12.0):
 def get_target_vix(pc, iface):
     iface_patch_vals = []
     # Go through each patch.
-    for ii in pc.keys():
+    for ii in range(len(pc)):
 
         neigh = pc[ii]
         val = np.mean(iface[neigh])
@@ -141,7 +125,7 @@ mesh = pymesh.load_mesh(target_ply_fn)
 
 iface = mesh.get_attribute("vertex_iface")
 
-target_coord = subsample_patch_coords(coords_dir, target_ppi_pair_id, "p1", radius=12.0)
+target_coord = subsample_patch_coords(precomp_dir, target_ppi_pair_id, "p1")
 target_vix = get_target_vix(target_coord, iface)
 
 target_pcd = read_point_cloud(target_ply_fn)
@@ -162,7 +146,7 @@ out_patch.close()
 
 
 def match_descriptors(
-    in_desc_dir, in_iface_dir, pids, target_desc, desc_dist_cutoff=1.7, iface_cutoff=0.9
+    in_desc_dir, in_iface_dir, pids, target_desc, desc_dist_cutoff=1.7, iface_cutoff=0.8
 ):
 
     all_matched_names = []
@@ -291,9 +275,7 @@ def multidock(
                 CorrespondenceCheckerBasedOnDistance(1.0),
                 CorrespondenceCheckerBasedOnNormal(np.pi / 2),
             ],
-            RANSACConvergenceCriteria(ransac_iter, 500),
-            0.0,
-            2,
+            RANSACConvergenceCriteria(ransac_iter, 500)
         )
         ransac_time = ransac_time + (time.time() - tic)
         # result = registration_icp(source_patch, target_pcd, 1.5,
@@ -464,8 +446,8 @@ for name in matched_dict.keys():
     tic = time.time()
     source_vix = matched_dict[name]
     try:
-        source_coords = subsample_patch_coords_fast(
-            precomp_dir, ppi_pair_id, pid, cv=source_vix, frac=1.0
+        source_coords = subsample_patch_coords(
+            precomp_dir, ppi_pair_id, pid, cv=source_vix, 
         )
     except:
         print("Coordinates not found. continuing.")
