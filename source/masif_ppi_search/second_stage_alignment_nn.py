@@ -362,9 +362,7 @@ def subsample_patch_coords(pdb, pid, cv=None):
         subsample_patch_coords: Read the geodesic coordinates in an easy to access format.
         pdb: the id of the protein pair in PDBID_CHAIN1_CHAIN2 format.
         pid: 'p1' if you want to read CHAIN1, 'p2' if you want to read CHAIN2
-        cv: central vertex 
-        frac: subsample the patch for speed. Not recommended.
-        radius: the radius of the patch used for alignment.
+        cv: central vertex (list of patches to select; if None, select all)
     """
 
     if cv is None:
