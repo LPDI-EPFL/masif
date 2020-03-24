@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
+import pymesh
 from IPython.core.debugger import set_trace
 import time
 import os
 from default_config.masif_opts import masif_opts
 from open3d import *
-import pymesh
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -34,16 +34,16 @@ def enablePrint():
 
 
 masif_root = os.environ["masif_root"]
-top_dir = os.path.join(masif_root, "data/masif_ppi_search/")
+top_dir = os.path.join(masif_root, "data/masif_pdl1_benchmark/")
 surf_dir = os.path.join(top_dir, masif_opts["ply_chain_dir"])
 iface_dir = os.path.join(
-    masif_root, "data/masif_site", masif_opts["site"]["out_pred_dir"]
+    top_dir, masif_opts["site"]["out_pred_dir"]
 )
 ply_iface_dir = os.path.join(
-    masif_root, "data/masif_site", masif_opts["site"]["out_surf_dir"]
+    top_dir, masif_opts["site"]["out_surf_dir"]
 )
 
-desc_dir = os.path.join(top_dir, masif_opts["ppi_search"]["desc_dir"])
+desc_dir = os.path.join(masif_opts["ppi_search"]["desc_dir"])
 
 pdb_dir = os.path.join(top_dir, masif_opts["pdb_chain_dir"])
 precomp_dir = os.path.join(
