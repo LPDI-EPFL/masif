@@ -5,7 +5,6 @@ from IPython.core.debugger import set_trace
 import time
 import os
 from default_config.masif_opts import masif_opts
-from open3d import *
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -47,12 +46,12 @@ desc_dir = os.path.join(masif_opts["ppi_search"]["desc_dir"])
 
 pdb_dir = os.path.join(top_dir, masif_opts["pdb_chain_dir"])
 precomp_dir = os.path.join(
-    top_dir, masif_opts["ppi_search"]["masif_precomputation_dir"]
+    top_dir, masif_opts["site"]["masif_precomputation_dir"]
 )
 
 # Extract a geodesic patch.
 def get_patch_geo(
-    pcd, patch_coords, center, descriptors, outward_shift=0.0, flip=False
+    pcd, patch_coords, center, descriptors, outward_shift=0.25, flip=False
 ):
     """
         Get a patch based on geodesic distances. 
@@ -65,7 +64,10 @@ def get_patch_geo(
     """
 
     idx = patch_coords[center]
-    pts = np.asarray(pcd.points)[idx, :]
+    try:
+        pts = np.asarray(pcd.points)[idx, :]
+    except:
+        set_trace()
     nrmls = np.asarray(pcd.normals)[idx, :]
     # Expand the surface in the direction of the normals. 
     pts = pts + outward_shift * nrmls
@@ -156,6 +158,8 @@ def match_descriptors(
     for ppi_pair_id in os.listdir(in_desc_dir):
         if ".npy" in ppi_pair_id or ".txt" in ppi_pair_id:
             continue
+        if count_proteins > 300 and ('4ZQK' not in ppi_pair_id and '3BIK' not in ppi_pair_id):
+            continue
         mydescdir = os.path.join(in_desc_dir, ppi_pair_id)
         for pid in pids:
             try:
@@ -244,8 +248,8 @@ def multidock(
     cand_pts,
     target_pcd,
     target_descs,
-    ransac_radius=0.75,
-    ransac_iter=4000,
+    ransac_radius=1.0,
+    ransac_iter=2000,
 ):
     all_results = []
     all_source_patch = []
@@ -445,13 +449,13 @@ for name in matched_dict.keys():
 
     tic = time.time()
     source_vix = matched_dict[name]
-    try:
-        source_coords = subsample_patch_coords(
+#    try:
+    source_coords = subsample_patch_coords(
             precomp_dir, ppi_pair_id, pid, cv=source_vix, 
         )
-    except:
-        print("Coordinates not found. continuing.")
-        continue
+#    except:
+#        print("Coordinates not found. continuing.")
+#        continue
     source_desc = np.load(
         os.path.join(desc_dir, ppi_pair_id, pid + "_desc_straight.npy")
     )
