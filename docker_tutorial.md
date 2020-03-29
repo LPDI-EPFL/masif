@@ -146,11 +146,66 @@ Then, one can train the neural network:
 
 Please make sure to use a Docker version that supports GPU access. You may have to install tensorflow with support for GPU within the Docker image. 
 
-
-
 ## MaSIF-search
 
 **This tutorial will be soon available**
+
+## PD-L1 benchmark
+
+In the paper we present a benchmark to scan ~11000 proteins for the binder of PD-L1 (taken from the co-crystal structure). This benchmark is very fast - finishes in minutes. The benchmark works as follows: 
+
+(a) First, based on the MaSIF-site predictions, the center of the interface for PD-L1 is chosen. 
+
+(b) Then, the fingerprint for that point is matched to the fingerprints o ftens of millions of patches from the database of 11000 proteins, and those that are within a *cutoff* are selected for further processing. 
+
+(c) each patch that passes the fingerprint is aligned and scored with a neural network. 
+
+For convenience, I have uploaded all the preprocessed data to Zenodo (link). 
+
+Steps to reproduce the benchmark. 
+
+Download the zenodo repository to your local machine and untar it: 
+
+```
+mkdir /your/temporary/path/docker_files/
+wget 
+untar 
+```
+
+Start the docker container for masif, linking your directory 
+
+``` 
+docker run -it /your/temporary/path/docker_files/:/var/docker_files/ pablogainza/masif
+```
+
+Pull the latest version from the repository 
+
+```
+root@b30c52bcb86f:/masif# git pull 
+```
+
+Go into the pdl1 benchmark data directory and untar all the downloaded data files:
+
+```
+cd data/masif_pdl1_benchmark/
+tar xvfz 
+```
+
+Finally just run the benchmark.
+
+```
+./run_benchmark_nn.sh 
+```
+
+This takes some time to run (~30 minutes). After this you can sort scores: 
+
+```
+cat log.txt | sort -k 2 -n 
+```
+You can also visualize the top candidates who were all stored in the ```out/``` directory. 
+
+
+*** A note on descriptors distance *** A critical value now is the *cutoff* used for masif-search's fingerprint distance. In general, and as explained in the paper, the lower the cutoff, the less the number of results, and therefore the faster the run. By default, the value is set here at 1.7, which works well for this dataset. However, it may be possible that you need to relax this further (to, say, 2.0 or 2.2). You can try different values. 
 
 ## MaSIF-ligand
 
