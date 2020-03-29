@@ -359,6 +359,7 @@ Example:
 
 The easiest way to test MaSIF is through a Docker container. Please see our tutorial on reproducing the paper results here:
 
+[Docker container](docker_container.md)
 
 
 ## License
