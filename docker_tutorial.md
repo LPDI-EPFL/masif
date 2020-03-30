@@ -164,21 +164,20 @@ For convenience, I have uploaded all the preprocessed data to Zenodo (link).
 
 Steps to reproduce the benchmark. 
 
-Download the zenodo repository to your local machine and untar it: 
+Download the zenodo compressed files to your local machine
 
 ```
 mkdir /your/temporary/path/docker_files/
 wget 
-untar 
 ```
 
 Start the docker container for masif, linking your directory 
 
 ``` 
-docker run -it /your/temporary/path/docker_files/:/var/docker_files/ pablogainza/masif
+docker run -it -v /your/temporary/path/docker_files/:/var/docker_files/ pablogainza/masif
 ```
 
-Pull the latest version from the repository 
+Pull the latest version from the masif repository 
 
 ```
 root@b30c52bcb86f:/masif# git pull 
@@ -188,10 +187,16 @@ Go into the pdl1 benchmark data directory and untar all the downloaded data file
 
 ```
 cd data/masif_pdl1_benchmark/
-tar xvfz 
+tar xvfz /var/docker_files/4ZQK_p1_desc_flipped.tar.gz -C .
+tar xvfz /var/docker_files/4ZQK_surf_pred.tar.gz -C .
+tar xvfz /var/docker_files/list_indices.tar.gz -C .
+tar xvfz /var/docker_files/masif_search_descriptors.tar.gz -C .
+tar xvfz /var/docker_files/masif_site_predictions.tar.gz -C .
+tar xvfz /var/docker_files/pdbs.tar.gz -C .
+tar xvfz /var/docker_files/plys.tar.gz -C .
 ```
 
-Finally just run the benchmark.
+Finally run the benchmark.
 
 ```
 ./run_benchmark_nn.sh 
@@ -206,6 +211,8 @@ You can also visualize the top candidates who were all stored in the ```out/``` 
 
 
 *** A note on descriptors distance *** A critical value now is the *cutoff* used for masif-search's fingerprint distance. In general, and as explained in the paper, the lower the cutoff, the less the number of results, and therefore the faster the run. By default, the value is set here at 1.7, which works well for this dataset. However, it may be possible that you need to relax this further (to, say, 2.0 or 2.2). You can try different values. 
+
+You can run this protocol on your protein of interest as well. In general, for it to work you need a target with a high shape complementarity, and one in which MaSIF correctly labels the site. You probably may also have to play with the descriptor distance parameters. 
 
 ## MaSIF-ligand
 
