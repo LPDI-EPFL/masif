@@ -27,6 +27,31 @@ from alignment_utils_masif_search import get_patch_geo, multidock, \
         subsample_patch_coords, compute_nn_score, get_target_vix
 from transformation_training_data.score_nn import ScoreNN
 
+"""
+Hard-coded configuration, change accordingly!"
+
+Target name - hard coded and tested with PD-L1 (PDB id: 4ZQK). You can change you your own target and test. 
+In general this will work well with targets where MaSIF-site labels the site well and where there is a high
+amount of shape complementarity
+"""
+target_name = "4ZQK_A"
+target_ppi_pair_id = "4ZQK_A_B"
+
+"""
+Descriptor cutoff: This is the key parameter for the speed of the method. The lower the value, 
+the faster the method, but also the higher the number of false negatives. Values ABOVE
+this cutoff are discareded. Recommended values: 1.7-2.2. 
+"""
+DESC_DIST_CUTOFF=1.7
+
+"""
+Iface cutoff: Patches are also filtered by their MaSIF-site score. Patches whose center
+point has a value BELOW this score are discarded. 
+The higher the value faster the method, but also the higher the number of false negatives. 
+Recommended values: 0.8
+"""
+IFACE_CUTOFF=0.8
+
 def blockPrint():
     sys.stdout = open(os.devnull, "w")
     sys.stderr = open(os.devnull, "w")
@@ -65,11 +90,8 @@ precomp_dir = os.path.join(
 
 
 
-# # Load target patches.
 
 
-target_name = "4ZQK_A"
-target_ppi_pair_id = "4ZQK_A_B"
 
 # Go through every 9A patch in top_dir -- get the one with the highest iface mean 12A around it.
 target_ply_fn = os.path.join(ply_iface_dir, target_name + ".ply")
@@ -97,7 +119,7 @@ out_patch.close()
 
 # Match descriptors that have a descriptor distance less than K
 def match_descriptors(
-    in_desc_dir, in_iface_dir, pids, target_desc, desc_dist_cutoff=1.7, iface_cutoff=0.8
+    in_desc_dir, in_iface_dir, pids, target_desc, desc_dist_cutoff=2.2, iface_cutoff=0.8
 ):
 
     all_matched_names = []
@@ -107,8 +129,6 @@ def match_descriptors(
     for ppi_pair_id in os.listdir(in_desc_dir):
         if ".npy" in ppi_pair_id or ".txt" in ppi_pair_id:
             continue
-#        if count_proteins > 10 and ('4ZQK' not in ppi_pair_id and '3BIK' not in ppi_pair_id):
-#            continue
         mydescdir = os.path.join(in_desc_dir, ppi_pair_id)
         for pid in pids:
             try:
@@ -187,7 +207,8 @@ inlier_scores = []
 inlier_pos = []
 
 (matched_names, matched_vix, matched_desc_dist, count_proteins) = match_descriptors(
-    desc_dir, iface_dir, ["p1", "p2"], target_desc[target_vix]
+    desc_dir, iface_dir, ["p1", "p2"], target_desc[target_vix],
+    desc_dist_cutoff=DESC_DIST_CUTOFF, iface_cutoff=IFACE_CUTOFF
 )
 
 matched_names = np.concatenate(matched_names, axis=0)
