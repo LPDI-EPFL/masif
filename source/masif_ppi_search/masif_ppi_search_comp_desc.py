@@ -1,11 +1,11 @@
 # Header variables and parameters.
+import pymesh
 import sys
 import os
 import time
 import numpy as np
 from IPython.core.debugger import set_trace
 from sklearn import metrics
-import pymesh
 import importlib
 from default_config.masif_opts import masif_opts
 
@@ -87,10 +87,10 @@ for count, ppi_pair_id in enumerate(ppi_list):
     out_desc_dir = os.path.join(params["desc_dir"], ppi_pair_id)
     if not os.path.exists(os.path.join(out_desc_dir, 'p1_desc_straight.npy')):
         os.mkdir(out_desc_dir)
-    else:
-        # Ignore this one as it was already computed.
-        print('Ignoring descriptor computation for {} as it was already computed'.format(ppi_pair_id))
-        continue
+#    else:
+#        # Ignore this one as it was already computed.
+#        print('Ignoring descriptor computation for {} as it was already computed'.format(ppi_pair_id))
+#        continue
 
     pdbid = ppi_pair_id.split("_")[0]
     chain1 = ppi_pair_id.split("_")[1]
