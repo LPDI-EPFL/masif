@@ -3,7 +3,7 @@ from IPython.core.debugger import set_trace
 import copy
 from Bio.PDB import *
 import os
-from open3d import *
+from geometry.open3d_import import *
 
 def compute_nn_score(
     target_ckdtree,
