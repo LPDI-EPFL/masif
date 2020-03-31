@@ -9,6 +9,7 @@
     * [Running MaSIF-site on a single protein from a PDB id or PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-id)
     * [Reproducing the transient benchmark from the paper](#Reproducing-the-transient-benchmark-from-the-paper)
 - [MaSIF-search](#MaSIF-search)
+- [MaSIF-PDL1-benchmark](#MaSIF-PDL1-benchmark)
 - [MaSIF-ligand](#MaSIF-ligand)
 - [Building MaSIF from a Dockerfile](Dockerfile)
 
@@ -150,7 +151,7 @@ Please make sure to use a Docker version that supports GPU access. You may have 
 
 **This tutorial will be soon available**
 
-## PD-L1 benchmark
+## (#MaSIF PDL1 benchmark)
 
 In the paper we present a benchmark to scan ~11000 proteins for the binder of PD-L1 (taken from the co-crystal structure). This benchmark is very fast - finishes in minutes. The benchmark works as follows: 
 
