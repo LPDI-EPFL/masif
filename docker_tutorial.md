@@ -161,11 +161,12 @@ In the paper we present a benchmark to scan ~11000 proteins for the binder of PD
 
 (c) each patch that passes the fingerprint is aligned and scored with a neural network. 
 
-For convenience, I have uploaded all the preprocessed data to Zenodo (link). 
+For convenience, I have uploaded all the preprocessed data to Dropbox (eventually this will be replaced by a Zenodo link): 
+https://www.dropbox.com/s/aaf5nt6smbrx8p7/masif_pdl1_benchmark_precomputed_data.tar?dl=0
 
 Steps to reproduce the benchmark. 
 
-Download the zenodo compressed files to your local machine
+Download the compressed data files to your local machine
 
 ```
 mkdir /your/temporary/path/docker_files/
