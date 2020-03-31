@@ -151,7 +151,7 @@ Please make sure to use a Docker version that supports GPU access. You may have 
 
 **This tutorial will be soon available**
 
-## (#MaSIF PDL1 benchmark)
+## MaSIF PDL1 benchmark
 
 In the paper we present a benchmark to scan ~11000 proteins for the binder of PD-L1 (taken from the co-crystal structure). This benchmark is very fast - finishes in minutes. The benchmark works as follows: 
 
