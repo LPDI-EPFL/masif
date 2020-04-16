@@ -3,7 +3,7 @@
 import sys
 import time
 import sklearn.metrics
-from open3d import *
+from geometry.open3d_import import *
 import numpy as np
 import os
 from alignment_utils_masif_search import compute_nn_score, rand_rotation_matrix, \
@@ -192,7 +192,7 @@ for target_ix, target_pdb in enumerate(rand_list):
     ranking = np.argsort(all_desc_dists)
 
     # Load target geodesic distances.
-    target_coord = subsample_patch_coords(target_pdb, "p1", precomp_dir_9A, center_point)
+    target_coord = subsample_patch_coords(target_pdb, "p1", precomp_dir_9A, [center_point])
 
     # Get the geodesic patch and descriptor patch for the target.
     target_patch, target_patch_descs = get_patch_geo(
