@@ -175,21 +175,67 @@ cd ../../comparison/masif_ppi_search/masif_descriptors_nn/
 
 The results should be the last line of the results_masif.txt file. 
 
+#### Recomputing the data for the benchmark 
+
+If you wish, you can also reproduce the benchmark data. I have conveniently left a script to recompute the data: 
+
+```
+docker run -it pablogainza/masif
+cd data/masif_ppi_search/
+././recompute_data_docking_benchmark.sh
+```
+
+This should take about 3 minutes per protein on a CPU (about 2 on a GPU). For a total of 100 protein pairs it may take a few hours.
+
+Finally change the directory to the benchmark directory and run the benchmark for a number of decoys K (e.g. 100 or 2000 as in the paper): 
+
+```
+cd ../../comparison/masif_ppi_search/masif_descriptors_nn/
+./second_stage_masif.sh 100
+```
+
+#### Recomputing all training data and retraining the network.
+
+For this task I strongly recommend a cluster to do the precomputation because there are about 10000 proteins per cluster. The steps to recompute and retrain are laid out in the main MaSIF readme.
+
+[MaSIF Readme](Readme.md)
+
 ### Reproducing the MaSIF-ppi-search unbound docking benchmark.
 
-For the unbound it is similar: 
+#### Fastest and easiest way to reproduce this benchmark. 
+
+Similar as for the bound: 
 
 ```
 docker run -it pablogainza/masif
 cd data/masif_ppi_search_ub/
-https://www.dropbox.com/s/5w46ankuk3y2edo/masif_ppi_search_ub_precomputed_data.tar.gz?dl=0
+wget https://www.dropbox.com/s/5w46ankuk3y2edo/masif_ppi_search_ub_precomputed_data.tar.gz?dl=0
 tar cvfz masif_ppi_search_ub_precomputed_data.tar.gz
 ```
 
 Change the directory to the benchmark directory and run the benchmark for a number of decoys K (e.g. 2000 as in the paper): 
 
 ``` 
-cd ../../comparison/masif_ppi_search/masif_descriptors_nn/
+cd ../../comparison/masif_ppi_search_ub/masif_descriptors_nn/
+./second_stage_masif.sh 2000
+```
+
+#### Recomputing the data for the benchmark 
+
+If you wish, you can also reproduce the benchmark data. I have conveniently left a script to recompute the data: 
+
+```
+docker run -it pablogainza/masif
+cd data/masif_ppi_search_ub/
+./recompute_data_docking_benchmark.sh
+```
+
+This should take about 3 minutes per protein on a CPU (about 2 on a GPU). For a total of 40 protein pairs it may take a few hours.
+
+Finally change the directory to the benchmark directory and run the benchmark for a number of decoys K (e.g. 2000 as in the paper): 
+
+```
+cd ../../comparison/masif_ppi_search_ub/masif_descriptors_nn/
 ./second_stage_masif.sh 2000
 ```
 
