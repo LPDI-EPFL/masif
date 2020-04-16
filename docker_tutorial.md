@@ -11,7 +11,7 @@
 - [MaSIF-search](#MaSIF-search)
 - [MaSIF-PDL1-benchmark](#MaSIF-PDL1-benchmark)
 - [MaSIF-ligand](#MaSIF-ligand)
-- [Building MaSIF from a Dockerfile](Dockerfile)
+- [Building Docker MaSIF image from a Dockerfile](#Dockerfile)
 
 
 
@@ -312,7 +312,7 @@ You can run this protocol on your protein of interest as well. In general, for i
 
 ## Dockerfile
 
-To build MaSIF from a Dockerfile run the following steps: 
+To build a Docker MaSIF image from a Dockerfile run the following steps: 
 
 ```
 git clone https://github.com/LPDI-EPFL/masif-dockerfile
