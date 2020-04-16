@@ -149,7 +149,31 @@ Please make sure to use a Docker version that supports GPU access. You may have 
 
 ## MaSIF-search
 
-**This tutorial will be soon available**
+### Reproducing the MaSIF-ppi-search bound docking benchmark.
+
+This section describes the fast docking benchmark presented in our paper (Table 1).
+
+#### Fastest and easiest way to reproduce this benchmark. 
+
+The fastest way to reproduce this benchmark is to download all the precomputed data from the following site: 
+https://www.dropbox.com/s/09fwtic1095z9z6/masif_ppi_search_precomputed_data.tar.gz?dl=0
+
+Run the masif container and download the data: 
+```
+docker run -it pablogainza/masif
+cd data/masif_ppi_search/
+wget https://www.dropbox.com/s/09fwtic1095z9z6/masif_ppi_search_precomputed_data.tar.gz?dl=0
+tar cvfz masif_ppi_search_precomputed_data.tar.gz
+```
+
+Change the directory to the benchmark directory and run the benchmark for a number of decoys K (e.g. 100 or 2000 as in the paper): 
+
+``` 
+cd ../../comparison/masif_ppi_search/masif_descriptors_nn/
+./second_stage_masif.sh 100
+```
+
+The results should be the last line of the results_masif.txt file. 
 
 ## MaSIF PDL1 benchmark
 
