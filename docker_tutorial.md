@@ -175,6 +175,24 @@ cd ../../comparison/masif_ppi_search/masif_descriptors_nn/
 
 The results should be the last line of the results_masif.txt file. 
 
+### Reproducing the MaSIF-ppi-search unbound docking benchmark.
+
+For the unbound it is similar: 
+
+```
+docker run -it pablogainza/masif
+cd data/masif_ppi_search_ub/
+https://www.dropbox.com/s/5w46ankuk3y2edo/masif_ppi_search_ub_precomputed_data.tar.gz?dl=0
+tar cvfz masif_ppi_search_ub_precomputed_data.tar.gz
+```
+
+Change the directory to the benchmark directory and run the benchmark for a number of decoys K (e.g. 2000 as in the paper): 
+
+``` 
+cd ../../comparison/masif_ppi_search/masif_descriptors_nn/
+./second_stage_masif.sh 2000
+```
+
 ## MaSIF PDL1 benchmark
 
 In the paper we present a benchmark to scan ~11000 proteins for the binder of PD-L1 (taken from the co-crystal structure). This benchmark is very fast - finishes in minutes. The benchmark works as follows: 
