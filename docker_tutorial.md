@@ -254,14 +254,18 @@ https://www.dropbox.com/s/aaf5nt6smbrx8p7/masif_pdl1_benchmark_precomputed_data.
 
 Steps to reproduce the benchmark. 
 
-Download the compressed data files to your local machine
+Download the compressed data files to your local machine and unpack. You must make a temporary directory in your host machine to download a large file (about 30GB) which will contain the benchmark data. Here this directory is called '/your/temporary/path/docker_files/'.
 
 ```
 mkdir /your/temporary/path/docker_files/
-wget 
+wget https://www.dropbox.com/s/aaf5nt6smbrx8p7/masif_pdl1_benchmark_precomputed_data.tar?dl=0
+tar xvf masif_pdl1_benchmark_precomputed_data.tar
+rm masif_pdl1_benchmark_precomputed_data.tar
 ```
 
-Start the docker container for masif, linking your directory 
+You should now have a list of compressed tar.gz files. 
+
+Start the docker container for masif, linking the directory in your host machine. 
 
 ``` 
 docker run -it -v /your/temporary/path/docker_files/:/var/docker_files/ pablogainza/masif
@@ -286,7 +290,7 @@ tar xvfz /var/docker_files/pdbs.tar.gz -C .
 tar xvfz /var/docker_files/plys.tar.gz -C .
 ```
 
-Finally run the benchmark.
+The -C flag force the unpacking to occur in the current directory. Finally run the benchmark.
 
 ```
 ./run_benchmark_nn.sh 
