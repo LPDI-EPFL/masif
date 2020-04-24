@@ -9,8 +9,9 @@
     * [Running MaSIF-site on a single protein from a PDB id or PDB file](#Running-MaSIF-site-on-a-single-protein-from-a-PDB-id)
     * [Reproducing the transient benchmark from the paper](#Reproducing-the-transient-benchmark-from-the-paper)
 - [MaSIF-search](#MaSIF-search)
+- [MaSIF-PDL1-benchmark](#MaSIF-PDL1-benchmark)
 - [MaSIF-ligand](#MaSIF-ligand)
-- [Building MaSIF from a Dockerfile](Dockerfile)
+- [Building Docker MaSIF image from a Dockerfile](#Dockerfile)
 
 
 
@@ -146,11 +147,166 @@ Then, one can train the neural network:
 
 Please make sure to use a Docker version that supports GPU access. You may have to install tensorflow with support for GPU within the Docker image. 
 
-
-
 ## MaSIF-search
 
-**This tutorial will be soon available**
+### Reproducing the MaSIF-ppi-search bound docking benchmark.
+
+This section describes the fast docking benchmark presented in our paper (Table 1).
+
+#### Fastest and easiest way to reproduce this benchmark. 
+
+The fastest way to reproduce this benchmark is to download all the precomputed data from the following site: 
+https://www.dropbox.com/s/09fwtic1095z9z6/masif_ppi_search_precomputed_data.tar.gz?dl=0
+
+Run the masif container and download the data: 
+```
+docker run -it pablogainza/masif
+cd data/masif_ppi_search/
+wget https://www.dropbox.com/s/09fwtic1095z9z6/masif_ppi_search_precomputed_data.tar.gz?dl=0
+tar cvfz masif_ppi_search_precomputed_data.tar.gz
+```
+
+Change the directory to the benchmark directory and run the benchmark for a number of decoys K (e.g. 100 or 2000 as in the paper): 
+
+``` 
+cd ../../comparison/masif_ppi_search/masif_descriptors_nn/
+./second_stage_masif.sh 100
+```
+
+The results should be the last line of the results_masif.txt file. 
+
+#### Recomputing the data for the benchmark 
+
+If you wish, you can also reproduce the benchmark data. I have conveniently left a script to recompute the data: 
+
+```
+docker run -it pablogainza/masif
+cd data/masif_ppi_search/
+././recompute_data_docking_benchmark.sh
+```
+
+This should take about 3 minutes per protein on a CPU (about 2 on a GPU). For a total of 100 protein pairs it may take a few hours.
+
+Finally change the directory to the benchmark directory and run the benchmark for a number of decoys K (e.g. 100 or 2000 as in the paper): 
+
+```
+cd ../../comparison/masif_ppi_search/masif_descriptors_nn/
+./second_stage_masif.sh 100
+```
+
+#### Recomputing all training data and retraining the network.
+
+For this task I strongly recommend a cluster to do the precomputation because there are about 10000 proteins per cluster. The steps to recompute and retrain are laid out in the main MaSIF readme.
+
+[MaSIF Readme](Readme.md)
+
+### Reproducing the MaSIF-ppi-search unbound docking benchmark.
+
+#### Fastest and easiest way to reproduce this benchmark. 
+
+Similar as for the bound: 
+
+```
+docker run -it pablogainza/masif
+cd data/masif_ppi_search_ub/
+wget https://www.dropbox.com/s/5w46ankuk3y2edo/masif_ppi_search_ub_precomputed_data.tar.gz?dl=0
+tar cvfz masif_ppi_search_ub_precomputed_data.tar.gz
+```
+
+Change the directory to the benchmark directory and run the benchmark for a number of decoys K (e.g. 2000 as in the paper): 
+
+``` 
+cd ../../comparison/masif_ppi_search_ub/masif_descriptors_nn/
+./second_stage_masif.sh 2000
+```
+
+#### Recomputing the data for the benchmark 
+
+If you wish, you can also reproduce the benchmark data. I have conveniently left a script to recompute the data: 
+
+```
+docker run -it pablogainza/masif
+cd data/masif_ppi_search_ub/
+./recompute_data_docking_benchmark.sh
+```
+
+This should take about 3 minutes per protein on a CPU (about 2 on a GPU). For a total of 40 protein pairs it may take a few hours.
+
+Finally change the directory to the benchmark directory and run the benchmark for a number of decoys K (e.g. 2000 as in the paper): 
+
+```
+cd ../../comparison/masif_ppi_search_ub/masif_descriptors_nn/
+./second_stage_masif.sh 2000
+```
+
+## MaSIF PDL1 benchmark
+
+In the paper we present a benchmark to scan ~11000 proteins for the binder of PD-L1 (taken from the co-crystal structure). This benchmark is very fast - finishes in minutes. The benchmark works as follows: 
+
+(a) First, based on the MaSIF-site predictions, the center of the interface for PD-L1 is chosen. 
+
+(b) Then, the fingerprint for that point is matched to the fingerprints o ftens of millions of patches from the database of 11000 proteins, and those that are within a *cutoff* are selected for further processing. 
+
+(c) each patch that passes the fingerprint is aligned and scored with a neural network. 
+
+For convenience, I have uploaded all the preprocessed data to Dropbox (eventually this will be replaced by a Zenodo link): 
+https://www.dropbox.com/s/aaf5nt6smbrx8p7/masif_pdl1_benchmark_precomputed_data.tar?dl=0
+
+Steps to reproduce the benchmark. 
+
+Download the compressed data files to your local machine and unpack. You must make a temporary directory in your host machine to download a large file (about 30GB) which will contain the benchmark data. Here this directory is called '/your/temporary/path/docker_files/'.
+
+```
+mkdir /your/temporary/path/docker_files/
+wget https://www.dropbox.com/s/aaf5nt6smbrx8p7/masif_pdl1_benchmark_precomputed_data.tar?dl=0
+tar xvf masif_pdl1_benchmark_precomputed_data.tar
+rm masif_pdl1_benchmark_precomputed_data.tar
+```
+
+You should now have a list of compressed tar.gz files. 
+
+Start the docker container for masif, linking the directory in your host machine. 
+
+``` 
+docker run -it -v /your/temporary/path/docker_files/:/var/docker_files/ pablogainza/masif
+```
+
+Pull the latest version from the masif repository 
+
+```
+root@b30c52bcb86f:/masif# git pull 
+```
+
+Go into the pdl1 benchmark data directory and untar all the downloaded data files:
+
+```
+cd data/masif_pdl1_benchmark/
+tar xvfz /var/docker_files/4ZQK_p1_desc_flipped.tar.gz -C .
+tar xvfz /var/docker_files/4ZQK_surf_pred.tar.gz -C .
+tar xvfz /var/docker_files/list_indices.tar.gz -C .
+tar xvfz /var/docker_files/masif_search_descriptors.tar.gz -C .
+tar xvfz /var/docker_files/masif_site_predictions.tar.gz -C .
+tar xvfz /var/docker_files/pdbs.tar.gz -C .
+tar xvfz /var/docker_files/plys.tar.gz -C .
+```
+
+The -C flag force the unpacking to occur in the current directory. Finally run the benchmark.
+
+```
+./run_benchmark_nn.sh 
+```
+
+This takes some time to run (~30 minutes). After this you can sort scores: 
+
+```
+cat log.txt | sort -k 2 -n 
+```
+You can also visualize the top candidates who were all stored in the ```out/``` directory. 
+
+
+*** A note on descriptors distance *** A critical value now is the *cutoff* used for masif-search's fingerprint distance. In general, and as explained in the paper, the lower the cutoff, the less the number of results, and therefore the faster the run. By default, the value is set here at 1.7, which works well for this dataset. However, it may be possible that you need to relax this further (to, say, 2.0 or 2.2). You can try different values. 
+
+You can run this protocol on your protein of interest as well. In general, for it to work you need a target with a high shape complementarity, and one in which MaSIF correctly labels the site. You probably may also have to play with the descriptor distance parameters. 
 
 ## MaSIF-ligand
 
@@ -160,7 +316,7 @@ Please make sure to use a Docker version that supports GPU access. You may have 
 
 ## Dockerfile
 
-To build MaSIF from a Dockerfile run the following steps: 
+To build a Docker MaSIF image from a Dockerfile run the following steps: 
 
 ```
 git clone https://github.com/LPDI-EPFL/masif-dockerfile

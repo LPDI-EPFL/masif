@@ -58,7 +58,10 @@ def read_data_from_surface(ply_fn, params):
     hphob = mesh.get_attribute("vertex_hphob")/4.5
 
     # Iface labels (for ground truth only)     
-    iface_labels = mesh.get_attribute("vertex_iface") 
+    if "vertex_iface" in mesh.get_attribute_names():
+        iface_labels = mesh.get_attribute("vertex_iface") 
+    else:
+        iface_labels = np.zeros_like(hphob)
 
     # n: number of patches, equal to the number of vertices.
     n = len(mesh.vertices)

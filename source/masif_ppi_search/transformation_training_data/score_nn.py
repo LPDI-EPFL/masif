@@ -64,7 +64,7 @@ class ScoreNN:
         self.restore_model()
 
     def restore_model(self):
-        self.model.load_weights('models/nn_score/weights_3feat_new_012.hdf5')
+        self.model.load_weights('models/nn_score/trained_model.hdf5')
 
     def train_model(self, features, labels, n_negatives, n_positives):
         callbacks = [

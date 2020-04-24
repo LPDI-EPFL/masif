@@ -1,0 +1,16 @@
+training_list: lists/training.txt
+testing_list: lists/testing.txt
+max_shape_size: 30
+n_conv_layers: 3
+max_distance: 7.0
+masif_precomputation_dir: data_preparation/04a-precomputation_9A/precomputation/
+range_val_samples: 0.9
+model_dir: nn_models/all_feat_3l/model_data/
+out_pred_dir: output/all_feat_3l/pred_data/
+out_surf_dir: output/all_feat_3l/pred_surfaces/
+feat_mask: [1.0, 1.0, 1.0, 1.0, 1.0]
+pids: ['p1', 'p2']
+Starting epoch 0Training on 2ZB9_A p1
+Training on 1FOD_1 p1
+Training on 1JZT_A p1
+Training on 1S7M_A p1
