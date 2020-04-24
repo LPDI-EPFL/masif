@@ -37,9 +37,9 @@ test_pdbs = all_pdbs[train + val : train + val + test]
 # np.save('lists/test_pdbs_sequence.npy',test_pdbs)
 
 # For this run use the train, validation and test sets actually used
-train_pdbs = np.load("lists/train_pdbs_sequence.npy")
-val_pdbs = np.load("lists/val_pdbs_sequence.npy")
-test_pdbs = np.load("lists/test_pdbs_sequence.npy")
+train_pdbs = np.load("lists/train_pdbs_sequence.npy").astype(str)
+val_pdbs = np.load("lists/val_pdbs_sequence.npy").astype(str)
+test_pdbs = np.load("lists/test_pdbs_sequence.npy").astype(str)
 success = 0
 precom_dir = params["masif_precomputation_dir"]
 ligand_coord_dir = params["ligand_coords_dir"]
@@ -62,7 +62,7 @@ with tf.python_io.TFRecordWriter(
             theta_wrt_center = np.load(
                 os.path.join(precom_dir, pdb + "_", "p1_theta_wrt_center.npy")
             )
-            mask = np.load(os.path.join(precom_dir, pdb + "_", "p1_mask.npy"))
+            mask = np.expand_dims(np.load(os.path.join(precom_dir, pdb + "_", "p1_mask.npy")),-1)
             X = np.load(os.path.join(precom_dir, pdb + "_", "p1_X.npy"))
             Y = np.load(os.path.join(precom_dir, pdb + "_", "p1_Y.npy"))
             Z = np.load(os.path.join(precom_dir, pdb + "_", "p1_Z.npy"))
@@ -75,7 +75,7 @@ with tf.python_io.TFRecordWriter(
                 os.path.join(
                     ligand_coord_dir, "{}_ligand_types.npy".format(pdb.split("_")[0])
                 )
-            )
+            ).astype(str)
         except:
             continue
 
@@ -147,7 +147,7 @@ with tf.python_io.TFRecordWriter(
             theta_wrt_center = np.load(
                 os.path.join(precom_dir, pdb + "_", "p1_theta_wrt_center.npy")
             )
-            mask = np.load(os.path.join(precom_dir, pdb + "_", "p1_mask.npy"))
+            mask = np.expand_dims(np.load(os.path.join(precom_dir, pdb + "_", "p1_mask.npy")),-1)
             X = np.load(os.path.join(precom_dir, pdb + "_", "p1_X.npy"))
             Y = np.load(os.path.join(precom_dir, pdb + "_", "p1_Y.npy"))
             Z = np.load(os.path.join(precom_dir, pdb + "_", "p1_Z.npy"))
@@ -160,7 +160,7 @@ with tf.python_io.TFRecordWriter(
                 os.path.join(
                     ligand_coord_dir, "{}_ligand_types.npy".format(pdb.split("_")[0])
                 )
-            )
+            ).astype(str)
         except:
             continue
 
@@ -232,7 +232,7 @@ with tf.python_io.TFRecordWriter(
             theta_wrt_center = np.load(
                 os.path.join(precom_dir, pdb + "_", "p1_theta_wrt_center.npy")
             )
-            mask = np.load(os.path.join(precom_dir, pdb + "_", "p1_mask.npy"))
+            mask = np.expand_dims(np.load(os.path.join(precom_dir, pdb + "_", "p1_mask.npy")),-1)
             X = np.load(os.path.join(precom_dir, pdb + "_", "p1_X.npy"))
             Y = np.load(os.path.join(precom_dir, pdb + "_", "p1_Y.npy"))
             Z = np.load(os.path.join(precom_dir, pdb + "_", "p1_Z.npy"))
@@ -245,7 +245,7 @@ with tf.python_io.TFRecordWriter(
                 os.path.join(
                     ligand_coord_dir, "{}_ligand_types.npy".format(pdb.split("_")[0])
                 )
-            )
+            ).astype(str)
         except:
             continue
 

@@ -19,13 +19,13 @@ Released under an Apache License 2.0
 params = masif_opts["ligand"]
 
 # Load dataset
-training_data = tf.contrib.data.TFRecordDataset(
+training_data = tf.data.TFRecordDataset(
     os.path.join(params["tfrecords_dir"], "training_data_sequenceSplit_30.tfrecord")
 )
-validation_data = tf.contrib.data.TFRecordDataset(
+validation_data = tf.data.TFRecordDataset(
     os.path.join(params["tfrecords_dir"], "validation_data_sequenceSplit_30.tfrecord")
 )
-testing_data = tf.contrib.data.TFRecordDataset(
+testing_data = tf.data.TFRecordDataset(
     os.path.join(params["tfrecords_dir"], "testing_data_sequenceSplit_30.tfrecord")
 )
 training_data = training_data.map(_parse_function)
@@ -263,7 +263,7 @@ with tf.Session() as sess:
                 learning_obj.theta_coords: np.expand_dims(data_element[2], -1)[
                     sample, :, :
                 ],
-                learning_obj.mask: data_element[3][sample, :, :],
+                learning_obj.mask: data_element[3][pocket_points[:32], :, :],
                 learning_obj.labels: pocket_labels,
                 learning_obj.keep_prob: 1.0,
             }

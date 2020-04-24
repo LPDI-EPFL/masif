@@ -17,7 +17,7 @@ Released under an Apache License 2.0
 
 params = masif_opts["ligand"]
 # Load testing data
-testing_data = tf.contrib.data.TFRecordDataset(
+testing_data = tf.data.TFRecordDataset(
     os.path.join(params["tfrecords_dir"], "testing_data_sequenceSplit_30.tfrecord")
 )
 testing_data = testing_data.map(_parse_function)
@@ -103,6 +103,7 @@ with tf.Session() as sess:
                 samples_data_loss.append(data_loss)
 
             pdb_logits_softmax.append(samples_logits_softmax)
+        import pdb as debugger; debugger.set_trace()
         np.save(test_set_out_dir + "{}_labels.npy".format(pdb), pdb_labels)
         np.save(test_set_out_dir + "{}_logits.npy".format(pdb), pdb_logits_softmax)
 
