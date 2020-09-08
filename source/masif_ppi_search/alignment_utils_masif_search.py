@@ -129,6 +129,63 @@ def get_patch_geo(
     patch_descs.data = descriptors[idx, :].T
     return patch, patch_descs
 
+def multidock_cn_svd(
+    source_pcd, # the candidate 'decoy' patches
+    source_patch_coords, # The geodesic coordinates of the decoy patches
+    source_descs, # The source descriptors
+    cand_pts, # The central vertex of the candidate patches.
+    target_pcd, # The target patch's point cloud
+    target_descs, # The descriptors for the target patch
+    target_ckdtree, # A kd-tree for the target patch for fast searches. 
+    nn_model, # The neural network model
+    use_icp=True
+):
+    """
+    Multi-docking protocol using context normalization and SVD (i.e. avoids RANSAC: 
+    Here is where the alignment is actually made. 
+    This method aligns each of the K prematched decoy patches to the target by first using
+    a neural network to establish correspondences and then using a neural network to align using SVD.
+    """
+
+    all_results = []
+    all_source_patch = []
+    all_source_scores = []
+    patch_time = 0.0
+    ransac_time = 0.0
+    transform_time = 0.0
+    score_time = 0.0
+    for pt in cand_pts:
+        source_patch, source_patch_descs = get_patch_geo(
+            source_pcd, source_patch_coords, pt, source_descs
+        )
+
+        transformation = align_source_to_target(source_pcd, source_patch_descs, target_pcd, target_patch_descs)
+
+        # Transform this: 
+        source_patch.transform(result.transformation)
+
+        # Optimize the alignment using ICP.
+        if use_icp:
+            result = registration_icp(source_patch, target_pcd, 
+            1.0, result.transformation, TransformationEstimationPointToPlane(),
+            )
+
+        source_patch.transform(result.transformation)
+        all_results.append(result)
+        all_source_patch.append(source_patch)
+
+        # Compute the 
+        source_scores = compute_nn_score(
+            target_ckdtree,
+            target_pcd, 
+            source_patch,
+            target_descs,
+            source_patch_descs,
+            nn_model
+        )
+        all_source_scores.append(source_scores)
+
+    return all_results, all_source_patch, all_source_scores
 
 def multidock(
     source_pcd, # the candidate 'decoy' patches

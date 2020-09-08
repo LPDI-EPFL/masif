@@ -118,7 +118,7 @@ for i, pdb in enumerate(rand_list):
 
     # Read patch coordinates. 
 
-    pc = subsample_patch_coords(pdb, "p2", precomp_dir_9A)
+    pc = subsample_patch_coords(pdb, "p2", precomp_dir)
     p2_patch_coords.append(pc)
 
     p2_names.append(pdb)
@@ -192,7 +192,7 @@ for target_ix, target_pdb in enumerate(rand_list):
     ranking = np.argsort(all_desc_dists)
 
     # Load target geodesic distances.
-    target_coord = subsample_patch_coords(target_pdb, "p1", precomp_dir_9A, [center_point])
+    target_coord = subsample_patch_coords(target_pdb, "p1", precomp_dir, [center_point])
 
     # Get the geodesic patch and descriptor patch for the target.
     target_patch, target_patch_descs = get_patch_geo(
