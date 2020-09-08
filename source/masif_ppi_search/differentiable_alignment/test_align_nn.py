@@ -9,6 +9,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
+import open3d as o3d
 
 align_nn = AlignNN()
 align_nn.restore_model()
@@ -16,10 +17,18 @@ align_nn.restore_model()
 #features = features[:,:,0]
 #features = np.expand_dims(features, 2)
 
+do_icp = True
 
 test_pair_ids = os.listdir('data/testing/')
 tmpl = 'data/testing/{}/features_0.npy'
 test_feat_fn = [tmpl.format(x) for x in test_pair_ids]
+
+tmpl = 'data/testing/{}/patch1_0.npy'
+test_patch1_fn = [tmpl.format(x) for x in test_pair_ids]
+
+tmpl = 'data/testing/{}/patch1_n0.npy'
+test_patch1_n_fn = [tmpl.format(x) for x in test_pair_ids]
+
 tmpl = 'data/testing/{}/pred_0.npy'
 test_pred_fn = [tmpl.format(x) for x in test_pair_ids]
 tmpl = 'data/testing/{}/labels_0.npy'
@@ -40,20 +49,54 @@ for i in range(len(test_pair_ids)):
     xyz2 = feat[:,:,4:7]
     gt_xyz2 = np.copy(xyz2)
     norm2 = feat[:,:,10:13]
+    gt_norm2 = np.copy(norm2)
     xyz2, norm2 = batch_rand_rotate_center_patch(xyz2, norm2)
     feat[:,:,4:7] = xyz2
     feat[:,:,10:13] = norm2
 
     feat = np.concatenate([pred, feat[:,:,1:13]], axis=2)
-    new_coords = align_nn.eval(feat)
+    new_coords_norm2 = align_nn.eval(feat)
+    new_coords2 = new_coords_norm2[:,:,0:3]
+    new_norm2 = new_coords_norm2[:,:,3:6]
 
-#    gt_xyz2 = np.reshape(gt_xyz2, [1,600])
-#    new_coords = np.reshape(new_coords, [1,200,3])
-    rmsd1 = np.sqrt(np.mean(np.sum(np.square(gt_xyz2 - new_coords), axis=2)))
 
-    print('Point to point RMSD: {:.3f}'.format(rmsd1))
+    rmsd1 = np.sqrt(np.mean(np.sum(np.square(gt_xyz2 - new_coords2), axis=2)))
 
-    all_rmsd.append(rmsd1)
+    if do_icp:
+        # Patch1 is the target
+        patch1_pcd = o3d.geometry.PointCloud()
+        p1 = np.squeeze(np.load(test_patch1_fn[i]))
+        p1n = np.squeeze(np.load(test_patch1_n_fn[i]))
+        p1 = p1+0.25*p1n
+        patch1_pcd.points = o3d.Vector3dVector(p1)
+        patch1_pcd.normals= o3d.Vector3dVector(p1n)
+
+        # Take the new coordinates and new normals 
+        patch2_pcd = o3d.geometry.PointCloud()
+        p2 = np.squeeze(new_coords2)
+        p2n = np.squeeze(new_norm2)
+        p2 = p2+0.25*p2n
+        patch2_pcd.points = o3d.Vector3dVector(p2)
+        patch2_pcd.normals = o3d.Vector3dVector(p2n)
+
+        # Do ICP on the new coordinates for a final refinement.
+        result = o3d.registration_icp(patch2_pcd, patch1_pcd,
+                1.5, estimation_method=o3d.TransformationEstimationPointToPlane(),
+                )
+
+        patch2_pcd.transform(result.transformation)
+        patch2_pred = np.asarray(patch2_pcd.points)
+        p2p_dist = np.sqrt(np.sum(np.square(np.squeeze(gt_xyz2) - patch2_pred), axis=1))
+        rmsd2 = np.sqrt(np.mean(np.sum(np.square(np.squeeze(gt_xyz2) - patch2_pred), axis=1)))
+
+        print(result)
+        print('Point to point RMSD: before {:.3f} after: {:.3f}, inliers = {}'.format(rmsd1, rmsd2, np.sum(p2p_dist<1.0)))
+        all_rmsd.append(rmsd2)
+        
+    else:
+
+        print('Point to point RMSD: {:.3f}'.format(rmsd1))
+        all_rmsd.append(rmsd1)
 
 sns.distplot(all_rmsd)
 all_rmsd = np.array(all_rmsd)

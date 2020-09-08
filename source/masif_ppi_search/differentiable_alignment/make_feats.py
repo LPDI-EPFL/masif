@@ -8,7 +8,8 @@ import os
 from IPython.core.debugger import set_trace
 from rand_rotation import rand_rotate_center_patch, center_patch
 
-def get_geodesic_neighs(mesh, source):
+# Get 100 neighbors.
+def get_geodesic_neighs(mesh, source, num_neighs=100):
     # Use Dijkstra to get the distances 
     # Graph
     G=nx.Graph()
@@ -29,10 +30,10 @@ def get_geodesic_neighs(mesh, source):
 
     G.add_weighted_edges_from(wedges)
     dists = nx.single_source_dijkstra_path_length(G, source)
-    # Get the closest 200 neighbors
+    # Get the closest num_neighs neighbors
     dists = [dists[x] for x in range(len(mesh.vertices))]
     dists = np.array(dists)
-    neigh = dists.argsort()[0:200]
+    neigh = dists.argsort()[0:num_neighs]
     return neigh
 
 
@@ -41,6 +42,7 @@ def get_geodesic_neighs(mesh, source):
 
 # precomputation dir
 precomp = "../data_preparation/04b-precomputation_12A/precomputation/{}/{}"
+num_neighs = 100 # Number of neighbors to use, 100 (for ~9A) or 200 (for ~12A)
 plydir = "../data_preparation/01-benchmark_surfaces/{}_{}.ply"
 desc = "../descriptors/sc05/all_feat/{}/{}"
 
@@ -108,8 +110,8 @@ for ix, pairid in enumerate(all_pairs):
 
     neigh1 = get_geodesic_neighs(mesh1, center_point)
     neigh2 = get_geodesic_neighs(mesh2, cp_2)
-    assert(len(neigh1) == 200)
-    assert(len(neigh2) == 200)
+    assert(len(neigh1) == num_neighs)
+    assert(len(neigh2) == num_neighs)
 
     # Get K patch-pairs between these proteins. 
     K = 1
@@ -119,8 +121,6 @@ for ix, pairid in enumerate(all_pairs):
     for i in range(K):
         # Find the correspondences from patch2 to patch1 based on descriptor distance. 
         desc_d_patch, desc_r_patch = desc_kdt_patch.query(d2[neigh2])
-#        desc_d_patch = desc_d_patch[:,i]
-#        desc_r_patch = desc_r_patch[:,i]
         # From those correspondences found based on descriptor distances , find which are really true. 
         pos_dists_nn = []
         neg_dists_nn = []
@@ -163,7 +163,7 @@ for ix, pairid in enumerate(all_pairs):
             # feat 5 is n2
             feat5.append(pn2)
             euc_dists.append(dist)
-            if dist < 3.0: 
+            if dist < 1.5: 
                 pos_dists_nn.append(desc_dist)
                 labels.append(1.0)
             else:
@@ -187,7 +187,7 @@ for ix, pairid in enumerate(all_pairs):
         # Store features and coordinates.
         features = np.concatenate([feat1, feat2, feat3, feat4, feat5], axis=1)
         # Add padding. 
-        assert(len(features) == 200)
+        assert(len(features) == num_neighs)
 
         if pairid in training_list: 
             train_features.append(features)

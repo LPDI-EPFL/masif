@@ -7,6 +7,8 @@ from rand_rotation import batch_rand_rotate_center_patch
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
 
+NUM_NEIGH = 100
+
 class Corr_Generator(keras.utils.Sequence):
 
     def __init__(self, feature_filenames, label_filenames, batch_size):
@@ -68,7 +70,7 @@ class CorrespondenceNN:
 #        model = keras.models.Sequential()
     
         # Initial multilayer perceptron 
-        network_in = keras.layers.Input(shape=(200,13))
+        network_in = keras.layers.Input(shape=(NUM_NEIGH,13))
         dense1 = keras.layers.Dense(128)(network_in)
         resnet1 = self.resnet(dense1)
         resnet2 = self.resnet(resnet1)
@@ -114,11 +116,11 @@ class CorrespondenceNN:
 
     def resnet(self, resnet_in):
         p1 = keras.layers.Dense(128)(resnet_in)
-        cn1 = ContextNormalization((200,128))(p1)
+        cn1 = ContextNormalization((NUM_NEIGH,128))(p1)
         bn1 = keras.layers.BatchNormalization()(cn1)
         relu1 = keras.layers.ReLU()(bn1)
         p2 = keras.layers.Dense(128)(relu1)
-        cn2 = ContextNormalization((200,128))(p2)
+        cn2 = ContextNormalization((NUM_NEIGH,128))(p2)
         bn2 = keras.layers.BatchNormalization()(cn2)
         relu2 = keras.layers.ReLU()(bn2)
         resnet_out = keras.layers.Add()([resnet_in, relu2])
