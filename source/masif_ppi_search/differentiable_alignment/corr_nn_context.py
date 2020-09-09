@@ -99,7 +99,11 @@ class CorrespondenceNN:
             print('Trainable weights: {}'.format(layer.trainable_variables))
             print(layer.output_shape)
 
-        all_training_pair_ids = os.listdir('data/training/')
+        try:
+            all_training_pair_ids = os.listdir('data/training/')
+        except: 
+            print("Evaluation mode.")
+            all_training_pair_ids = []
         
         np.random.shuffle(all_training_pair_ids)
         val_split = int(np.floor(0.9 * len(all_training_pair_ids)))

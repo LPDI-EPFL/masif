@@ -1,9 +1,11 @@
 import numpy as np 
+import scipy
 from IPython.core.debugger import set_trace
 import copy
 from Bio.PDB import *
 import os
 from geometry.open3d_import import *
+from masif_ppi_search.differentiable_alignment.rand_rotation import center_patch
 
 def compute_nn_score(
     target_ckdtree,
@@ -129,6 +131,58 @@ def get_patch_geo(
     patch_descs.data = descriptors[idx, :].T
     return patch, patch_descs
 
+# Align source patch to target patch. 
+def align_source_to_target(source_patch, source_patch_descs, target_pcd, target_patch_descs, target_ckd_desc, nn_models):
+    # Compute the nearest neighborhood from target to source. 
+    sdesc = source_patch_descs.data.T
+    desc_d_patch, desc_r_patch = target_ckd_desc.query(sdesc)
+
+    patch1 = np.asarray(target_pcd.points)
+    patch1_n = np.asarray(target_pcd.normals)
+
+    patch2 = np.asarray(source_patch.points)
+    patch2_n = np.asarray(source_patch.normals)
+
+    # We must center the two patches for the neural network. 
+    patch1, patch2, translation_value =  center_patch(patch1, patch2)
+
+    # Feat1: the descriptor distance between points. 
+    feat1 = desc_d_patch
+    feat1 = np.expand_dims(feat1, axis=1)
+
+    # Feat2: xyz of target, according to correspondences
+    feat2 = patch1[desc_r_patch]
+
+    # Feat3: xyz of source, 
+    feat3 = patch2
+
+    # Feat4: normal of target, according to correspondences
+    feat4= patch1_n[desc_r_patch]
+
+    # Feat5: noraml of source
+    feat5 = patch2_n
+
+    # features: nx13 matrix, where n is the number of points. 
+    features = np.concatenate([feat1, feat2, feat3, feat4, feat5], axis=1)
+    features = np.expand_dims(features, axis=0)
+    
+    # Get the predicted correspondences.
+    ypred = nn_models['corr_nn'].eval(features)
+    ypred = np.squeeze(ypred)
+
+    # Replace the descriptor distance feature with the correspondences.
+    features[:,:,0] = ypred
+
+    # Get the predicted alignment
+    new_coords_norm2 = nn_models['align_nn'].eval(features)
+
+    R = nn_models['align_nn'].rot_matrix
+    set_trace()
+
+        
+
+
+
 def multidock_cn_svd(
     source_pcd, # the candidate 'decoy' patches
     source_patch_coords, # The geodesic coordinates of the decoy patches
@@ -137,11 +191,11 @@ def multidock_cn_svd(
     target_pcd, # The target patch's point cloud
     target_descs, # The descriptors for the target patch
     target_ckdtree, # A kd-tree for the target patch for fast searches. 
-    nn_model, # The neural network model
+    nn_models, # The neural network models for correspondences, alignment, and scoring.
     use_icp=True
 ):
     """
-    Multi-docking protocol using context normalization and SVD (i.e. avoids RANSAC: 
+    Multi-docking protocol using context normalization and SVD (i.e. avoids RANSAC).
     Here is where the alignment is actually made. 
     This method aligns each of the K prematched decoy patches to the target by first using
     a neural network to establish correspondences and then using a neural network to align using SVD.
@@ -154,12 +208,16 @@ def multidock_cn_svd(
     ransac_time = 0.0
     transform_time = 0.0
     score_time = 0.0
+
+    tdesc = np.asarray(target_descs.data).T
+    desc_kdt_patch = scipy.spatial.cKDTree(tdesc)
+
     for pt in cand_pts:
         source_patch, source_patch_descs = get_patch_geo(
             source_pcd, source_patch_coords, pt, source_descs
         )
 
-        transformation = align_source_to_target(source_pcd, source_patch_descs, target_pcd, target_patch_descs)
+        transformation = align_source_to_target(source_patch, source_patch_descs, target_pcd, target_descs, desc_kdt_patch, nn_models)
 
         # Transform this: 
         source_patch.transform(result.transformation)

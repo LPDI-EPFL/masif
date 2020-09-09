@@ -124,6 +124,7 @@ class SVDAlign(Layer):
                                       shape=[1],
                                       initializer='zeros',
                                       trainable=True)
+        self.rot_matrix = []
 
         super(SVDAlign, self).build(input_shape)  # Be sure to call this at the end
 
@@ -198,6 +199,9 @@ class SVDAlign(Layer):
         # Transpose 
         new_coords = K.permute_dimensions(new_coords, (0,2,1)) # (batch_size, NUM_NEIGH, 3)
 
+        # Store the rotation in an instance variable (in case access is later needed.
+        self.rot_matrix = R
+
         # Rotate+translate the coordinates for norm2
         new_norm = K.batch_dot(R, K.permute_dimensions(orig_norm2, (0,2,1))) # (batch_size, 3, NUM_NEIGH)
         new_norm = K.permute_dimensions(new_norm, (0,2,1)) # (batch_size, NUM_NEIGH, 3)
@@ -249,6 +253,7 @@ class AlignNN:
 
     def eval(self, features):
         y_test_pred = self.model.predict(features)
+        self.rot_matrix = self.svd_layer.rot_matrix
         return y_test_pred
 
     def restore_model(self):
@@ -264,7 +269,11 @@ class AlignNN:
             print(layer.get_weights())
     
     def init_data_dir(self):
-        all_training_pair_ids = os.listdir('data/training/')
+        try:
+            all_training_pair_ids = os.listdir('data/training/')
+        except: 
+            print('Evaluation mode')
+            all_training_pair_ids = []
         np.random.shuffle(all_training_pair_ids)
         val_split = int(np.floor(0.9 * len(all_training_pair_ids)))
         val_pair_ids = all_training_pair_ids[val_split:]

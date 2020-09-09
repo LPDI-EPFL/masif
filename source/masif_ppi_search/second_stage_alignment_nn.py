@@ -7,9 +7,12 @@ from geometry.open3d_import import *
 import numpy as np
 import os
 from alignment_utils_masif_search import compute_nn_score, rand_rotation_matrix, \
-        get_center_and_random_rotate, get_patch_geo, multidock, test_alignments, \
+        get_center_and_random_rotate, get_patch_geo, multidock_cn_svd, test_alignments, \
        subsample_patch_coords 
 from transformation_training_data.score_nn import ScoreNN
+from differentiable_alignment.corr_nn_context import CorrespondenceNN
+from differentiable_alignment.align_nn import AlignNN
+
 from scipy.spatial import cKDTree
 from Bio.PDB import *
 import copy
@@ -40,8 +43,21 @@ global_start_time = time.clock()
 global_ground_truth_time = 0.0
 
 # Read the pre-trained neural network.
-nn_model = ScoreNN()
+scoring_nn= ScoreNN()
 print(sys.argv)
+
+# Read the pre-trained correspondence neural network.
+corr_nn = CorrespondenceNN()
+corr_nn.restore_model()
+
+# Read the pre-trained alignment neural network.
+align_nn = AlignNN()
+align_nn.restore_model()
+
+nn_model = {'scoring_nn': scoring_nn, \
+            'corr_nn': corr_nn,
+            'align_nn': align_nn}
+    
 
 if len(sys.argv) != 6 or (sys.argv[5] != "masif" and sys.argv[5] != "gif"):
     print("Usage: {} data_dir K ransac_iter num_success gif|masif".format(sys.argv[0]))
@@ -92,7 +108,8 @@ all_desc = []
 rand_list = np.copy(pdb_list)
 #np.random.seed(0)
 np.random.shuffle(rand_list)
-rand_list = rand_list[0:100]
+rand_list = rand_list[0:10]
+#rand_list = rand_list[0:100]
 
 p2_descriptors_straight = []
 p2_point_clouds = []
@@ -118,7 +135,7 @@ for i, pdb in enumerate(rand_list):
 
     # Read patch coordinates. 
 
-    pc = subsample_patch_coords(pdb, "p2", precomp_dir)
+    pc = subsample_patch_coords(pdb, "p2", precomp_dir_9A)
     p2_patch_coords.append(pc)
 
     p2_names.append(pdb)
@@ -192,7 +209,7 @@ for target_ix, target_pdb in enumerate(rand_list):
     ranking = np.argsort(all_desc_dists)
 
     # Load target geodesic distances.
-    target_coord = subsample_patch_coords(target_pdb, "p1", precomp_dir, [center_point])
+    target_coord = subsample_patch_coords(target_pdb, "p1", precomp_dir_9A, [center_point])
 
     # Get the geodesic patch and descriptor patch for the target.
     target_patch, target_patch_descs = get_patch_geo(
@@ -250,7 +267,7 @@ for target_ix, target_pdb in enumerate(rand_list):
         random_transformation = get_center_and_random_rotate(source_pcd)
         source_pcd.transform(random_transformation)
         # Dock and score each matched patch. 
-        all_results, all_source_patch, all_source_scores = multidock(
+        all_results, all_source_patch, all_source_scores = multidock_cn_svd(
             source_pcd,
             source_coords,
             source_desc,
@@ -259,7 +276,6 @@ for target_ix, target_pdb in enumerate(rand_list):
             target_patch_descs,
             target_ckdtree,
             nn_model, 
-            ransac_iter=ransac_iter
         )
         num_negs = num_negs
 

@@ -85,4 +85,4 @@ def center_patch(patch1, patch2):
     assert(len(center_of_mass) == 3)
     patch1 = patch1-center_of_mass
     patch2 = patch2-center_of_mass
-    return patch1, patch2
+    return patch1, patch2, center_of_mass
