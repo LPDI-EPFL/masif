@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 import sys
+from IPython.core.debugger import set_trace
 import time
 import sklearn.metrics
 from geometry.open3d_import import *
@@ -108,8 +109,7 @@ all_desc = []
 rand_list = np.copy(pdb_list)
 #np.random.seed(0)
 np.random.shuffle(rand_list)
-rand_list = rand_list[0:10]
-#rand_list = rand_list[0:100]
+rand_list = rand_list[0:100]
 
 p2_descriptors_straight = []
 p2_point_clouds = []
@@ -267,33 +267,42 @@ for target_ix, target_pdb in enumerate(rand_list):
         random_transformation = get_center_and_random_rotate(source_pcd)
         source_pcd.transform(random_transformation)
         # Dock and score each matched patch. 
-        all_results, all_source_patch, all_source_scores = multidock_cn_svd(
-            source_pcd,
-            source_coords,
-            source_desc,
-            source_vix,
-            target_patch,
-            target_patch_descs,
-            target_ckdtree,
-            nn_model, 
-        )
+        all_results, all_source_patch, all_source_scores, \
+            all_rotations, all_translations_target, all_translations_source = \
+                multidock_cn_svd(
+                    source_pcd,
+                    source_coords,
+                    source_desc,
+                    source_vix,
+                    target_patch,
+                    target_patch_descs,
+                    target_ckdtree,
+                    nn_model, 
+                )
         num_negs = num_negs
 
         # If this is the source_pdb, get the ground truth. The ground truth evaluation time is ignored for this and all other methods. 
         gt_start_time = time.clock()
         if source_pdb == target_pdb:
 
-            for j, res in enumerate(all_results):
-                rmsd, clashing, structure_coord_pcd, structure_coord_pcd_notTransformed = test_alignments(
-                    res.transformation,
-                    random_transformation,
-                    gt_source_struct,
-                    target_ca_pcd_tree,
-                    target_atom_pcd_tree,
-                    radius=0.5,
-                )
+            for j, res_transform in enumerate(all_results):
+                try:
+                    rmsd, clashing, structure_coord_pcd, structure_coord_pcd_notTransformed = test_alignments(
+                        res_transform,
+                        random_transformation,
+                        gt_source_struct,
+                        target_ca_pcd_tree,
+                        target_atom_pcd_tree,
+                        all_rotations[j],
+                        all_translations_target[j],
+                        all_translations_source[j],
+                        radius=0.5,
+                    )
+                except:
+                    set_trace()
                 score = all_source_scores[j]
-                if rmsd < 5.0 and res.fitness > 0:
+                #if rmsd < 5.0 and res.fitness > 0:
+                if rmsd < 5.0:
                     rank_val = np.where(chosen_top == viii[j])[0][0]
                     pos_rmsd.append(rmsd)
                     found = True

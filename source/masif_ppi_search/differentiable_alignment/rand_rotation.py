@@ -69,14 +69,14 @@ def batch_rand_rotate_center_patch(in_patch, in_patch_normals):
     return batch_patch, batch_norm
 
 # center patch in origin.
-#def center_patch(patch):
-#    patch = np.copy(patch)
-#    center_of_mass = np.mean(patch, axis=0)
-#    patch = patch-center_of_mass
-#    return patch
+def center_patch(patch):
+    patch = np.copy(patch)
+    center_of_mass = np.mean(patch, axis=0)
+    patch = patch-center_of_mass
+    return patch, center_of_mass
 
-# center both patches in origin.
-def center_patch(patch1, patch2):
+# center both patches in origin. This should be only for training (if at all) 
+def center_both_patches(patch1, patch2):
     patch1 = np.copy(patch1)
     patch2 = np.copy(patch2)
     center_of_mass1 = np.mean(patch1, axis=0)

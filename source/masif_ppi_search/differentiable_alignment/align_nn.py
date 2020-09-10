@@ -22,41 +22,6 @@ def p2p_rmsd_loss(yTrue, yPred):
     costfunc = K.mean(mysqrt) # (1)
     return costfunc
 
-# EXPERIMENTAL - a shape similarity loss: use both points and normals
-# UNSTABLE - code has a bug. 
-def shape_sim_loss(yTrue, yPred):
-    yPredxyz = yPred[:,:,0:3]
-    yPrednorm = yPred[:,:,3:6]
-    yTruexyz = yTrue[:,:,0:3]
-    yTruenorm = yTrue[:,:,3:6]
-
-    # Compute the point to point distances between all points.
-    mydiff = yTruexyz - yPredxyz # (batch_size, NUM_NEIGH, 3)
-    mysquare = K.square(mydiff) # (batch_size, NUM_NEIGH, 3)
-    p2pdist2 = K.sum(mysquare, axis=2) # (batch_size, NUM_NEIGH)
-#    p2pdist= K.sqrt(mysum)
-
-    # This is actually shape similarity, not shape complementarity.
-    print("yPrednorm {}".format(yPrednorm.shape))
-    print("yTruenorm {}".format(yTruenorm.shape))
-    print("p2pdist2 {}".format(p2pdist2.shape))
-    ytn = K.permute_dimensions(yTruenorm,(0,2,1)) # (batch_size, 3, NUM_NEIGH
-    sc = K.batch_dot(yPrednorm, ytn , axes=2) # (batch_size, NUM_NEIGH, 1)
-#    assert(sc.shape[2] ==1)
-    print("midpoint {}".format(sc.shape))
-    sc = K.squeeze(sc, axis=2)
-    assert(sc.shape[1] == 100)
-    assert (p2pdist2.shape[1] == sc.shape[1])
-    w = 0.5
-    sc = tf.math.multiply(sc, K.exp(-w * p2pdist2)) # (batch_size, NUM_NEIGH)
-    print("after {}".format(sc.shape))
-    assert (len(sc.shape) == 2)
-    assert (sc.shape[1] == 100)
-
-    sc = K.mean(sc) #(batch_size, NUM_NEIGH)
-
-    return sc 
-
 
 class Align_Generator(keras.utils.Sequence):
 
@@ -124,7 +89,6 @@ class SVDAlign(Layer):
                                       shape=[1],
                                       initializer='zeros',
                                       trainable=True)
-        self.rot_matrix = []
 
         super(SVDAlign, self).build(input_shape)  # Be sure to call this at the end
 
@@ -199,14 +163,17 @@ class SVDAlign(Layer):
         # Transpose 
         new_coords = K.permute_dimensions(new_coords, (0,2,1)) # (batch_size, NUM_NEIGH, 3)
 
-        # Store the rotation in an instance variable (in case access is later needed.
-        self.rot_matrix = R
+        # Store the rotation matrix (in case access is later needed) - this should be better implemented but for now we do an ugly one.
+        rot_matrix = K.reshape(R, [-1,9])
+        rot_matrix = K.repeat(rot_matrix, orig_xyz2.shape[1])
+        trans_vec = K.squeeze(t, axis=2)
+        trans_vec = K.repeat(trans_vec, orig_xyz2.shape[1])
 
         # Rotate+translate the coordinates for norm2
         new_norm = K.batch_dot(R, K.permute_dimensions(orig_norm2, (0,2,1))) # (batch_size, 3, NUM_NEIGH)
         new_norm = K.permute_dimensions(new_norm, (0,2,1)) # (batch_size, NUM_NEIGH, 3)
         
-        coord_norm = K.concatenate([new_coords, new_norm], axis =2)
+        coord_norm = K.concatenate([new_coords, new_norm, rot_matrix, trans_vec], axis =2)
         return coord_norm
 
 
@@ -253,7 +220,6 @@ class AlignNN:
 
     def eval(self, features):
         y_test_pred = self.model.predict(features)
-        self.rot_matrix = self.svd_layer.rot_matrix
         return y_test_pred
 
     def restore_model(self):

@@ -45,7 +45,7 @@ def compute_nn_score(
         features_trimmed[0,:features.shape[0],:] = features
 
     # Evaluate patch with neural network. 
-    pred = nn_model.eval(features_trimmed)
+    pred = nn_model['scoring_nn'].eval(features_trimmed)
     return pred[0][1]
 
 def rand_rotation_matrix(deflection=1.0, randnums=None):
@@ -131,8 +131,8 @@ def get_patch_geo(
     patch_descs.data = descriptors[idx, :].T
     return patch, patch_descs
 
-# Align source patch to target patch. 
-def align_source_to_target(source_patch, source_patch_descs, target_pcd, target_patch_descs, target_ckd_desc, nn_models):
+# Align source patch to target patch with SVD. 
+def align_source_to_target_svd(source_patch, source_patch_descs, target_pcd, target_patch_descs, target_ckd_desc, nn_models):
     # Compute the nearest neighborhood from target to source. 
     sdesc = source_patch_descs.data.T
     desc_d_patch, desc_r_patch = target_ckd_desc.query(sdesc)
@@ -141,10 +141,14 @@ def align_source_to_target(source_patch, source_patch_descs, target_pcd, target_
     patch1_n = np.asarray(target_pcd.normals)
 
     patch2 = np.asarray(source_patch.points)
+    patch2_copy = np.copy(patch2)
     patch2_n = np.asarray(source_patch.normals)
 
+    dist_0 = np.sqrt(np.sum(np.square(patch1[0] - patch2[0])))
+
     # We must center the two patches for the neural network. 
-    patch1, patch2, translation_value =  center_patch(patch1, patch2)
+    patch1, translation_value1 = center_patch(patch1)
+    patch2, translation_value2 = center_patch(patch2)
 
     # Feat1: the descriptor distance between points. 
     feat1 = desc_d_patch
@@ -164,6 +168,18 @@ def align_source_to_target(source_patch, source_patch_descs, target_pcd, target_
 
     # features: nx13 matrix, where n is the number of points. 
     features = np.concatenate([feat1, feat2, feat3, feat4, feat5], axis=1)
+
+    # Pad with repeat ? 
+    if len(feat1) < 100: # Set to actual params!.
+        repeat_corrs = np.arange(len(feat1))
+        repeat_corrs = np.concatenate([repeat_corrs, repeat_corrs, repeat_corrs], axis=0)
+        np.random.shuffle(repeat_corrs)
+        repeat_corrs = repeat_corrs[:100-len(feat1)]
+        features_pad = np.zeros((100, 13))
+        features_pad[0:len(feat1),:] = features
+        features_pad[len(feat1):,:] = features[repeat_corrs,:]
+        features = features_pad
+
     features = np.expand_dims(features, axis=0)
     
     # Get the predicted correspondences.
@@ -174,14 +190,41 @@ def align_source_to_target(source_patch, source_patch_descs, target_pcd, target_
     features[:,:,0] = ypred
 
     # Get the predicted alignment
-    new_coords_norm2 = nn_models['align_nn'].eval(features)
+    # The rotation and translation are stored in fields 6:15 and 15:18 
+    #           respectively; they are the same for the entire patch, obviously 
+    new_coords_norm2_R = nn_models['align_nn'].eval(features)
+    # Get the rotation matrix
+    new_coords2 = new_coords_norm2_R[:,:,0:3]
+    R = new_coords_norm2_R[0,0,6:15]
+    trans_vec = new_coords_norm2_R[0,0,15:18]
+    R = np.reshape(R, [3,3])
+    eval_patch = np.dot(R, patch2.T).T + trans_vec
+    # Ensure nothing went wrong with R and the eval_patch
+    diff = np.mean(np.sqrt(np.sum(np.square(new_coords2[0,:len(feat1),:] - eval_patch), axis=1)))
+    assert(np.mean(diff) < 1e4)
 
-    R = nn_models['align_nn'].rot_matrix
-    set_trace()
+    # Make a transformation matrix 
+    trans_matrix = np.identity(4)
+    trans_matrix[0:3,0:3] = R
+    trans_matrix[0:3,3] = trans_vec.T 
 
-        
+    translation_mat1 = np.identity(4)
+    translation_mat1[0:3,3] = translation_value1
 
+    translation_mat2 = np.identity(4)
+    translation_mat2[0:3,3] = -translation_value2
 
+    if (dist_0 < 1.5):
+        test_pcd = PointCloud()
+        in_patch = patch2_copy - translation_value2
+        test_pcd.points = Vector3dVector(in_patch)
+        test_pcd.normals = Vector3dVector(patch2_n)
+        test_pcd.transform(trans_matrix)
+        test_points = np.asarray(test_pcd.points)
+        test_points = test_points + translation_value1
+        rmsd = np.sqrt(np.mean(np.sum(np.square(patch2_copy - test_points), axis=1)))
+    
+    return trans_matrix, translation_mat1, translation_mat2
 
 def multidock_cn_svd(
     source_pcd, # the candidate 'decoy' patches
@@ -204,6 +247,9 @@ def multidock_cn_svd(
     all_results = []
     all_source_patch = []
     all_source_scores = []
+    all_translations_target = []
+    all_translations_source = []
+    all_rotations = []
     patch_time = 0.0
     ransac_time = 0.0
     transform_time = 0.0
@@ -217,33 +263,48 @@ def multidock_cn_svd(
             source_pcd, source_patch_coords, pt, source_descs
         )
 
-        transformation = align_source_to_target(source_patch, source_patch_descs, target_pcd, target_descs, desc_kdt_patch, nn_models)
+        patch1 = np.asarray(target_pcd.points)
+        patch2 = np.asarray(source_patch.points)
 
-        # Transform this: 
-        source_patch.transform(result.transformation)
+        dist_0 = np.sqrt(np.sum(np.square(patch1[0] - patch2[0])))
+        svd_transformation, translation_mat1, translation_mat2 = align_source_to_target_svd(source_patch, source_patch_descs, target_pcd, target_descs, desc_kdt_patch, nn_models)
 
+        # Transform the patch:
+        orig_points = np.copy(np.asarray(source_patch.points))
+        source_patch.transform(translation_mat2)
+        source_patch.transform(svd_transformation)
+        source_patch.transform(translation_mat1)
+
+        #if dist_0 < 1.5:
+        #    set_trace()
         # Optimize the alignment using ICP.
         if use_icp:
             result = registration_icp(source_patch, target_pcd, 
-            1.0, result.transformation, TransformationEstimationPointToPlane(),
-            )
+                1.0, np.identity(4), TransformationEstimationPointToPlane(),
+                )
+            result = result.transformation
+        else:
+            result = np.identity(4)
 
-        source_patch.transform(result.transformation)
+        source_patch.transform(result)
         all_results.append(result)
+        all_translations_target.append(translation_mat1)
+        all_translations_source.append(translation_mat2)
+        all_rotations.append(svd_transformation)
         all_source_patch.append(source_patch)
 
-        # Compute the 
+        # Compute the score 
         source_scores = compute_nn_score(
             target_ckdtree,
             target_pcd, 
             source_patch,
             target_descs,
             source_patch_descs,
-            nn_model
+            nn_models
         )
         all_source_scores.append(source_scores)
 
-    return all_results, all_source_patch, all_source_scores
+    return all_results, all_source_patch, all_source_scores, all_rotations, all_translations_target, all_translations_source
 
 def multidock(
     source_pcd, # the candidate 'decoy' patches
@@ -321,6 +382,9 @@ def test_alignments(
     source_structure, # The source (decoy) binder structure in a Biopython object 
     target_ca_pcd_tree, # The target c-alphas in an Open3D point cloud tree format.
     target_pcd_tree, # The target atoms in an Open 3D point cloud tree format.
+    svd_rotation, \
+    svd_translation_target, \
+    svd_translation_source, \
     radius=2.0, # The radius for clashes (unused) 
     interface_dist=10.0, # The interface cutoff to define the interface.
 ):
@@ -339,6 +403,10 @@ def test_alignments(
     structure_coord_pcd.points = Vector3dVector(structure_coords)
     structure_coord_pcd_notTransformed = copy.deepcopy(structure_coord_pcd)
     structure_coord_pcd.transform(random_transformation)
+    # Apply a translation: the source patch translation to the center
+    structure_coord_pcd.transform(svd_translation_source)
+    structure_coord_pcd.transform(svd_rotation)
+    structure_coord_pcd.transform(svd_translation_target)
     structure_coord_pcd.transform(transformation)
 
     clashing = 0
