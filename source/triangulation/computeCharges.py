@@ -78,7 +78,10 @@ def computeChargeHelper(atom_name, res, v):
     elif isAcceptorAtom(atom_name, res):
         acceptor_atom = res[atom_name]
         b = acceptor_atom.get_coord()
-        a = res[acceptorAngleAtom[atom_name]].get_coord()
+        try:
+            a = res[acceptorAngleAtom[atom_name]].get_coord()
+        except:
+            return 0.0
         # 120 degress for acceptor
         angle_deviation = computeAngleDeviation(a, b, v, 2 * np.pi / 3)
         # TODO: This should not be 120 for all atoms, i.e. for HIS it should be
