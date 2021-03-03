@@ -57,4 +57,12 @@ def computeAPBS(vertices, pdb_file, tmp_file_base):
     for ix, line in enumerate(chargefile.readlines()):
         charges[ix] = float(line.split(",")[3])
 
+    remove_fn = os.path.join(directory, filename_base)
+    os.remove(remove_fn)
+    os.remove(remove_fn+'.csv')
+    os.remove(remove_fn+'.dx')
+    os.remove(remove_fn+'.in')
+    os.remove(remove_fn+'-input.p')
+    os.remove(remove_fn+'_out.csv')
+
     return charges

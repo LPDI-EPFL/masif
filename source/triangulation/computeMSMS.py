@@ -35,5 +35,12 @@ def computeMSMS(pdb_file,  protonate=True):
     for line in ses_file:
         fields = line.split()
         areas[fields[3]] = fields[1]
+
+
+    # Remove temporary files. 
+    os.remove(file_base+'.area')
+    os.remove(file_base+'.xyzrn')
+    os.remove(file_base+'.vert')
+    os.remove(file_base+'.face')
     return vertices, faces, normals, names, areas
 
