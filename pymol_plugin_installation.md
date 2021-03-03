@@ -39,3 +39,8 @@ masif/source/masif_plugin_pymol/
 ```
 
 This should tell pymol to search this directory for plugins.
+
+
+In addition, some solutions are provided in this thread to problems with the plugin, especially in windows: 
+
+https://github.com/LPDI-EPFL/masif/issues/15
