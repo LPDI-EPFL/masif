@@ -256,7 +256,7 @@ def normalize_electrostatics(in_elec):
     upper_threshold = 3
     lower_threshold = -3
     elec[elec > upper_threshold] = upper_threshold
-    elec[elec > upper_threshold] = upper_threshold
+    elec[elec < lower_threshold] = lower_threshold
     elec = elec - lower_threshold
     elec = elec / (upper_threshold - lower_threshold)
     elec = 2 * elec - 1
