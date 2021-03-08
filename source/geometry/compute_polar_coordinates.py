@@ -4,6 +4,8 @@ Pablo Gainza - LPDI STI EPFL 2019
 This file is part of MaSIF.
 Released under an Apache License 2.0
 """
+from heapq import heappush, heappop
+import math
 
 import sys
 from sklearn.manifold import MDS
@@ -13,8 +15,300 @@ import scipy.linalg
 from IPython.core.debugger import set_trace
 from  numpy.linalg import norm
 import time
-from scipy.sparse import csr_matrix, coo_matrix
+from scipy.sparse import csr_matrix, coo_matrix, find
 import pymesh
+
+def average_angles(angles):
+    """Average (mean) of angles
+
+    Return the average of an input sequence of angles. The result is between
+    ``0`` and ``2 * math.pi``.
+    If the average is not defined (e.g. ``average_angles([0, math.pi]))``,
+    a ``ValueError`` is raised.
+    """
+
+    x = sum(math.cos(a) for a in angles)
+    y = sum(math.sin(a) for a in angles)
+
+    if x == 0 and y == 0:
+        raise ValueError(
+            "The angle average of the inputs is undefined: %r" % angles)
+
+    # To get outputs from -pi to +pi, delete everything but math.atan2() here.
+    return math.fmod(math.atan2(y, x) + 2 * math.pi, 2 * math.pi)
+
+# Remove duplicates from a list, while preserving order. 
+def f7(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
+# For vertex vix, get the theta angles of all neighboring vertices in clockwise order. also return the distance to vertex 0 for convenience.
+def get_theta0(vix, vertices, normals, faces, faces_idx):
+    vixf = faces_idx[vix]
+    n0 = normals[vix]
+    v0 = vertices[vix]
+    # First triangle
+    tt = vixf[0]
+    tt = faces[tt]
+    # Compute the normal for tt by averagin over the vertex normals
+    normal_tt = np.mean([normals[tt[0]], normals[tt[1]], normals[tt[2]]], axis=0)
+    # Find the two vertices (v1ix and v2ix) in tt that are not vix
+    neigh_tt = [x for x in tt if x != vix]
+    v1ix = neigh_tt[0]
+    v2ix = neigh_tt[1]
+
+    # Compute the sign of the angle between v2ix and v1ix in 3D to ensure that the angles are always in the same direction.
+    v0 = vertices[vix]
+    v1 = vertices[v1ix]
+    v2 = vertices[v2ix]
+    v1 = v1 - v0
+    v1 = v1/np.linalg.norm(v1)
+    v2 = v2 - v0
+    v2 = v2/np.linalg.norm(v2)
+    angle_v1_v2 = np.arctan2(norm(np.cross(v2,v1)),np.dot(v2,v1))*np.sign(np.dot(v2,np.cross(normal_tt,v1)))
+
+    sign_3d = np.sign(angle_v1_v2)
+    if sign_3d < 0: 
+        tmp = v1ix
+        v1ix = v2ix
+        v2ix = tmp
+
+    # Now that this is clockwise, and we have v1ix identified go through all faces.
+    all_angles = [0, np.abs(angle_v1_v2)]
+    all_vix = [v1ix, v2ix]
+
+    prev_v1ix = v1ix
+    v1ix = v2ix
+
+    for i in range(1, len(vixf)-1):
+        tt = [faces[f] for f in vixf if (v1ix in faces[f] and prev_v1ix not in faces[f])]
+        assert(len(tt) == 1)
+        tt = tt[0]
+        neigh_tt = [x for x in tt if x != vix and x!= v1ix]
+        assert(len(neigh_tt) == 1)
+        v2ix = neigh_tt[0]
+
+        # Now go from v1ix to v2ix and so on till the circle is closed.
+        vec1 = (vertices[v1ix] - vertices[vix])
+        vec1 = vec1/np.linalg.norm(vec1)
+        vec2 = (vertices[v2ix] - vertices[vix])
+        vec2 = vec2/np.linalg.norm(vec2)
+        dp = np.dot(vec1, vec2)
+        angle = np.arccos(dp)
+        all_angles.append(angle)
+        all_vix.append(v2ix)
+        prev_v1ix = v1ix
+        v1ix = v2ix
+    all_dists = []
+    for v1ix in all_vix: 
+        d = np.sqrt(np.sum(np.square(vertices[v1ix] - vertices[vix])))
+        all_dists.append(d)
+
+
+    return all_vix, all_angles, all_dists
+
+def expand_by_dijkstra(adj):
+    visited_set = set([ix])
+    visited = [ix]
+    while len(visited) < max_vertices: 
+        cur_level = [adj[x] for x in visited_prev_level]
+        cur_level = np.concatenate(cur_level, axis=0)
+        cur_level = [x for x in cur_level if x not in visited_set]
+        visited_set.update(cur_level)
+        visited.extend(cur_level)
+        visited_prev_level = cur_level
+    return visited[:max_vertices]
+
+
+#def expand_by_rings_bfs():
+#    """
+#    Expand every patch by rings, and get coordinates
+#    """
+
+    # start in vertex 0
+    # Get all its neighbors; assign a polar angle to each neighboring vertex. 
+    # Continue expanding bfs and assign to each vertex an angle which is an average of all connected previous nodes. 
+def get_coord_mine(adj, ix0, theta0_vix, theta0, theta0_dist, max_vertices=200):
+    dq = []
+    # Vertex ix0 is the first one.
+    visited_id = [ix0]
+    visited_set = set(visited_id)
+    theta = [0]
+    visited_dist = [0]
+    visited_id_vii = {}
+    # Add the nodes from theta0_vix  
+    for ii, vix in enumerate(theta0_vix):
+        heappush(dq, (theta0_dist[ii], (vix, theta0[ii], -1)))
+    while len(visited_id) < max_vertices: 
+        # Pop the next vertex 
+        (dist, (vix, angle, nodevii)) = heappop(dq)
+        if vix not in visited_set:
+            # nodevii: secondary pointer to the visited_id list
+            visited_dist.append(dist)
+            visited_id.append(vix)
+            visited_set.add(vix)
+            theta.append(angle)
+            nodevii = len( visited_dist)-1
+            visited_id_vii[vix] = nodevii
+            # expand its neighbors           
+            neighs = adj[vix] 
+            for neigh_ii in range(len(neighs)):
+                neigh= neighs[neigh_ii][0]
+                w = neighs[neigh_ii][1]
+                if neigh not in visited_set: 
+                    heappush(dq, ((w+ dist), (neigh, angle, nodevii)))
+                    k = 0
+        else:
+            # Update theta for this node
+            vii = visited_id_vii[vix]
+            theta[vii] = average_angles([theta[vii], theta[nodevii]])
+
+    return visited_id
+
+
+def get_adj_list_clockwise(rowi, rowj, vertices, faces_idx, normals):
+    """
+        For every vertex in the mesh, get a list of its neighbors clockwise
+    """
+    n = len(vertices)
+    adj_list = [ [] for _ in range(n) ]
+    for i in range(len(rowi)):
+        vix = rowi[i]
+        neigh = rowj[i]
+        if neigh not in adj_list[vix]:
+            adj_list[vix].append(neigh)
+
+    # Reorder adjacencies clockwise
+    if clockwise:
+        for i in range(n):
+            f = faces_idx[i]
+            # Chose the first face.
+            f = f[0]
+            neighs = adj_list[i]
+            cv = vertices[i]
+
+            neigh = rowj[i]
+            if neigh not in adj_list[vix]:
+                adj_list[vix].append(neigh)
+    
+    return adj_list
+
+# Get a patch for ix with the theta angles and the distances for every member to ix.
+def get_patch(adj, ix, theta0_vix, theta0, max_vertices=200): 
+    theta = [0]
+    theta.extend(theta0)
+    visited_set = set([ix])
+    visited_set.update(theta0_vix)
+    visited= [ix]
+    visited.extend(theta0_vix)
+    prev_vix = theta0_vix 
+    prev_theta = theta0
+
+    while len(visited) < max_vertices: 
+        theta_dict = {}
+        for ii, vix in enumerate(prev_vix):
+            for vix_adj in adj[vix]: 
+                if vix_adj not in visited: 
+                    if vix_adj not in theta_dict:
+                        theta_dict[vix_adj] = []
+                    theta_dict[vix_adj].append(prev_theta[ii])
+
+        cur_theta = []
+        cur_vix = []
+        for vix in theta_dict:
+            cur_theta.append(average_angles(theta_dict[vix]))
+            cur_vix.append(vix)
+        visited_set.update(cur_vix)
+        visited.extend(cur_vix)
+        theta.extend(cur_theta)
+        prev_vix = cur_vix
+        prev_theta = cur_theta
+
+    return visited[:max_vertices], theta[:max_vertices]
+
+# Get a list of adjacencies for every vertex. (contains vix, and dist)
+def get_adj_list(rowi, rowj, vertices):
+    n = len(vertices)
+    adj_list = [ [] for _ in range(n) ]
+    for i in range(len(rowi)):
+        vix = rowi[i]
+        neigh = rowj[i]
+        dist = np.sqrt(np.sum(np.square(vertices[vix] - vertices[neigh])))
+        adj_list[vix].append((neigh, dist))
+    return adj_list
+
+# Get a list of adjacencies for every vertex. (contains vix, and dist)
+def get_adj_list_bfs(rowi, rowj, vertices):
+    n = len(vertices)
+    adj_list = [ [] for _ in range(n) ]
+    for i in range(len(rowi)):
+        vix = rowi[i]
+        neigh = rowj[i]
+        adj_list[vix].append(neigh)
+    for i in range(len(adj_list)):
+        # Remove duplicate members.
+        adj_list[i] = f7(adj_list[i])
+    return adj_list
+    
+
+def compute_polar_coordinates_bfs(mesh, do_fast=True, radius=12, max_vertices=200):
+    """
+    compute_polar_coordinates_bfs: compute the polar coordinates for every patch in the mesh using BFS (a lot faster).
+    Returns: 
+        rho: radial coordinates for each patch. padded to zero.
+        theta: angle values for each patch. padded to zero. 
+        neigh_indices: indices of members of each patch. 
+        mask: the mask for rho and theta
+    """
+
+    # Vertices, faces and normals
+    vertices = mesh.vertices
+    faces = mesh.faces
+    norm1 = mesh.get_attribute('vertex_nx')
+    norm2 = mesh.get_attribute('vertex_ny')
+    norm3 = mesh.get_attribute('vertex_nz')
+    normals = np.vstack([norm1, norm2, norm3]).T
+
+    # Get edges
+    f = np.array(mesh.faces, dtype = int)
+    rowi = np.concatenate([f[:,0], f[:,0], f[:,1], f[:,1], f[:,2], f[:,2]], axis = 0)
+    rowj = np.concatenate([f[:,1], f[:,2], f[:,0], f[:,2], f[:,0], f[:,1]], axis = 0)
+    adj_list = get_adj_list(rowi, rowj, vertices)
+
+
+    # Compute the faces per vertex.
+    idx = {}
+    for ix, face in enumerate(mesh.faces):
+        for i in range(3):
+            if face[i] not in idx:
+                idx[face[i]] = []
+            idx[face[i]].append(ix)
+
+    # Make a list of adjacent vertices for each vertex, where adjacent vertices are always given clockwise. 
+    print('Starting to get patches with Dijkstra')
+    start= time.clock()
+    for x in range(len(vertices)):
+        theta0_vix, theta0, theta0_dist = get_theta0(x, vertices, normals, faces, idx)
+        get_coord_mine(adj_list, x, theta0_vix, theta0, theta0_dist)
+    print('Finished getting patches')
+    end = time.clock()
+    print('My Dijkstra took {:.2f}s'.format((end-start)))
+    set_trace()
+
+    adj_list = get_adj_list_bfs(rowi, rowj, vertices)
+    print('Starting to get patches')
+    start= time.clock()
+    for x in range(len(vertices)):
+        # Get theta0: the theta angles for vertices immediately around the central vertex 
+        theta0_vix, theta0, _ = get_theta0(x, vertices, normals, faces, idx)
+        get_patch(adj_list, x, theta0_vix, theta0)
+    print('Finished getting patches')
+    end = time.clock()
+    print('My BFStook {:.2f}s'.format((end-start)))
+    set_trace()
+    
+
 
 def compute_polar_coordinates(mesh, do_fast=True, radius=12, max_vertices=200):
     """
@@ -43,6 +337,7 @@ def compute_polar_coordinates(mesh, do_fast=True, radius=12, max_vertices=200):
     f = np.array(mesh.faces, dtype = int)
     rowi = np.concatenate([f[:,0], f[:,0], f[:,1], f[:,1], f[:,2], f[:,2]], axis = 0)
     rowj = np.concatenate([f[:,1], f[:,2], f[:,0], f[:,2], f[:,0], f[:,1]], axis = 0)
+
     edges = np.stack([rowi, rowj]).T
     verts = mesh.vertices
 
