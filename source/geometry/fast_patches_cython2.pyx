@@ -1,16 +1,17 @@
 # This code is derived work from Jake Vanderplas's Dijkstra code for SKLearn
 # I modified this for MaSIF to extract patches, and also to compute polar coordinates. 
 # Author: Jake Vanderplas  -- <vanderplas@astro.washington.edu>
-# Modified Derived: Pablo Gainza 
+# Modified and Derived by : Pablo Gainza for MaSIF - including angles.
 # License: BSD 3 clause, (C) 2011
 
+# cython: unraisable_tracebacks=True
 import numpy as np
 cimport numpy as np
+import sys
 
 from scipy.sparse import csr_matrix, isspmatrix, isspmatrix_csr
 
 cimport cython
-
 from libc.stdlib cimport malloc, free
 
 np.import_array()
@@ -20,39 +21,51 @@ ctypedef np.float64_t DTYPE_t
 
 ITYPE = np.int32
 ctypedef np.int32_t ITYPE_t
-
+from libc.math cimport sin, cos, acos, exp, sqrt, fabs, M_PI, atan2, fmod
 
 @cython.boundscheck(False)
-cdef np.ndarray dijkstra(dist_matrix,
-                         np.ndarray[DTYPE_t, ndim=2] graph,
-                         int directed=0):
+cdef DTYPE_t average_angles(DTYPE_t angle1, DTYPE_t angle2):
+    """Average (mean) of angles
+
+    Return the average of an input sequence of angles. The result is between
+    ``0`` and ``2 * math.pi``.
+    If the average is not defined (e.g. ``average_angles([0, math.pi]))``,
+    a ``ValueError`` is raised.
+    """
+    cdef DTYPE_t x, y
+    cdef DTYPE_t mean_angle
+
+    x = cos(angle1) +cos(angle2) 
+    y = sin(angle1)+ sin(angle2)
+
+    # To get outputs from -pi to +pi, delete everything but math.atan2() here.
+    mean_angle = fmod(atan2(y,x)+ 2*M_PI, 2*M_PI)
+    
+    return mean_angle
+
+@cython.boundscheck(False)
+cdef np.ndarray dijkstra(dist_matrix, 
+        np.ndarray[ITYPE_t, ndim=2] patch_indices,
+        np.ndarray[DTYPE_t, ndim=2] patch_rho,
+        np.ndarray[DTYPE_t, ndim=2] patch_theta,
+        theta0, 
+        theta0_v_idx):
     """
     Dijkstra algorithm using Fibonacci Heaps
     Parameters
     ----------
-    graph : array or sparse matrix
-        dist_matrix is the matrix of distances between connected points.
-        unconnected points have distance=0.  It will be converted to
-        a csr_matrix internally
-    indptr :
-        These arrays encode a distance matrix in compressed-sparse-row
-        format.
-    graph : ndarray
-        on input, graph is the matrix of distances between connected points.
-        unconnected points have distance=0
-        on exit, graph is overwritten with the output
-    directed : bool, default = False
-        if True, then the algorithm will only traverse from a point to
-        its neighbors when finding the shortest path.
-        if False, then the algorithm will traverse all paths in both
-        directions.
+    dist_matrix: sparse matrix
+        dist_matrix is the csr_matrix of distances between connected points.
+        unconnected points have distance=0.  
+    patch_indices: ndarray
+        on exit, patch_indices is overwritten with the outputted patch indices
+    patch_rho: ndarray
+        on exit, patch_rho is overwritten with the outputted patch indices' distance to the center of each patch
     Returns
     -------
-    graph : array
-        the matrix of shortest paths between points.
-        If no path exists, the path length is zero
+        patch_rho, patch_indices
     """
-    cdef unsigned int N = graph.shape[0]
+    cdef unsigned int N = patch_indices.shape[0]
     cdef unsigned int i
 
     cdef FibonacciHeap heap
@@ -86,11 +99,13 @@ cdef np.ndarray dijkstra(dist_matrix,
     for i from 0 <= i < N:
         dijkstra_one_row(i, neighbors, distances, indptr,
                 neighbors2, distances2, indptr2,
-                graph, &heap, nodes)
+                patch_indices, patch_rho, patch_theta, theta0[i], theta0_v_idx[i],
+                &heap, nodes)
+        break
 
     free(nodes)
 
-    return graph
+    return patch_indices
 
 
 ######################################################################
@@ -104,6 +119,7 @@ cdef struct FibonacciNode:
     unsigned int rank
     unsigned int state
     DTYPE_t val
+    DTYPE_t theta_val
     FibonacciNode* parent
     FibonacciNode* left_sibling
     FibonacciNode* right_sibling
@@ -112,11 +128,13 @@ cdef struct FibonacciNode:
 
 cdef void initialize_node(FibonacciNode* node,
                           unsigned int index,
-                          DTYPE_t val=0):
+                          DTYPE_t val=0,
+                          DTYPE_t theta_val=0):
     # Assumptions: - node is a valid pointer
     #              - node is not currently part of a heap
     node.index = index
     node.val = val
+    node.theta_val= theta_val
     node.rank = 0
     node.state = 0  # 0 -> NOT_IN_HEAP
 
@@ -310,7 +328,7 @@ cdef FibonacciNode* remove_min(FibonacciHeap* heap):
 
 
 
-@cython.boundscheck(False)
+#@cython.boundscheck(False)
 cdef void dijkstra_one_row(unsigned int i_node,
                     np.ndarray[ITYPE_t, ndim=1, mode='c'] neighbors1,
                     np.ndarray[DTYPE_t, ndim=1, mode='c'] distances1,
@@ -318,7 +336,11 @@ cdef void dijkstra_one_row(unsigned int i_node,
                     np.ndarray[ITYPE_t, ndim=1, mode='c'] neighbors2,
                     np.ndarray[DTYPE_t, ndim=1, mode='c'] distances2,
                     np.ndarray[ITYPE_t, ndim=1, mode='c'] indptr2,
-                    np.ndarray[DTYPE_t, ndim=2, mode='c'] graph,
+                    np.ndarray[ITYPE_t, ndim=2, mode='c'] patch_indices,
+                    np.ndarray[DTYPE_t, ndim=2, mode='c'] patch_rho,
+                    np.ndarray[DTYPE_t, ndim=2, mode='c'] patch_theta,
+                    np.ndarray[DTYPE_t, ndim=1, mode='c'] theta0,
+                    np.ndarray[ITYPE_t, ndim=1, mode='c'] theta0_v_idx,
                     FibonacciHeap* heap,
                     FibonacciNode* nodes):
     """
@@ -335,15 +357,14 @@ cdef void dijkstra_one_row(unsigned int i_node,
         the neighbors of point i are given by
         neighbors1[indptr1[i]:indptr1[i+1]] and
         neighbors2[indptr2[i]:indptr2[i+1]]
-    graph : array, shape = (N,)
-        on return, graph[i_node] contains the path lengths from
-        i_node to each target
     heap : the Fibonacci heap object to use
     nodes : the array of nodes to use
     """
-    cdef unsigned int N = graph.shape[0]
+    cdef unsigned int N = patch_indices.shape[0]
+    cdef unsigned int MAX_POINTS = patch_indices.shape[1]
+    cdef unsigned int count_popped = 0
     cdef unsigned int i_N
-    cdef ITYPE_t i
+    cdef ITYPE_t i, idx2
     cdef FibonacciNode *v
     cdef FibonacciNode *current_neighbor
     cdef DTYPE_t dist
@@ -355,48 +376,73 @@ cdef void dijkstra_one_row(unsigned int i_node,
     for i_N in range(0, N):
         nodes[i_N].state = 0  # 0 -> NOT_IN_HEAP
         nodes[i_N].val = 0
+    myset = set(theta0_v_idx)
 
     insert_node(heap, &nodes[i_node])
 
     while heap.min_node:
         v = remove_min(heap)
         v.state = 2  # 2 -> SCANNED
-        # MaSIF: limit patches to 12 A (should be parameter)
-        if v.val > 12: 
+        # MaSIF: limit patches to MAX_POINTS(should be parameter)
+        if count_popped >= MAX_POINTS: 
             continue
 
         for i from indptr1[v.index] <= i < indptr1[v.index + 1]:
             current_neighbor = &nodes[neighbors1[i]]
+            if current_neighbor.index in myset:
+                print('intptr 1: current neighbor: {} state: {} v.index: {}'.format(current_neighbor.index, current_neighbor.state, v.index))
             if current_neighbor.state != 2:      # 2 -> SCANNED
                 dist = distances1[i]
                 if current_neighbor.state == 0:  # 0 -> NOT_IN_HEAP
                     current_neighbor.state = 1   # 1 -> IN_HEAP
                     current_neighbor.val = v.val + dist
                     insert_node(heap, current_neighbor)
+                    if current_neighbor.index in myset:
+                        idx2 = np.where(theta0_v_idx == current_neighbor.index)[0][0]
+                        current_neighbor.theta_val = theta0[idx2]
+                    else:
+                        current_neighbor.theta_val = v.theta_val
                 else:
                     if current_neighbor.val > v.val + dist:
                         decrease_val(heap, current_neighbor,
                                  v.val + dist)
                     # MaSIF: if a neighbor is already in the queue, 
                             # update its theta angle value - simply average the angles.
+                    if current_neighbor.index in myset:
+                        print('indptr1 current neighbor: {} v.index: {} Old theta: {} averaging with {}'.format(current_neighbor.index, v.index, current_neighbor.theta_val, v.theta_val))
+                    current_neighbor.theta_val = average_angles(current_neighbor.theta_val, v.theta_val)
 
         for i from indptr2[v.index] <= i < indptr2[v.index + 1]:
             current_neighbor = &nodes[neighbors2[i]]
+            if current_neighbor.index in myset:
+                print('indptr2: current neighbor: {} state: {} v.index: {}'.format(current_neighbor.index, current_neighbor.state, v.index))
             if current_neighbor.state != 2:      # 2 -> SCANNED
                 dist = distances2[i]
                 if current_neighbor.state == 0:  # 0 -> NOT_IN_HEAP
                     current_neighbor.state = 1   # 1 -> IN_HEAP
                     current_neighbor.val = v.val + dist
                     insert_node(heap, current_neighbor)
+                    if current_neighbor.index in myset:
+                        idx2 = np.where(theta0_v_idx == current_neighbor.index)[0][0]
+                        current_neighbor.theta_val = theta0[idx2]
+                    else:
+                        current_neighbor.theta_val = v.theta_val
                 else: 
                     if current_neighbor.val > v.val + dist:
                         decrease_val(heap, current_neighbor,
                                  v.val + dist)
                     # MaSIF: if a neighbor is already in the queue, 
                             # update its theta angle value - simply average the angles.
+                    if current_neighbor.index in myset:
+                        print('indptr2: current neighbor: {} v.index: {} Old theta: {} averaging with {}'.format(current_neighbor.index, v.index, current_neighbor.theta_val, v.theta_val))
+                    current_neighbor.theta_val = average_angles(current_neighbor.theta_val, v.theta_val)
 
-        #v has now been scanned: add the distance to the results
-        graph[i_node, v.index] = v.val
+        patch_indices[i_node][count_popped] = v.index
+        patch_rho[i_node][count_popped] = v.val
+        patch_theta[i_node][count_popped] = v.theta_val
+        count_popped += 1
 
-def dijkstra_entry(dist_matrix, graph):
-    return dijkstra(dist_matrix, graph)
+
+def dijkstra_entry(dist_matrix, theta0, theta0_v_idx, patch_indices, patch_rho, patch_theta):
+    dijkstra(dist_matrix, patch_indices, patch_rho, patch_theta, theta0, theta0_v_idx)
+    return patch_indices, patch_rho
