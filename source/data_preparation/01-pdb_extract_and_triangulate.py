@@ -93,7 +93,8 @@ if 'compute_iface' in masif_opts and masif_opts['compute_iface']:
         protonate=True)
     # Regularize the mesh
     mesh = pymesh.form_mesh(v3, f3)
-    full_regular_mesh = fix_mesh(mesh, masif_opts['mesh_res'])
+    # I believe It is not necessary to regularize the full mesh. This can speed up things by a lot.
+    full_regular_mesh = mesh
     # Find the vertices that are in the iface.
     v3 = full_regular_mesh.vertices
     # Find the distance between every vertex in regular_mesh.vertices and those in the full complex.
