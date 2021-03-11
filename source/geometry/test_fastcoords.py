@@ -8,7 +8,77 @@ from scipy.sparse import csr_matrix
 #from fast_patches_simple import get_patch_coords_fast_simple
 #from fast_patches_cython0 import get_patch_coords_fast_cython0
 from fast_patches_cython2 import dijkstra_entry
+from fast_patches_cython2 import dijkstra_entry
+from compute_fast_polar_coordinates import compute_fast_polar_coordinates
+from theta0 import get_theta0
+
+def extract_patch(mesh, neigh, cv):
+    """ 
+    Extract a patch from the mesh.
+        neigh: the neighboring vertices.
+    """
+    n = len(mesh.vertices)
+    subverts = mesh.vertices[neigh]
+
+    nx = mesh.get_attribute('vertex_nx')
+    ny = mesh.get_attribute('vertex_ny')
+    nz = mesh.get_attribute('vertex_nz')
+    normals = np.vstack([nx, ny, nz]).T
+    subn = normals[neigh]
+
+
+    # Extract triangulation. 
+    
+    m = np.zeros(n,dtype=int)
+
+    # -1 if not there.
+    m = m - 1 
+    for i in range(len(neigh)):
+        m[neigh[i]] = i
+    f = mesh.faces.astype(int)
+    nf = len(f)
+    
+    neigh = set(neigh) 
+    subf = [[m[f[i][0]], m[f[i][1]], m[f[i][2]]] for i in range(nf) \
+             if f[i][0] in neigh and f[i][1] in neigh and f[i][2] in neigh]
+    
+    subfaces = subf
+    return np.array(subverts), np.array(subn), np.array(subf) 
+
+def output_patch_coords(subv, subf, subn, i, neigh_i, theta, rho): 
+    """ 
+        For debugging purposes, save a patch to visualize it.
+    """ 
+    
+    mesh = pymesh.form_mesh(subv, subf)
+    n1 = subn[:,0]
+    n2 = subn[:,1]
+    n3 = subn[:,2]
+    mesh.add_attribute('vertex_nx')
+    mesh.set_attribute('vertex_nx', n1)
+    mesh.add_attribute('vertex_ny')
+    mesh.set_attribute('vertex_ny', n2)
+    mesh.add_attribute('vertex_nz')
+    mesh.set_attribute('vertex_nz', n3)
+
+    #rho = np.array([rho[0,ix] for ix in range(rho.shape[1]) if ix in neigh_i])
+    mesh.add_attribute('rho')
+    mesh.set_attribute('rho', rho)
+
+    #theta= np.array([theta[ix] for ix in range((theta.shape[0])) if ix in neigh_i])
+    mesh.add_attribute('theta')
+    mesh.set_attribute('theta', theta)
+
+    charge = np.zeros(len(neigh_i))
+    mesh.add_attribute('charge')
+    mesh.set_attribute('charge', charge)
+
+    pymesh.save_mesh('v{}.ply'.format(i), mesh, *mesh.get_attribute_names(), use_float=True, ascii=True)
+
+
+
 #import helloworld
+start = time.perf_counter()
 mesh = pymesh.load_mesh('4ZQK_A.ply')
 
 # Vertices, faces and normals
@@ -29,15 +99,58 @@ rowj = np.concatenate([f[:,1], f[:,2], f[:,0], f[:,2], f[:,0], f[:,1]], axis = 0
 data = np.sqrt(np.sum(np.square(vertices[rowi] - vertices[rowj]), axis=1))/2
 
 distmat = csr_matrix((data, (rowi, rowj)))
-graph = np.zeros((len(vertices), len(vertices)))
 
-set_trace()
-start = time.clock()
-pablo = dijkstra_entry(distmat, graph)
-end = time.clock()
-pablo = dijkstra_entry(distmat, graph)
+patch_indices = np.zeros((len(vertices), 200), dtype=np.int32)
+patch_rho = np.zeros((len(vertices), 200))
+patch_theta = np.zeros((len(vertices), 200))
+
+# Compute the faces per vertex.
+idx = {}
+theta0 = {}
+theta0_v_idx ={}
+for ix, face in enumerate(mesh.faces):
+    for i in range(3):
+        if face[i] not in idx:
+            idx[face[i]] = []
+        idx[face[i]].append(ix)
+
+
+for key in idx: 
+    idx[key] = np.array(idx[key], order='C', dtype=np.int32)
+    theta0[key] = np.array(np.zeros(len(idx[key])+1), order='C', dtype=np.float64)
+    theta0_v_idx[key] = np.array(np.zeros(len(idx[key])+1), order='C', dtype=np.int32)
+
+end = time.perf_counter()
+print('Read data/make matrix Took {:.2f}s'.format(end-start))
+
+v = vertices.astype(np.float64, order='C')
+n = normals.astype(np.float64, order='C')
+f = faces.astype(np.int32, order='C')
+
+start = time.perf_counter()
+compute_fast_polar_coordinates(distmat, v, n, patch_indices, patch_rho, patch_theta)
+end= time.perf_counter()
+print('Fast coords took {}'.format(end-start))
+
+#for i in range(10):
+#    vix = np.random.choice(len(v))
+#    subv, subn, subf = extract_patch(mesh, patch_indices[vix], vix)
+#    output_patch_coords(subv, subf, subn, vix, patch_indices[vix], patch_theta[vix], patch_rho[vix]) 
+
+start = time.perf_counter()
+get_theta0(v, n, f, idx, theta0, theta0_v_idx)
+end= time.perf_counter()
+print('Theta0 took {}'.format(end-start))
+
+start = time.perf_counter()
+pablo1, pablo2  = dijkstra_entry(distmat, theta0, theta0_v_idx, patch_indices, patch_rho, patch_theta)
+end = time.perf_counter()
 print('Took {:.2f}s'.format(end-start))
-set_trace()
+
+for vix in range(10):
+    subv, subn, subf = extract_patch(mesh, patch_indices[vix], vix)
+    output_patch_coords(subv, subf, subn, vix, patch_indices[vix], patch_theta[vix], patch_rho[vix]) 
+
 #get_patch_coords_fast_cython1(vertices, faces, normals)
 #get_patch_coords_fast_cython1(vertices, faces, normals)
 #get_patch_coords_fast_cython0(vertices, faces, normals)
