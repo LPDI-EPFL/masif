@@ -10,6 +10,7 @@ from scipy.sparse import csr_matrix
 from fast_patches_cython2 import dijkstra_entry
 from fast_patches_cython2 import dijkstra_entry
 from compute_fast_polar_coordinates import compute_fast_polar_coordinates
+from compute_polar_coordinates import compute_polar_coordinates
 from theta0 import get_theta0
 
 def extract_patch(mesh, neigh, cv):
@@ -69,7 +70,7 @@ def output_patch_coords(subv, subf, subn, i, neigh_i, theta, rho):
     mesh.add_attribute('theta')
     mesh.set_attribute('theta', theta)
 
-    charge = np.zeros(len(neigh_i))
+    charge = 2*np.copy(theta)/(2*np.pi) -1
     mesh.add_attribute('charge')
     mesh.set_attribute('charge', charge)
 
@@ -123,6 +124,14 @@ for key in idx:
 end = time.perf_counter()
 print('Read data/make matrix Took {:.2f}s'.format(end-start))
 
+start = time.perf_counter()
+rho_out, theta_out, neigh_indices, mask_out = compute_polar_coordinates(mesh, do_fast=True, radius=12, max_vertices=200)
+end = time.perf_counter()
+print('Old method took {:.2f}s'.format(end-start))
+
+
+set_trace()
+
 v = vertices.astype(np.float64, order='C')
 n = normals.astype(np.float64, order='C')
 f = faces.astype(np.int32, order='C')
@@ -131,6 +140,17 @@ start = time.perf_counter()
 compute_fast_polar_coordinates(distmat, v, n, patch_indices, patch_rho, patch_theta)
 end= time.perf_counter()
 print('Fast coords took {}'.format(end-start))
+vix = 0
+subv, subn, subf = extract_patch(mesh, patch_indices[vix], vix)
+output_patch_coords(subv, subf, subn, vix, patch_indices[vix], patch_theta[vix], patch_rho[vix]) 
+print('{},{},{}'.format(v[vix][0], v[vix][1], v[vix][2]))
+
+np.random.seed(0)
+for i in range(10):
+    vix = np.random.choice(len(vertices))
+    subv, subn, subf = extract_patch(mesh, patch_indices[vix], vix)
+    output_patch_coords(subv, subf, subn, vix, patch_indices[vix], patch_theta[vix], patch_rho[vix]) 
+    print('{},{},{}'.format(v[vix][0], v[vix][1], v[vix][2]))
 
 #for i in range(10):
 #    vix = np.random.choice(len(v))
@@ -147,9 +167,6 @@ pablo1, pablo2  = dijkstra_entry(distmat, theta0, theta0_v_idx, patch_indices, p
 end = time.perf_counter()
 print('Took {:.2f}s'.format(end-start))
 
-for vix in range(10):
-    subv, subn, subf = extract_patch(mesh, patch_indices[vix], vix)
-    output_patch_coords(subv, subf, subn, vix, patch_indices[vix], patch_theta[vix], patch_rho[vix]) 
 
 #get_patch_coords_fast_cython1(vertices, faces, normals)
 #get_patch_coords_fast_cython1(vertices, faces, normals)

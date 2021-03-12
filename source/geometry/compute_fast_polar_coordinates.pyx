@@ -23,47 +23,118 @@ ITYPE = np.int32
 ctypedef np.int32_t ITYPE_t
 from libc.math cimport sin, cos, acos, exp, sqrt, fabs, M_PI, atan2, fmod
 
+cdef int fast_sign(DTYPE_t x):
+    if x < 0: 
+        return -1
+    if x ==0 :
+        return 0
+    if x> 0: 
+        return 1
+
+cdef void fast_crossp(
+        DTYPE_t [:] vect_A, 
+        DTYPE_t [:] vect_B,
+        DTYPE_t [:] cross_P):
+    cross_P[0] = vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1]
+    cross_P[1] = vect_A[2] * vect_B[0] - vect_A[0] * vect_B[2]
+    cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0]
+
+cdef DTYPE_t fast_cdot(
+        DTYPE_t [:] v1,
+        DTYPE_t [:] v2):
+        cdef DTYPE_t result = 0
+        for i in range(3):
+            result+= v1[i]*v2[i]
+        return result
+
 @cython.boundscheck(False)
 cdef DTYPE_t compute_angle_projection(
-        np.ndarray[DTYPE_t, ndim=1] v0,
-        np.ndarray[DTYPE_t, ndim=1] v1,
-        np.ndarray[DTYPE_t, ndim=1] v2,
-        np.ndarray[DTYPE_t, ndim=1] n0):
+        DTYPE_t [:,:] v,
+        DTYPE_t [:,:] n,
+        unsigned int i0,
+        unsigned int i1,
+        unsigned int i2):
 
     """Projection of angles
         Project v1 and v2 to the plane of v0 using normal n0. 
         Compute the angle of v2 with respect to v0, and return it in the range [0, 2*pi]
     """
-    cdef DTYPE_t x, y
+    cdef DTYPE_t x, y, angle1, angle2
     cdef DTYPE_t mean_angle
-    cdef np.ndarray[DTYPE_t, ndim=1] v2c 
-    cdef np.ndarray[DTYPE_t, ndim=1] v1c 
-    cdef DTYPE_t n_norm
-    cdef np.ndarray[DTYPE_t, ndim=1] proj_of_v1c_on_n0
-    cdef np.ndarray[DTYPE_t, ndim=1] proj_of_v2c_on_n0
+    cdef DTYPE_t [3] v1c
+    cdef DTYPE_t [3] v2c
+    cdef DTYPE_t [:] n0 = n[i0]
+    cdef DTYPE_t n_norm, tmp
+    cdef DTYPE_t [3] proj_of_v1c_on_n0
+    cdef DTYPE_t [3] proj_of_v2c_on_n0
+    cdef DTYPE_t [3] crossp1 
+    cdef DTYPE_t [3] crossp2
     cdef DTYPE_t theta
 
+    v1c[0] = v[i1][0]- v[i0][0]
+    v1c[1] = v[i1][1]- v[i0][1]
+    v1c[2] = v[i1][2]- v[i0][2]
+    v2c[0] = v[i2][0]- v[i0][0]
+    v2c[1] = v[i2][1]- v[i0][1]
+    v2c[2] = v[i2][2]- v[i0][2]
+
     # Center on the origin
-    v1c = v1 - v0
-    v2c = v2 - v0
 
     # Project on plane
-    n_norm = np.sum(np.square(n0))
+
+    n_norm = n0[0] * n0[0] + n0[1]*n0[1] + n0[2]*n0[2]
     
-    proj_of_v1c_on_n0 = (np.dot(v1c, n0)/n_norm)*n0
-    v1c = v1c - proj_of_v1c_on_n0 
+    if n_norm==0:
+        print(1)
+    tmp = fast_cdot(v1c, n0)/n_norm
+    proj_of_v1c_on_n0[0] = tmp*n0[0]
+    proj_of_v1c_on_n0[1] = tmp*n0[1]
+    proj_of_v1c_on_n0[2] = tmp*n0[2]
+    v1c[0] = v1c[0] - proj_of_v1c_on_n0[0]
+    v1c[1] = v1c[1] - proj_of_v1c_on_n0[1]
+    v1c[2] = v1c[2] - proj_of_v1c_on_n0[2]
 
-    proj_of_v2c_on_n0 = (np.dot(v2c, n0)/n_norm)*n0
-    v2c = v2c - proj_of_v2c_on_n0 
+    tmp = fast_cdot(v2c, n0)/n_norm
+    proj_of_v2c_on_n0[0] = tmp*n0[0]
+    proj_of_v2c_on_n0[1] = tmp*n0[1]
+    proj_of_v2c_on_n0[2] = tmp*n0[2]
+    v2c[0] = v2c[0] - proj_of_v2c_on_n0[0]
+    v2c[1] = v2c[1] - proj_of_v2c_on_n0[1]
+    v2c[2] = v2c[2] - proj_of_v2c_on_n0[2]
 
-    v1c = v1c/np.sqrt(np.sum(np.square(v1c)))
-    v2c = v2c/np.sqrt(np.sum(np.square(v1c)))
+    # Normalize vector 
+    tmp = sqrt(v1c[0] * v1c[0] + v1c[1]*v1c[1] + v1c[2]*v1c[2])
+    if tmp < 1e-8:
+        return M_PI
 
-    theta = np.arctan2(np.linalg.norm(np.cross(v2c,v1c)) , np.dot(v2c,v1c))*np.sign(np.dot(v2c,np.cross(n0,v1c)))
-    # To get outputs from -pi to +pi, delete everything but math.atan2() here.
-#    theta= fmod(atan2(v1c,v2c)+ 2*M_PI, 2*M_PI)
+    v1c[0] = v1c[0]/tmp
+    v1c[1] = v1c[1]/tmp
+    v1c[2] = v1c[2]/tmp
+
+    tmp = sqrt(v2c[0] * v2c[0] + v2c[1]*v2c[1] + v2c[2]*v2c[2])
+    if tmp< 1e-8:
+        return M_PI
+    v2c[0] = v2c[0]/tmp
+    v2c[1] = v2c[1]/tmp
+    v2c[2] = v2c[2]/tmp
+
+    fast_crossp(v2c, v1c, crossp1)
+    angle1 = sqrt(crossp1[0] ** 2 + crossp1[1] ** 2 + crossp1[2] ** 2)
+
+    fast_crossp(n0, v1c, crossp2)
+    tmp = fast_sign(fast_cdot(v2c, crossp2))
+    angle2 = fast_cdot(v2c,v1c)
     
-    return theta 
+    theta = atan2(angle1, angle2)*tmp
+
+#    print("{} {} {}".format(angle1, angle2, theta))
+
+# Old code in python: 
+#    theta2 = np.arctan2(np.linalg.norm(np.cross(v2c,v1c)) , np.dot(v2c,v1c))*np.sign(np.dot(v2c,np.cross(n0,v1c)))
+
+    theta = fmod(theta + 2*M_PI, 2*M_PI)
+
+    return theta
 
 @cython.boundscheck(False)
 cdef DTYPE_t average_angles(DTYPE_t angle1, DTYPE_t angle2, DTYPE_t weight1, DTYPE_t weight2):
@@ -114,6 +185,8 @@ cdef np.ndarray dijkstra(dist_matrix,
 
     cdef FibonacciNode* nodes = <FibonacciNode*> malloc(N *
                                                         sizeof(FibonacciNode))
+    cdef DTYPE_t [:, :] v = vertices
+    cdef DTYPE_t [:, :] n = normals 
 
     cdef np.ndarray distances, neighbors, indptr
 
@@ -129,8 +202,9 @@ cdef np.ndarray dijkstra(dist_matrix,
 
     heap.min_node = NULL
 
+
     for i from 0 <= i < N:
-        dijkstra_one_row(i, neighbors, distances, indptr, vertices, normals,
+        dijkstra_one_row(i, neighbors, distances, indptr, v, n,
                 patch_indices, patch_rho, patch_theta, &heap, nodes)
 
     free(nodes)
@@ -363,8 +437,10 @@ cdef void dijkstra_one_row(unsigned int i_node,
                     np.ndarray[ITYPE_t, ndim=1, mode='c'] neighbors1,
                     np.ndarray[DTYPE_t, ndim=1, mode='c'] distances1,
                     np.ndarray[ITYPE_t, ndim=1, mode='c'] indptr1,
-                    np.ndarray[DTYPE_t, ndim=2, mode='c'] vertices,
-                    np.ndarray[DTYPE_t, ndim=2, mode='c'] normals,
+                    #np.ndarray[DTYPE_t, ndim=2, mode='c'] vertices,
+                    #np.ndarray[DTYPE_t, ndim=2, mode='c'] normals,
+                    DTYPE_t [:,:] vertices, 
+                    DTYPE_t [:,:] normals, 
                     np.ndarray[ITYPE_t, ndim=2, mode='c'] patch_indices,
                     np.ndarray[DTYPE_t, ndim=2, mode='c'] patch_rho,
                     np.ndarray[DTYPE_t, ndim=2, mode='c'] patch_theta,
@@ -404,7 +480,7 @@ cdef void dijkstra_one_row(unsigned int i_node,
     for i_N in range(0, N):
         nodes[i_N].state = 0  # 0 -> NOT_IN_HEAP
         nodes[i_N].val = 0
-        nodes[i_N].theta_val = 0
+        nodes[i_N].theta_val = M_PI
 
     insert_node(heap, &nodes[i_node])
 
@@ -425,13 +501,14 @@ cdef void dijkstra_one_row(unsigned int i_node,
                     current_neighbor.val = v.val + dist
                     insert_node(heap, current_neighbor)
 
-                    if i1_node == i_node and v.val+dist > 0.1:
-                        # MaSIF: i1_node is the first popped node, as long as it is at least 0.1A from the center, to remove singularity issues.
+                    if i1_node == i_node and v.val+dist > 0.01:
+                        # MaSIF: i1_node is the first popped node, as long as it is at least 0.01A from the center, to remove singularity issues.
                         i1_node = current_neighbor.index
-                    elif i1_node != i_node and v.val+dist <= 2.0:
+                        current_neighbor.theta_val = 0
+                    elif i1_node != i_node and (v.val+dist <= 2.0 or v.index == i_node):
                         # MaSIF: If the current node's distance to the center is less than 2.0A, then we can project 
                         # MaSIF: this node onto the center's normal plane and compute the angle with respect to i1_node
-                        current_neighbor.theta_val = compute_angle_projection(vertices[i_node], vertices[i1_node], vertices[current_neighbor.index], normals[i_node]) 
+                        current_neighbor.theta_val = compute_angle_projection(vertices, normals, i_node, i1_node, current_neighbor.index) 
                     elif i1_node != i_node: 
                         current_neighbor.theta_val = v.theta_val
                 else:
