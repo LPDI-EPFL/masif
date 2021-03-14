@@ -10,19 +10,14 @@ import random
 # Pablo Gainza LPDI EPFL 2017-2019
 # Calls MSMS and returns the vertices.
 # Special atoms are atoms with a reduced radius.
-def computeMSMS(pdb_file,  protonate=True):
+def computeMSMS(pdb_file, res=0.5):
     randnum = random.randint(1,10000000)
     file_base = masif_opts['tmp_dir']+"/msms_"+str(randnum)
     out_xyzrn = file_base+".xyzrn"
 
-    if protonate:        
-        output_pdb_as_xyzrn(pdb_file, out_xyzrn)
-    else:
-        print("Error - pdb2xyzrn is deprecated.")
-        sys.exit(1)
+    output_pdb_as_xyzrn(pdb_file, out_xyzrn)
     # Now run MSMS on xyzrn file
-    FNULL = open(os.devnull, 'w')
-    args = [msms_bin, "-density", "3.0", "-hdensity", "3.0", "-probe",\
+    args = [msms_bin, "-density", '{:.1f}'.format(res), "-hdensity", '{:.1f}'.format(res), "-probe",\
                     "1.5", "-if",out_xyzrn,"-of",file_base, "-af", file_base]
     #print msms_bin+" "+`args`
     p2 = Popen(args, stdout=PIPE, stderr=PIPE)
