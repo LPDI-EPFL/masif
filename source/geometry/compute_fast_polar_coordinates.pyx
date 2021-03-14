@@ -488,10 +488,8 @@ cdef void dijkstra_one_row(unsigned int i_node,
         v = remove_min(heap)
         v.state = 2  # 2 -> SCANNED
         # MaSIF: limit patches to MAX_POINTS
-        if v.val >= 12 or count_popped >= MAX_POINTS:
+        if count_popped >= MAX_POINTS: 
             continue
-#        if count_popped >= MAX_POINTS: 
-#            continue
 
         for i from indptr1[v.index] <= i < indptr1[v.index + 1]:
             current_neighbor = &nodes[neighbors1[i]]
@@ -531,6 +529,28 @@ cdef void dijkstra_one_row(unsigned int i_node,
         count_popped += 1
 
 
-def compute_fast_polar_coordinates(dist_matrix, vertices, normals, patch_indices, patch_rho, patch_theta):
-    dijkstra(dist_matrix, vertices, normals, patch_indices, patch_rho, patch_theta)
-    return patch_indices, patch_rho
+def compute_fast_polar_coordinates(mesh, patch_rho, patch_theta, patch_indices):
+
+    # Vertices, faces and normals
+    vertices = mesh.vertices
+    faces = mesh.faces
+    norm1 = mesh.get_attribute('vertex_nx')
+    norm2 = mesh.get_attribute('vertex_ny')
+    norm3 = mesh.get_attribute('vertex_nz')
+    normals = np.vstack([norm1, norm2, norm3]).T
+
+    # Build a csr matrix of distances.
+    f = np.array(faces, dtype = int)
+    rowi = np.concatenate([f[:,0], f[:,0], f[:,1], f[:,1], f[:,2], f[:,2]], axis = 0)
+    rowj = np.concatenate([f[:,1], f[:,2], f[:,0], f[:,2], f[:,0], f[:,1]], axis = 0)
+   
+    # Distances divided by two because all edges are counted twice?
+    data = np.sqrt(np.sum(np.square(vertices[rowi] - vertices[rowj]), axis=1))/2
+
+    distmat = csr_matrix((data, (rowi, rowj)))
+
+    v = vertices.astype(np.float64, order='C')
+    n = normals.astype(np.float64, order='C')
+    dijkstra(distmat, v, n, patch_indices, patch_rho, patch_theta)
+
+    return 

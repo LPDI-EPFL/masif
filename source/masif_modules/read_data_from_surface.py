@@ -5,7 +5,7 @@ import pymesh
 import time
 import numpy as np
 
-from geometry.compute_polar_coordinates import compute_polar_coordinates
+from geometry.compute_fast_polar_coordinates import compute_fast_polar_coordinates
 from input_output.save_ply import save_ply
 
 from sklearn import metrics
@@ -29,7 +29,16 @@ def read_data_from_surface(ply_fn, params):
     normals = np.stack([n1,n2,n3], axis=1)
 
     # Compute the angular and radial coordinates. 
-    rho, theta, neigh_indices, mask = compute_polar_coordinates(mesh, radius=params['max_distance'], max_vertices=params['max_shape_size'])
+    print('computing coordinates') 
+    start = time.perf_counter()
+    rho = np.zeros((len(normals), params['max_shape_size']), dtype=np.float64)
+    theta = np.zeros((len(normals), params['max_shape_size']), dtype=np.float64)
+    neigh_indices = np.zeros((len(normals), params['max_shape_size']), dtype=np.int32)
+    mask = np.ones_like(rho)
+    compute_fast_polar_coordinates(mesh, rho, theta, neigh_indices)
+    end = time.perf_counter()
+    print('Finished computing coordinates, took: {:.2f}'.format(end-start)) 
+
 
     # Compute the principal curvature components for the shape index. 
     mesh.add_attribute("vertex_mean_curvature")
