@@ -5,13 +5,8 @@ import time
 from scipy.sparse import csr_matrix
 
 #import pyximport; pyximport.install()
-#from fast_patches_simple import get_patch_coords_fast_simple
-#from fast_patches_cython0 import get_patch_coords_fast_cython0
-from fast_patches_cython2 import dijkstra_entry
-from fast_patches_cython2 import dijkstra_entry
 from compute_fast_polar_coordinates import compute_fast_polar_coordinates
 from compute_polar_coordinates import compute_polar_coordinates
-from theta0 import get_theta0
 
 def extract_patch(mesh, neigh, cv):
     """ 
@@ -105,22 +100,6 @@ patch_indices = np.zeros((len(vertices), 200), dtype=np.int32)
 patch_rho = np.zeros((len(vertices), 200))
 patch_theta = np.zeros((len(vertices), 200))
 
-# Compute the faces per vertex.
-idx = {}
-theta0 = {}
-theta0_v_idx ={}
-for ix, face in enumerate(mesh.faces):
-    for i in range(3):
-        if face[i] not in idx:
-            idx[face[i]] = []
-        idx[face[i]].append(ix)
-
-
-for key in idx: 
-    idx[key] = np.array(idx[key], order='C', dtype=np.int32)
-    theta0[key] = np.array(np.zeros(len(idx[key])+1), order='C', dtype=np.float64)
-    theta0_v_idx[key] = np.array(np.zeros(len(idx[key])+1), order='C', dtype=np.int32)
-
 end = time.perf_counter()
 print('Read data/make matrix Took {:.2f}s'.format(end-start))
 
@@ -128,8 +107,9 @@ start = time.perf_counter()
 rho_old, theta_old, neigh_indices_old, mask_old = compute_polar_coordinates(mesh, do_fast=True, radius=12, max_vertices=200)
 end = time.perf_counter()
 print('Old method took {:.2f}s'.format(end-start))
-
-
+np.save('rho_old.npy', rho_old)
+np.save('theta_old.npy', theta_old)
+np.save('neigh_indices_old.npy', neigh_indices_old)
 
 v = vertices.astype(np.float64, order='C')
 n = normals.astype(np.float64, order='C')
@@ -138,12 +118,15 @@ f = faces.astype(np.int32, order='C')
 start = time.perf_counter()
 compute_fast_polar_coordinates(distmat, v, n, patch_indices, patch_rho, patch_theta)
 end= time.perf_counter()
+np.save('rho_new.npy', patch_rho)
+np.save('theta_new.npy', patch_theta)
+np.save('neigh_indices_new.npy', patch_indices)
 print('Fast coords took {:.2f}s'.format(end-start))
-set_trace()
 vix = 0
 subv, subn, subf = extract_patch(mesh, patch_indices[vix], vix)
 output_patch_coords(subv, subf, subn, vix, patch_indices[vix], patch_theta[vix], patch_rho[vix]) 
 print('{},{},{}'.format(v[vix][0], v[vix][1], v[vix][2]))
+set_trace()
 
 #np.random.seed(0)
 #for i in range(10):
