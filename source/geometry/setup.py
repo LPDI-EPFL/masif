@@ -4,6 +4,15 @@ import numpy
 
 setup(
     ext_modules=cythonize("fast_patches_cython2.pyx"), 
-#    ext_modules=cythonize("helloworld.pyx"))
+    include_dirs=[numpy.get_include()]
+)
+
+setup(
+    ext_modules=cythonize("theta0.pyx"), unraisable_tracebacks=True, 
+    include_dirs=[numpy.get_include()]
+)
+
+setup(
+    ext_modules=cythonize("compute_fast_polar_coordinates.pyx"), 
     include_dirs=[numpy.get_include()]
 )

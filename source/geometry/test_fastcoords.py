@@ -125,12 +125,11 @@ end = time.perf_counter()
 print('Read data/make matrix Took {:.2f}s'.format(end-start))
 
 start = time.perf_counter()
-rho_out, theta_out, neigh_indices, mask_out = compute_polar_coordinates(mesh, do_fast=True, radius=12, max_vertices=200)
+rho_old, theta_old, neigh_indices_old, mask_old = compute_polar_coordinates(mesh, do_fast=True, radius=12, max_vertices=200)
 end = time.perf_counter()
 print('Old method took {:.2f}s'.format(end-start))
 
 
-set_trace()
 
 v = vertices.astype(np.float64, order='C')
 n = normals.astype(np.float64, order='C')
@@ -139,37 +138,17 @@ f = faces.astype(np.int32, order='C')
 start = time.perf_counter()
 compute_fast_polar_coordinates(distmat, v, n, patch_indices, patch_rho, patch_theta)
 end= time.perf_counter()
-print('Fast coords took {}'.format(end-start))
+print('Fast coords took {:.2f}s'.format(end-start))
+set_trace()
 vix = 0
 subv, subn, subf = extract_patch(mesh, patch_indices[vix], vix)
 output_patch_coords(subv, subf, subn, vix, patch_indices[vix], patch_theta[vix], patch_rho[vix]) 
 print('{},{},{}'.format(v[vix][0], v[vix][1], v[vix][2]))
 
-np.random.seed(0)
-for i in range(10):
-    vix = np.random.choice(len(vertices))
-    subv, subn, subf = extract_patch(mesh, patch_indices[vix], vix)
-    output_patch_coords(subv, subf, subn, vix, patch_indices[vix], patch_theta[vix], patch_rho[vix]) 
-    print('{},{},{}'.format(v[vix][0], v[vix][1], v[vix][2]))
-
+#np.random.seed(0)
 #for i in range(10):
-#    vix = np.random.choice(len(v))
+#    vix = np.random.choice(len(vertices))
 #    subv, subn, subf = extract_patch(mesh, patch_indices[vix], vix)
 #    output_patch_coords(subv, subf, subn, vix, patch_indices[vix], patch_theta[vix], patch_rho[vix]) 
-
-start = time.perf_counter()
-get_theta0(v, n, f, idx, theta0, theta0_v_idx)
-end= time.perf_counter()
-print('Theta0 took {}'.format(end-start))
-
-start = time.perf_counter()
-pablo1, pablo2  = dijkstra_entry(distmat, theta0, theta0_v_idx, patch_indices, patch_rho, patch_theta)
-end = time.perf_counter()
-print('Took {:.2f}s'.format(end-start))
-
-
-#get_patch_coords_fast_cython1(vertices, faces, normals)
-#get_patch_coords_fast_cython1(vertices, faces, normals)
-#get_patch_coords_fast_cython0(vertices, faces, normals)
-#get_patch_coords_fast_simple(vertices, faces, normals)
+#    print('{},{},{}'.format(v[vix][0], v[vix][1], v[vix][2]))
 

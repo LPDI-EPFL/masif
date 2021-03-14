@@ -24,7 +24,7 @@ ctypedef np.int32_t ITYPE_t
 from libc.math cimport sin, cos, acos, exp, sqrt, fabs, M_PI, atan2, fmod
 
 @cython.boundscheck(False)
-cdef DTYPE_t average_angles(DTYPE_t angle1, DTYPE_t angle2):
+cdef DTYPE_t average_angles(DTYPE_t angle1, DTYPE_t angle2, DTYPE_t weight1, DTYPE_t weight2):
     """Average (mean) of angles
 
     Return the average of an input sequence of angles. The result is between
@@ -35,8 +35,8 @@ cdef DTYPE_t average_angles(DTYPE_t angle1, DTYPE_t angle2):
     cdef DTYPE_t x, y
     cdef DTYPE_t mean_angle
 
-    x = cos(angle1) +cos(angle2) 
-    y = sin(angle1)+ sin(angle2)
+    x = weight1*cos(angle1) + weight2*cos(angle2) 
+    y = weight1*sin(angle1) + weight2*sin(angle2)
 
     # To get outputs from -pi to +pi, delete everything but math.atan2() here.
     mean_angle = fmod(atan2(y,x)+ 2*M_PI, 2*M_PI)
@@ -101,7 +101,6 @@ cdef np.ndarray dijkstra(dist_matrix,
                 neighbors2, distances2, indptr2,
                 patch_indices, patch_rho, patch_theta, theta0[i], theta0_v_idx[i],
                 &heap, nodes)
-        break
 
     free(nodes)
 
@@ -367,7 +366,7 @@ cdef void dijkstra_one_row(unsigned int i_node,
     cdef ITYPE_t i, idx2
     cdef FibonacciNode *v
     cdef FibonacciNode *current_neighbor
-    cdef DTYPE_t dist
+    cdef DTYPE_t dist, weight1, weight2
 
     # re-initialize nodes
     # children, parent, left_sibling, right_sibling should already be NULL
@@ -376,7 +375,7 @@ cdef void dijkstra_one_row(unsigned int i_node,
     for i_N in range(0, N):
         nodes[i_N].state = 0  # 0 -> NOT_IN_HEAP
         nodes[i_N].val = 0
-    myset = set(theta0_v_idx)
+#    myset = set(theta0_v_idx)
 
     insert_node(heap, &nodes[i_node])
 
@@ -389,53 +388,27 @@ cdef void dijkstra_one_row(unsigned int i_node,
 
         for i from indptr1[v.index] <= i < indptr1[v.index + 1]:
             current_neighbor = &nodes[neighbors1[i]]
-            if current_neighbor.index in myset:
-                print('intptr 1: current neighbor: {} state: {} v.index: {}'.format(current_neighbor.index, current_neighbor.state, v.index))
             if current_neighbor.state != 2:      # 2 -> SCANNED
                 dist = distances1[i]
                 if current_neighbor.state == 0:  # 0 -> NOT_IN_HEAP
                     current_neighbor.state = 1   # 1 -> IN_HEAP
                     current_neighbor.val = v.val + dist
                     insert_node(heap, current_neighbor)
-                    if current_neighbor.index in myset:
-                        idx2 = np.where(theta0_v_idx == current_neighbor.index)[0][0]
-                        current_neighbor.theta_val = theta0[idx2]
-                    else:
-                        current_neighbor.theta_val = v.theta_val
+#                    if current_neighbor.index in myset:
+#                        idx2 = np.where(theta0_v_idx == current_neighbor.index)[0][0]
+#                        current_neighbor.theta_val = theta0[idx2]
+#                    else:
+#                        current_neighbor.theta_val = v.theta_val
                 else:
                     if current_neighbor.val > v.val + dist:
                         decrease_val(heap, current_neighbor,
                                  v.val + dist)
                     # MaSIF: if a neighbor is already in the queue, 
                             # update its theta angle value - simply average the angles.
-                    if current_neighbor.index in myset:
-                        print('indptr1 current neighbor: {} v.index: {} Old theta: {} averaging with {}'.format(current_neighbor.index, v.index, current_neighbor.theta_val, v.theta_val))
-                    current_neighbor.theta_val = average_angles(current_neighbor.theta_val, v.theta_val)
+#                    weight1 = (current_neighbor.val+v.val+dist) / current_neighbor.val
+#                    weight2 = (current_neighbor.val+v.val+dist) / (v.val+dist)
+#                    current_neighbor.theta_val = average_angles(current_neighbor.theta_val, v.theta_val, weight1, weight2)
 
-        for i from indptr2[v.index] <= i < indptr2[v.index + 1]:
-            current_neighbor = &nodes[neighbors2[i]]
-            if current_neighbor.index in myset:
-                print('indptr2: current neighbor: {} state: {} v.index: {}'.format(current_neighbor.index, current_neighbor.state, v.index))
-            if current_neighbor.state != 2:      # 2 -> SCANNED
-                dist = distances2[i]
-                if current_neighbor.state == 0:  # 0 -> NOT_IN_HEAP
-                    current_neighbor.state = 1   # 1 -> IN_HEAP
-                    current_neighbor.val = v.val + dist
-                    insert_node(heap, current_neighbor)
-                    if current_neighbor.index in myset:
-                        idx2 = np.where(theta0_v_idx == current_neighbor.index)[0][0]
-                        current_neighbor.theta_val = theta0[idx2]
-                    else:
-                        current_neighbor.theta_val = v.theta_val
-                else: 
-                    if current_neighbor.val > v.val + dist:
-                        decrease_val(heap, current_neighbor,
-                                 v.val + dist)
-                    # MaSIF: if a neighbor is already in the queue, 
-                            # update its theta angle value - simply average the angles.
-                    if current_neighbor.index in myset:
-                        print('indptr2: current neighbor: {} v.index: {} Old theta: {} averaging with {}'.format(current_neighbor.index, v.index, current_neighbor.theta_val, v.theta_val))
-                    current_neighbor.theta_val = average_angles(current_neighbor.theta_val, v.theta_val)
 
         patch_indices[i_node][count_popped] = v.index
         patch_rho[i_node][count_popped] = v.val
