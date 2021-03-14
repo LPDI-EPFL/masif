@@ -1,6 +1,5 @@
 from Bio.PDB import *
 import numpy as np
-from sklearn.neighbors import KDTree
 
 """
 computeCharges.py: Wrapper function to compute hydrogen bond potential (free electrons/protons) in the surface
@@ -18,13 +17,37 @@ from default_config.chemistry import (
     donorAtom,
 )
 
-# Compute vertex charges based on hydrogen bond potential.
+# Simple potential for charges, +1 if the closest group is a an acid, 
+#, -1 if it is a base.
+def computeSimpleCharge(vertices, names):
+    charge = np.zeros(len(vertices))
+    for ix, name in enumerate(names):
+        fields = name.split('_')
+        restype= fields[3]
+        atomtype = fields[4]
+        if restype == 'ASP': 
+            if atomtype == 'OD1' or atomtype == 'OD2' or atomtype =='CG': 
+                charge[ix] = -10
+        if restype == 'GLU': 
+            if atomtype == 'OE1' or atomtype == 'OE2' or atomtype =='CD': 
+                charge[ix] = -10
+        if restype == 'ARG': 
+            if atomtype in ['NH1', 'NH2', 'NE', 'HE', 'HH11', 'HH12', 'HH21', 'HH22']:
+                charge[ix] = 10
+        if restype == 'LYS': 
+            if atomtype in ['NZ', 'HZ1', 'HZ2', 'HZ3']:
+                charge[ix] = 10
+
+            
+    return charge
+
+# Compute vertex hbonds based on hydrogen bond potential.
 # pdb_filename: The filename of the protonated protein.
 # vertices: The surface vertices of the protonated protein
 # The name of each vertex in the format, example: B_125_x_ASN_ND2_Green
 # where B is chain, 125 res id, x the insertion, ASN aatype, ND2 the name of the
 # atom, and green is not used anymore.
-def computeCharges(pdb_filename, vertices, names):
+def computeHbonds(pdb_filename, vertices, names):
     parser = PDBParser(QUIET=True)
     struct = parser.get_structure(pdb_filename, pdb_filename + ".pdb")
     residues = {}
@@ -143,6 +166,10 @@ def computeSatisfied_CO_HN(atoms):
     ns = NeighborSearch(atoms)
     satisfied_CO = set()
     satisfied_HN = set()
+    ### PGC - 2021 - ignore this. Shouldn't be handcrafted. 
+    return satisfied_CO, satisfied_HN
+
+    """
     for atom1 in atoms:
         res1 = atom1.get_parent()
         if atom1.get_id() == "O":
@@ -176,6 +203,7 @@ def computeSatisfied_CO_HN(atoms):
                             satisfied_CO.add(res1.get_id())
                             satisfied_HN.add(res2.get_id())
     return satisfied_CO, satisfied_HN
+    """
 
 
 # Compute the charge of a new mesh, based on the charge of an old mesh.
