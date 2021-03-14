@@ -480,7 +480,7 @@ cdef void dijkstra_one_row(unsigned int i_node,
     for i_N in range(0, N):
         nodes[i_N].state = 0  # 0 -> NOT_IN_HEAP
         nodes[i_N].val = 0
-        nodes[i_N].theta_val = M_PI
+        nodes[i_N].theta_val = 0
 
     insert_node(heap, &nodes[i_node])
 
@@ -488,8 +488,10 @@ cdef void dijkstra_one_row(unsigned int i_node,
         v = remove_min(heap)
         v.state = 2  # 2 -> SCANNED
         # MaSIF: limit patches to MAX_POINTS
-        if count_popped >= MAX_POINTS: 
+        if v.val >= 12 or count_popped >= MAX_POINTS:
             continue
+#        if count_popped >= MAX_POINTS: 
+#            continue
 
         for i from indptr1[v.index] <= i < indptr1[v.index + 1]:
             current_neighbor = &nodes[neighbors1[i]]
@@ -505,7 +507,7 @@ cdef void dijkstra_one_row(unsigned int i_node,
                         # MaSIF: i1_node is the first popped node, as long as it is at least 0.01A from the center, to remove singularity issues.
                         i1_node = current_neighbor.index
                         current_neighbor.theta_val = 0
-                    elif i1_node != i_node and (v.val+dist <= 2.0 or v.index == i_node):
+                    elif i1_node != i_node and (v.val+dist <= 1.5 or v.index == i_node):
                         # MaSIF: If the current node's distance to the center is less than 2.0A, then we can project 
                         # MaSIF: this node onto the center's normal plane and compute the angle with respect to i1_node
                         current_neighbor.theta_val = compute_angle_projection(vertices, normals, i_node, i1_node, current_neighbor.index) 
@@ -515,7 +517,7 @@ cdef void dijkstra_one_row(unsigned int i_node,
                     if current_neighbor.val > v.val + dist:
                         decrease_val(heap, current_neighbor,
                                  v.val + dist)
-                    if v.val+dist >= 2.0:
+                    if v.val+dist >= 1.5:
                         # MaSIF: if a neighbor is already in the queue, and farther than 2.0A
                         # update its theta angle value - simply average the angles of the new path to it 
                         weight1 = (current_neighbor.val+v.val+dist) / current_neighbor.val
