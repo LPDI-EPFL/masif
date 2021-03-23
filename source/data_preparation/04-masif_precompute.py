@@ -73,13 +73,13 @@ for ppi_pair_id in ppi_pair_list:
     for pid in pids:
         input_feat[pid], rho[pid], theta[pid], mask[pid], neigh_indices[pid], iface_labels[pid], verts[pid] = read_data_from_surface(ply_file[pid], params)
 
-#    if len(pids) > 1 and masif_app == 'masif_ppi_search':
-#        start_time = time.time()
-#        p1_sc_labels, p2_sc_labels = compute_shape_complementarity(ply_file['p1'], ply_file['p2'], neigh_indices['p1'],neigh_indices['p2'], rho['p1'], rho['p2'], mask['p1'], mask['p2'], params)
-#        np.save(my_precomp_dir+'p1_sc_labels', p1_sc_labels)
-#        np.save(my_precomp_dir+'p2_sc_labels', p2_sc_labels)
-#        end_time = time.time()
-#        print("Computing shape complementarity took {:.2f}".format(end_time-start_time))
+    if len(pids) > 1 and masif_app == 'masif_ppi_search':
+        start_time = time.time()
+        p1_sc_labels, p2_sc_labels = compute_shape_complementarity(ply_file['p1'], ply_file['p2'], neigh_indices['p1'],neigh_indices['p2'], rho['p1'], rho['p2'], mask['p1'], mask['p2'], params)
+        np.save(my_precomp_dir+'p1_sc_labels', p1_sc_labels)
+        np.save(my_precomp_dir+'p2_sc_labels', p2_sc_labels)
+        end_time = time.time()
+        print("Computing shape complementarity took {:.2f}".format(end_time-start_time))
 
     # Save data only if everything went well. 
     for pid in pids: 
