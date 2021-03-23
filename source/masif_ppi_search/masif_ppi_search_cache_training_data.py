@@ -40,11 +40,14 @@ binder_rho_wrt_center = []
 binder_theta_wrt_center = []
 binder_input_feat = []
 binder_mask = []
+binder_patch_vertices = []
 
 pos_rho_wrt_center = []
 pos_theta_wrt_center = []
 pos_input_feat = []
 pos_mask = []
+pos_patch_vertices = []
+
 
 neg_rho_wrt_center = []
 neg_theta_wrt_center = []
@@ -96,6 +99,7 @@ for count, ppi_pair_id in enumerate(os.listdir(parent_in_dir)):
     l = l[:K] 
     l = pos_labels[l]
 
+    v1_full = pymesh.load_mesh(ply_fn1).vertices
     v1 = pymesh.load_mesh(ply_fn1).vertices[l]
     v2 = pymesh.load_mesh(ply_fn2).vertices
 
@@ -131,11 +135,21 @@ for count, ppi_pair_id in enumerate(os.listdir(parent_in_dir)):
     theta_wrt_center = np.load(in_dir+pid+'_theta_wrt_center.npy')
     input_feat = np.load(in_dir+pid+'_input_feat.npy')
     mask = np.load(in_dir+pid+'_mask.npy')
+    list_indices = np.load(in_dir+pid+'_list_indices.npy', allow_pickle=True)
+
+    # Get the vertices of each patch. 
+    dim1 = rho_wrt_center.shape[1]
+    patch_vertices = np.zeros((n_pos, dim1, 3))
+
+    for i in range(n_pos):
+        num_elem = len(list_indices[k1[i]])
+        patch_vertices[i,:num_elem,:] = v1_full[list_indices[k1[i]]]
 
     binder_rho_wrt_center.append(rho_wrt_center[k1])
     binder_theta_wrt_center.append(theta_wrt_center[k1])
     binder_input_feat.append(input_feat[k1])
     binder_mask.append(mask[k1])
+    binder_patch_vertices.append(patch_vertices)
 
     # Read pos, which is p2.
     pid = 'p2'
@@ -145,10 +159,20 @@ for count, ppi_pair_id in enumerate(os.listdir(parent_in_dir)):
     theta_wrt_center = np.load(in_dir+pid+'_theta_wrt_center.npy')
     input_feat = np.load(in_dir+pid+'_input_feat.npy')
     mask = np.load(in_dir+pid+'_mask.npy')
+
+    # Get the vertices of each patch. 
+    list_indices = np.load(in_dir+pid+'_list_indices.npy', allow_pickle=True)
+    dim1 = rho_wrt_center.shape[1]
+    patch_vertices = np.zeros((n_pos, dim1, 3))
+    for i in range(n_pos):
+        num_elem = len(list_indices[k2[i]])
+        patch_vertices[i,:num_elem,:] = v2[list_indices[k2[i]]]
+
     pos_rho_wrt_center.append(rho_wrt_center[k2])
     pos_theta_wrt_center.append(theta_wrt_center[k2])
     pos_input_feat.append(input_feat[k2])
     pos_mask.append(mask[k2])
+    pos_patch_vertices.append(patch_vertices)
 
     # Get a set of negatives from  p2. 
     np.random.shuffle(k_neg2)
@@ -180,11 +204,14 @@ binder_rho_wrt_center = np.concatenate(binder_rho_wrt_center, axis=0)
 binder_theta_wrt_center = np.concatenate(binder_theta_wrt_center, axis=0)
 binder_input_feat = np.concatenate(binder_input_feat, axis=0)
 binder_mask = np.concatenate(binder_mask, axis=0)
+binder_patch_vertices = np.concatenate(binder_patch_vertices, axis=0)
 
 pos_rho_wrt_center = np.concatenate(pos_rho_wrt_center, axis=0)
 pos_theta_wrt_center = np.concatenate(pos_theta_wrt_center, axis=0)
 pos_input_feat = np.concatenate(pos_input_feat, axis=0)
 pos_mask = np.concatenate(pos_mask, axis=0)
+pos_patch_vertices = np.concatenate(pos_patch_vertices, axis=0)
+
 np.save(params['cache_dir']+'/pos_names.npy', pos_names)
 
 neg_rho_wrt_center = np.concatenate(neg_rho_wrt_center, axis=0)
@@ -199,6 +226,7 @@ np.save(params['cache_dir']+'/binder_rho_wrt_center.npy', binder_rho_wrt_center)
 np.save(params['cache_dir']+'/binder_theta_wrt_center.npy', binder_theta_wrt_center)
 np.save(params['cache_dir']+'/binder_input_feat.npy', binder_input_feat)
 np.save(params['cache_dir']+'/binder_mask.npy', binder_mask)
+np.save(params['cache_dir']+'/binder_patch_vertices.npy', binder_patch_vertices)
 
 np.save(params['cache_dir']+'/pos_training_idx.npy', training_idx)
 np.save(params['cache_dir']+'/pos_val_idx.npy', val_idx)
@@ -207,6 +235,7 @@ np.save(params['cache_dir']+'/pos_rho_wrt_center.npy', pos_rho_wrt_center)
 np.save(params['cache_dir']+'/pos_theta_wrt_center.npy', pos_theta_wrt_center)
 np.save(params['cache_dir']+'/pos_input_feat.npy', pos_input_feat)
 np.save(params['cache_dir']+'/pos_mask.npy', pos_mask)
+np.save(params['cache_dir']+'/pos_patch_vertices.npy', pos_patch_vertices)
 
 np.save(params['cache_dir']+'/neg_training_idx.npy', training_idx)
 np.save(params['cache_dir']+'/neg_val_idx.npy', val_idx)

@@ -16,8 +16,9 @@ from input_output.extractPDB import extractPDB
 from input_output.save_ply import save_ply
 from input_output.read_ply import read_ply
 from input_output.protonate import protonate
+from triangulation.fixmesh import fix_mesh
 from triangulation.computeHydrophobicity import computeHydrophobicity
-from triangulation.computeCharges import computeHbonds, computeSimpleCharge
+from triangulation.computeCharges import computeHbonds, assignChargesToNewMesh
 from triangulation.computeAPBS import computeAPBS
 from triangulation.compute_normal import compute_normal
 from scipy.spatial import cKDTree
@@ -59,18 +60,6 @@ vertices1, faces1, normals1, names1, _ = computeMSMS(out_filename1+".pdb")
 end = time.perf_counter()
 print('MSMS took: {:.2f}s'.format(end-start))
 
-# Fix the mesh.
-start = time.perf_counter()
-mesh = pymesh.form_mesh(vertices1, faces1)
-mesh.add_attribute('vertex_area')
-areas_pymesh = mesh.get_attribute('vertex_area')
-regular_mesh = mesh
-end = time.perf_counter()
-print('Areas resorting took: {:.2f}s'.format(end-start))
-
-#regular_mesh = fix_mesh(mesh, masif_opts['mesh_res'])
-
-start = time.perf_counter()
 # Compute "charged" vertices
 if masif_opts['use_hbond']:
     vertex_hbond = computeHbonds(out_filename1, vertices1, names1)
@@ -78,15 +67,17 @@ if masif_opts['use_hbond']:
 # For each surface residue, assign the hydrophobicity of its amino acid. 
 if masif_opts['use_hphob']:
     vertex_hphobicity = computeHydrophobicity(names1)
+print('Computing charges took: {:.2f}s'.format(end-start))
 
-if masif_opts['use_apbs']:
-    vertex_charges = computeAPBS(regular_mesh.vertices, out_filename1+".pdb", out_filename1)
-else: 
-    # else, use a simple model for charge 
-    vertex_charges = computeSimpleCharge(regular_mesh.vertices, names1)
 
 end = time.perf_counter()
-print('Computing charges took: {:.2f}s'.format(end-start))
+# Fix the mesh.
+start = time.perf_counter()
+mesh = pymesh.form_mesh(vertices1, faces1)
+mesh.add_attribute('vertex_area')
+regular_mesh = fix_mesh(mesh, masif_opts['mesh_res'])
+end = time.perf_counter()
+print('Mesh fixing took: {:.2f}s'.format(end-start))
     
 
 start = time.perf_counter()
@@ -97,6 +88,16 @@ vertex_normal = compute_normal(regular_mesh.vertices, regular_mesh.faces)
 end = time.perf_counter()
 print('Computing normals took: {:.2f}s'.format(end-start))
 
+if masif_opts['use_hbond']:
+    vertex_hbond = assignChargesToNewMesh(regular_mesh.vertices, vertices1,\
+        vertex_hbond, masif_opts)
+
+if masif_opts['use_hphob']:
+    vertex_hphobicity = assignChargesToNewMesh(regular_mesh.vertices, vertices1,\
+        vertex_hphobicity, masif_opts)
+
+if masif_opts['use_apbs']:
+    vertex_charges = computeAPBS(regular_mesh.vertices, out_filename1+".pdb", out_filename1)
 
 start = time.perf_counter()
 # Compute the normals
@@ -105,7 +106,6 @@ if 'compute_iface' in masif_opts and masif_opts['compute_iface']:
     # Compute the surface of the entire complex and from that compute the interface.
     # Use highres for this. 
     v3, f3, _, _, _ = computeMSMS(pdb_filename, res=3.0)
-    # Regularize the mesh
     full_regular_mesh = pymesh.form_mesh(v3, f3)
     # Find the vertices that are in the iface.
     v3 = full_regular_mesh.vertices
