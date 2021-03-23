@@ -1,4 +1,5 @@
 from Bio.PDB import *
+from scipy.spatial import cKDTree
 import numpy as np
 
 """
@@ -216,7 +217,7 @@ def assignChargesToNewMesh(new_vertices, old_vertices, old_charges, seeder_opts)
     if seeder_opts["feature_interpolation"]:
         num_inter = 4  # Number of interpolation features
         # Assign k old vertices to each new vertex.
-        kdt = KDTree(dataset)
+        kdt = cKDTree(dataset)
         dists, result = kdt.query(testset, k=num_inter)
         # Square the distances (as in the original pyflann)
         dists = np.square(dists)
@@ -236,7 +237,7 @@ def assignChargesToNewMesh(new_vertices, old_vertices, old_charges, seeder_opts)
                 )
     else:
         # Assign k old vertices to each new vertex.
-        kdt = KDTree(dataset)
+        kdt = cKDTree(dataset)
         dists, result = kdt.query(testset)
         new_charges = old_charges[result]
     return new_charges
