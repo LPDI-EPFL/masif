@@ -25,7 +25,7 @@ def output_pdb_as_xyzrn(pdbfilename, xyzrnfilename):
         resname = residue.get_resname()
         reskey = residue.get_id()[1]
         chain = residue.get_parent().get_id()
-        atomtype = name[0]
+        atomtype = atom.element
 
         color = "Green"
         coords = None
