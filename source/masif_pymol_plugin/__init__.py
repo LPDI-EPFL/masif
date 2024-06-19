@@ -2,8 +2,8 @@
 # This pymol plugin for Masif just enables the load ply functions. 
 
 from pymol import cmd
-from loadPLY import *
-from loadDOTS import *
+from .loadPLY import *
+from .loadDOTS import *
 import sys
 
 def __init_plugin__(app):

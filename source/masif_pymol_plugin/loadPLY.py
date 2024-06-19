@@ -107,7 +107,7 @@ def load_ply(
     #        import pymesh
     #        mesh = pymesh.load_mesh(filename)
 
-    from simple_mesh import Simple_mesh
+    from .simple_mesh import Simple_mesh
 
     mesh = Simple_mesh()
     mesh.load_mesh(filename)
