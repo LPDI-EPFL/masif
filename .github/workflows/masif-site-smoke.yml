@@ -1,0 +1,33 @@
+name: masif-site smoke test
+
+# A reproducibility heartbeat: on every push/PR, run MaSIF-site end-to-end on the
+# canonical 4ZQK_A example (inside the published pablogainza/masif image) and assert
+# the interaction-site ROC-AUC stays healthy. Had this existed, issue #85 (the rotted
+# PDB download) would have been caught the day it broke.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  masif-site-4zqk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: MaSIF-site on 4ZQK_A (built-in download)
+        run: |
+          docker run --rm -v "$PWD:/repo" pablogainza/masif:latest bash -lc '
+            set -e
+            # use this checkout"s (fixed) source over the baked image
+            cp -f /repo/source/data_preparation/00-pdb_download.py \
+                  /masif/source/data_preparation/00-pdb_download.py
+            cd /masif/data/masif_site
+            ./data_prepare_one.sh 4ZQK_A
+            ./predict_site.sh 4ZQK_A
+            ./color_site.sh 4ZQK_A | tee /tmp/color.log
+            auc=$(grep "ROC AUC score for protein" /tmp/color.log | grep -oE "[0-9.]+" | tail -1)
+            echo "4ZQK_A ROC-AUC = $auc"
+            python -c "import sys; sys.exit(0 if float(\"$auc\") >= 0.8 else 1)"
+          '
